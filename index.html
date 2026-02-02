@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -32,6 +33,7 @@
             font-family: 'Assistant', sans-serif;
             background-color: #f8fafc;
         }
+
         .glass-card {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
@@ -51,11 +53,12 @@
         }
     </script>
 </head>
+
 <body class="min-h-screen text-slate-800">
 
     <!-- Sidebar / Navigation -->
     <div class="flex flex-col md:flex-row min-h-screen">
-        
+
         <!-- Sidebar -->
         <aside class="w-full md:w-64 bg-emerald-700 text-white p-6 flex flex-col shadow-xl">
             <div class="flex items-center gap-3 mb-10">
@@ -64,25 +67,30 @@
                 </div>
                 <h1 class="text-xl font-bold tracking-tight">שוק הירקות</h1>
             </div>
-            
+
             <nav class="space-y-4 flex-grow">
-                <a href="index.html" class="flex items-center gap-3 w-full p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all">
+                <a href="index.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all">
                     <i class="fas fa-home w-6 text-center"></i>
                     <span class="font-medium">דף הבית</span>
                 </a>
-                <a href="new-order.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <a href="new-order.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
                     <i class="fas fa-plus-circle w-6 text-center"></i>
                     <span class="font-medium">הזמנה חדשה</span>
                 </a>
-                <a href="orders-list.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <a href="orders-list.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
                     <i class="fas fa-list-ul w-6 text-center"></i>
                     <span class="font-medium">רשימת הזמנות</span>
                 </a>
-                <a href="suppliers.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <a href="suppliers.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
                     <i class="fas fa-truck w-6 text-center"></i>
                     <span class="font-medium">ספקים</span>
                 </a>
-                <a href="monthly-report.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <a href="monthly-report.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
                     <i class="fas fa-chart-line w-6 text-center"></i>
                     <span class="font-medium">דו"ח חודשי</span>
                 </a>
@@ -104,14 +112,16 @@
                 <div class="hidden md:flex items-center gap-4">
                     <div class="relative">
                         <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" placeholder="חיפוש..." class="pr-10 pl-4 py-2 rounded-full border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-64 bg-white shadow-sm transition-all focus:w-80">
+                        <input type="text" placeholder="חיפוש..."
+                            class="pr-10 pl-4 py-2 rounded-full border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-64 bg-white shadow-sm transition-all focus:w-80">
                     </div>
                 </div>
             </header>
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <div class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div
+                    class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
                     <div class="bg-emerald-100 text-emerald-600 p-4 rounded-2xl">
                         <i class="fas fa-shopping-basket text-xl"></i>
                     </div>
@@ -120,7 +130,8 @@
                         <h3 class="text-2xl font-bold">24</h3>
                     </div>
                 </div>
-                <div class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div
+                    class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
                     <div class="bg-blue-100 text-blue-600 p-4 rounded-2xl">
                         <i class="fas fa-truck text-xl"></i>
                     </div>
@@ -129,7 +140,8 @@
                         <h3 class="text-2xl font-bold">5</h3>
                     </div>
                 </div>
-                <div class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div
+                    class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
                     <div class="bg-amber-100 text-amber-600 p-4 rounded-2xl">
                         <i class="fas fa-clock text-xl"></i>
                     </div>
@@ -138,7 +150,8 @@
                         <h3 class="text-2xl font-bold">3</h3>
                     </div>
                 </div>
-                <div class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div
+                    class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
                     <div class="bg-purple-100 text-purple-600 p-4 rounded-2xl">
                         <i class="fas fa-dollar-sign text-xl"></i>
                     </div>
@@ -155,7 +168,8 @@
                 <div class="lg:col-span-2 glass-card rounded-3xl p-8 shadow-sm">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-xl font-bold">הזמנות אחרונות</h4>
-                        <a href="orders-list.html" class="text-emerald-600 text-sm font-semibold hover:underline">הצג הכל</a>
+                        <a href="orders-list.html" class="text-emerald-600 text-sm font-semibold hover:underline">הצג
+                            הכל</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-right">
@@ -175,7 +189,8 @@
                                     <td class="py-4 font-semibold">ירקות מודיעין</td>
                                     <td class="py-4 text-slate-500">02/02/2026</td>
                                     <td class="py-4">
-                                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">בדרך</span>
+                                        <span
+                                            class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">בדרך</span>
                                     </td>
                                     <td class="py-4 text-left font-bold">₪450</td>
                                 </tr>
@@ -184,7 +199,8 @@
                                     <td class="py-4 font-semibold">המשק שלי</td>
                                     <td class="py-4 text-slate-500">31/01/2026</td>
                                     <td class="py-4">
-                                        <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">סופק</span>
+                                        <span
+                                            class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">סופק</span>
                                     </td>
                                     <td class="py-4 text-left font-bold">₪1,200</td>
                                 </tr>
@@ -199,14 +215,17 @@
 
                 <!-- Quick Actions / Sidebar Info -->
                 <div class="space-y-8">
-                    <div class="glass-card rounded-3xl p-6 shadow-sm bg-gradient-to-br from-emerald-600 to-emerald-800 text-white">
+                    <div
+                        class="glass-card rounded-3xl p-6 shadow-sm bg-gradient-to-br from-emerald-600 to-emerald-800 text-white">
                         <h4 class="text-lg font-bold mb-4">פעולות מהירות</h4>
                         <div class="space-y-3">
-                            <a href="new-order.html" class="w-full py-3 bg-white text-emerald-700 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-50 transition-all">
+                            <a href="new-order.html"
+                                class="w-full py-3 bg-white text-emerald-700 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-50 transition-all">
                                 <i class="fas fa-plus"></i>
                                 יצירת הזמנה מהירה
                             </a>
-                            <a href="suppliers.html" class="w-full py-3 border border-white/30 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
+                            <a href="suppliers.html"
+                                class="w-full py-3 border border-white/30 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
                                 <i class="fas fa-user-plus"></i>
                                 הוספת ספק חדש
                             </a>
@@ -235,23 +254,17 @@
                         </h4>
                         <p class="text-sm text-slate-500 mb-4">גיבוי ושחזור נתוני המערכת</p>
                         <div class="space-y-3">
-                            <button
-                                onclick="exportAllData()"
-                                class="w-full py-3 border border-slate-300 text-slate-600 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-400 transition-all"
-                            >
+                            <button onclick="exportAllData()"
+                                class="w-full py-3 border border-slate-300 text-slate-600 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-400 transition-all">
                                 <i class="fas fa-download text-slate-500"></i>
                                 גיבוי נתונים (Export)
                             </button>
-                            <label class="w-full py-3 border border-slate-300 text-slate-600 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-400 transition-all cursor-pointer">
+                            <label
+                                class="w-full py-3 border border-slate-300 text-slate-600 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-400 transition-all cursor-pointer">
                                 <i class="fas fa-upload text-slate-500"></i>
                                 שחזור נתונים (Import)
-                                <input
-                                    type="file"
-                                    id="import-file-input"
-                                    accept=".json"
-                                    onchange="importAllData(event)"
-                                    class="hidden"
-                                >
+                                <input type="file" id="import-file-input" accept=".json" onchange="importAllData(event)"
+                                    class="hidden">
                             </label>
                         </div>
                         <p class="text-xs text-slate-400 mt-3 text-center">
@@ -264,6 +277,8 @@
         </main>
     </div>
 
+    <!-- Shared Utilities -->
+    <script src="js/utils.js"></script>
     <!-- Storage script -->
     <script src="js/storage.js"></script>
     <!-- App script -->
@@ -284,4 +299,5 @@
         }
     </script>
 </body>
+
 </html>

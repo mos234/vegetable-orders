@@ -277,8 +277,8 @@ function exportAllData() {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
-        // Show success message
-        showBackupToast(`גיבוי הושלם בהצלחה! (${suppliers.length} ספקים, ${orders.length} הזמנות)`);
+        // Show success message using shared utility
+        showToast(`גיבוי הושלם בהצלחה! (${suppliers.length} ספקים, ${orders.length} הזמנות)`);
 
         console.log('Data exported successfully:', backupData.stats);
         return true;
@@ -306,7 +306,7 @@ function importAllData(event) {
 
     const reader = new FileReader();
 
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         try {
             const backupData = JSON.parse(e.target.result);
 
@@ -343,8 +343,8 @@ function importAllData(event) {
             saveData(STORAGE_KEYS.SUPPLIERS, backupData.data.suppliers);
             saveData(STORAGE_KEYS.ORDERS, backupData.data.orders);
 
-            // Show success message
-            showBackupToast(`שחזור הושלם בהצלחה! (${newSuppliers} ספקים, ${newOrders} הזמנות)`);
+            // Show success message using shared utility
+            showToast(`שחזור הושלם בהצלחה! (${newSuppliers} ספקים, ${newOrders} הזמנות)`);
 
             console.log('Data imported successfully:', {
                 suppliers: newSuppliers,
@@ -364,58 +364,12 @@ function importAllData(event) {
         event.target.value = '';
     };
 
-    reader.onerror = function() {
+    reader.onerror = function () {
         alert('שגיאה בקריאת הקובץ');
         event.target.value = '';
     };
 
     reader.readAsText(file);
-}
-
-/**
- * Shows a toast notification for backup operations.
- * @param {string} message - The message to display
- */
-function showBackupToast(message) {
-    // Remove existing toast if any
-    const existing = document.querySelector('.backup-toast');
-    if (existing) existing.remove();
-
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = 'backup-toast fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center gap-3';
-    toast.innerHTML = `
-        <i class="fas fa-check-circle text-emerald-400"></i>
-        <span>${message}</span>
-    `;
-
-    // Add animation
-    toast.style.animation = 'fadeInUp 0.3s ease-out';
-
-    document.body.appendChild(toast);
-
-    // Remove after 4 seconds
-    setTimeout(() => {
-        toast.style.animation = 'fadeOutDown 0.3s ease-out';
-        setTimeout(() => toast.remove(), 300);
-    }, 4000);
-}
-
-// Add animation keyframes if not already present
-if (typeof document !== 'undefined' && !document.getElementById('backup-toast-styles')) {
-    const style = document.createElement('style');
-    style.id = 'backup-toast-styles';
-    style.textContent = `
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translate(-50%, 20px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
-        @keyframes fadeOutDown {
-            from { opacity: 1; transform: translate(-50%, 0); }
-            to { opacity: 0; transform: translate(-50%, 20px); }
-        }
-    `;
-    document.head.appendChild(style);
 }
 
 // Initialize on load

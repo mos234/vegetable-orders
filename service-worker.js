@@ -5,21 +5,22 @@
 
 const CACHE_NAME = 'vegetable-orders-v1';
 const CACHE_URLS = [
-    '/',
-    '/index.html',
-    '/new-order.html',
-    '/orders-list.html',
-    '/suppliers.html',
-    '/monthly-report.html',
-    '/js/app.js',
-    '/js/storage.js',
-    '/js/messaging.js',
-    '/js/suppliers.js',
-    '/js/orders.js',
-    '/js/orders-list.js',
-    '/js/monthly-report.js',
-    '/js/export.js',
-    '/manifest.json'
+    './',
+    './index.html',
+    './new-order.html',
+    './orders-list.html',
+    './suppliers.html',
+    './monthly-report.html',
+    './js/app.js',
+    './js/utils.js',
+    './js/storage.js',
+    './js/messaging.js',
+    './js/suppliers.js',
+    './js/orders.js',
+    './js/orders-list.js',
+    './js/monthly-report.js',
+    './js/export.js',
+    './manifest.json'
 ];
 
 // External resources to cache

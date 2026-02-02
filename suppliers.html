@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -28,6 +29,7 @@
             font-family: 'Assistant', sans-serif;
             background-color: #f8fafc;
         }
+
         .glass-card {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
@@ -47,6 +49,7 @@
         }
     </script>
 </head>
+
 <body class="min-h-screen text-slate-800">
 
     <!-- Sidebar / Navigation -->
@@ -62,23 +65,28 @@
             </div>
 
             <nav class="space-y-4 flex-grow">
-                <a href="index.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <a href="index.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
                     <i class="fas fa-home w-6 text-center"></i>
                     <span class="font-medium">דף הבית</span>
                 </a>
-                <a href="new-order.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <a href="new-order.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
                     <i class="fas fa-plus-circle w-6 text-center"></i>
                     <span class="font-medium">הזמנה חדשה</span>
                 </a>
-                <a href="orders-list.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <a href="orders-list.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
                     <i class="fas fa-list-ul w-6 text-center"></i>
                     <span class="font-medium">רשימת הזמנות</span>
                 </a>
-                <a href="suppliers.html" class="flex items-center gap-3 w-full p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all">
+                <a href="suppliers.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all">
                     <i class="fas fa-truck w-6 text-center"></i>
                     <span class="font-medium">ספקים</span>
                 </a>
-                <a href="monthly-report.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <a href="monthly-report.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
                     <i class="fas fa-chart-line w-6 text-center"></i>
                     <span class="font-medium">דו"ח חודשי</span>
                 </a>
@@ -107,42 +115,28 @@
                 </h3>
                 <form id="supplier-form" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label for="supplier-name" class="block text-sm font-semibold text-slate-700 mb-2">שם הספק</label>
-                        <input
-                            type="text"
-                            id="supplier-name"
-                            name="name"
-                            placeholder="לדוגמה: ירקות מודיעין"
+                        <label for="supplier-name" class="block text-sm font-semibold text-slate-700 mb-2">שם
+                            הספק</label>
+                        <input type="text" id="supplier-name" name="name" placeholder="לדוגמה: ירקות מודיעין"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-                            required
-                        >
+                            required>
                     </div>
                     <div>
-                        <label for="supplier-phone" class="block text-sm font-semibold text-slate-700 mb-2">מספר טלפון</label>
-                        <input
-                            type="tel"
-                            id="supplier-phone"
-                            name="phone"
-                            placeholder="050-1234567"
+                        <label for="supplier-phone" class="block text-sm font-semibold text-slate-700 mb-2">מספר
+                            טלפון</label>
+                        <input type="tel" id="supplier-phone" name="phone" placeholder="050-1234567"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-                            required
-                        >
+                            required>
                     </div>
                     <div>
-                        <label for="supplier-notes" class="block text-sm font-semibold text-slate-700 mb-2">הערות</label>
-                        <input
-                            type="text"
-                            id="supplier-notes"
-                            name="notes"
-                            placeholder="הערות נוספות (אופציונלי)"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-                        >
+                        <label for="supplier-notes"
+                            class="block text-sm font-semibold text-slate-700 mb-2">הערות</label>
+                        <input type="text" id="supplier-notes" name="notes" placeholder="הערות נוספות (אופציונלי)"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
                     </div>
                     <div class="md:col-span-3 flex justify-end">
-                        <button
-                            type="submit"
-                            class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-200 active:scale-95"
-                        >
+                        <button type="submit"
+                            class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-200 active:scale-95">
                             <i class="fas fa-plus"></i>
                             הוסף ספק
                         </button>
@@ -157,11 +151,13 @@
                         <i class="fas fa-address-book text-emerald-600"></i>
                         רשימת ספקים
                     </h3>
-                    <span id="suppliers-count" class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-bold">0 ספקים</span>
+                    <span id="suppliers-count"
+                        class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-bold">0 ספקים</span>
                 </div>
 
                 <!-- Empty State -->
-                <div id="empty-state" class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
+                <div id="empty-state"
+                    class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
                     <i class="fas fa-users text-4xl text-slate-300 mb-4 block"></i>
                     <p class="text-slate-400 text-lg">אין ספקים עדיין</p>
                     <p class="text-slate-400 text-sm mt-1">הוסף ספק חדש באמצעות הטופס למעלה</p>
@@ -201,43 +197,30 @@
                 <div class="space-y-4">
                     <div>
                         <label for="edit-name" class="block text-sm font-semibold text-slate-700 mb-2">שם הספק</label>
-                        <input
-                            type="text"
-                            id="edit-name"
+                        <input type="text" id="edit-name"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            required
-                        >
+                            required>
                     </div>
                     <div>
-                        <label for="edit-phone" class="block text-sm font-semibold text-slate-700 mb-2">מספר טלפון</label>
-                        <input
-                            type="tel"
-                            id="edit-phone"
+                        <label for="edit-phone" class="block text-sm font-semibold text-slate-700 mb-2">מספר
+                            טלפון</label>
+                        <input type="tel" id="edit-phone"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            required
-                        >
+                            required>
                     </div>
                     <div>
                         <label for="edit-notes" class="block text-sm font-semibold text-slate-700 mb-2">הערות</label>
-                        <input
-                            type="text"
-                            id="edit-notes"
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        >
+                        <input type="text" id="edit-notes"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
-                    <button
-                        type="submit"
-                        class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold transition-all"
-                    >
+                    <button type="submit"
+                        class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold transition-all">
                         שמור שינויים
                     </button>
-                    <button
-                        type="button"
-                        id="cancel-edit"
-                        class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition-all"
-                    >
+                    <button type="button" id="cancel-edit"
+                        class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition-all">
                         ביטול
                     </button>
                 </div>
@@ -246,8 +229,10 @@
     </div>
 
     <!-- Scripts -->
+    <script src="js/utils.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/messaging.js"></script>
     <script src="js/suppliers.js"></script>
 </body>
+
 </html>

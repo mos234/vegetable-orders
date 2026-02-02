@@ -555,47 +555,6 @@ function saveOrderAction(action) {
 }
 
 /**
- * Builds the order message for WhatsApp/SMS.
- * @param {Object} order
- * @returns {string} The formatted message
- */
-function buildOrderMessage(order) {
-    let message = `שלום ${order.supplierName},\n\n`;
-    message += `הזמנה ${order.orderNumber}\n`;
-    message += `תאריך אספקה: ${formatDateHebrew(order.deliveryDate)}\n\n`;
-    message += `פריטים:\n`;
-
-    order.items.forEach((item, index) => {
-        message += `${index + 1}. ${item.name} - ${item.quantity} ${item.unit}`;
-        if (item.price > 0) {
-            message += ` (₪${item.price} ליחידה)`;
-        }
-        message += `\n`;
-    });
-
-    message += `\nסה"כ: ₪${order.total.toFixed(2)}`;
-
-    if (order.notes) {
-        message += `\n\nהערות: ${order.notes}`;
-    }
-
-    message += `\n\nתודה רבה!`;
-
-    return message;
-}
-
-/**
- * Formats a date string to Hebrew format.
- * @param {string} dateStr - Date in YYYY-MM-DD format
- * @returns {string} Date in DD/MM/YYYY format
- */
-function formatDateHebrew(dateStr) {
-    if (!dateStr) return '';
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}/${year}`;
-}
-
-/**
  * Resets the order form.
  */
 function resetOrderForm() {
@@ -611,42 +570,4 @@ function resetOrderForm() {
     // Add first empty row
     addNewItemRow();
     updateOrderSummary();
-}
-
-/**
- * Shows a toast notification.
- * @param {string} message - The message to show
- */
-function showToast(message) {
-    const existing = document.querySelector('.toast-notification');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.className = 'toast-notification fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-lg z-50';
-    toast.textContent = message;
-    toast.style.animation = 'fadeInUp 0.3s ease-out';
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.animation = 'fadeOutDown 0.3s ease-out';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// Add animation keyframes if not already present
-if (!document.getElementById('toast-styles')) {
-    const style = document.createElement('style');
-    style.id = 'toast-styles';
-    style.textContent = `
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translate(-50%, 20px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
-        @keyframes fadeOutDown {
-            from { opacity: 1; transform: translate(-50%, 0); }
-            to { opacity: 0; transform: translate(-50%, 20px); }
-        }
-    `;
-    document.head.appendChild(style);
 }
