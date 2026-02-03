@@ -72,7 +72,7 @@ function renderOrdersList() {
                     <span class="text-lg font-bold text-slate-900">${order.orderNumber || '#---'}</span>
                     <p class="text-sm text-slate-500">${order.supplierName || 'ספק לא ידוע'}</p>
                 </div>
-                ${getStatusBadge(order.status)}
+                ${getStatusBadgeHtml(order.status)}
             </div>
 
             <!-- Details -->
@@ -163,20 +163,6 @@ function getFilteredOrders() {
     return orders;
 }
 
-/**
- * Gets the status badge HTML.
- * @param {string} status
- * @returns {string} HTML string
- */
-function getStatusBadge(status) {
-    const badges = {
-        draft: '<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">טיוטה</span>',
-        sent: '<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">נשלח</span>',
-        delivered: '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">סופק</span>',
-        cancelled: '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">בוטל</span>'
-    };
-    return badges[status] || badges.draft;
-}
 
 /**
  * Updates the stats display.
@@ -211,8 +197,7 @@ function viewOrder(orderId) {
                     <p class="text-sm text-slate-500">${order.supplierPhone || '-'}</p>
                 </div>
                 <div class="bg-slate-50 rounded-xl p-4">
-                    <p class="text-sm text-slate-500 mb-1">סטטוס</p>
-                    ${getStatusBadge(order.status)}
+                    ${getStatusBadgeHtml(order.status)}
                 </div>
                 <div class="bg-slate-50 rounded-xl p-4">
                     <p class="text-sm text-slate-500 mb-1">תאריך הזמנה</p>

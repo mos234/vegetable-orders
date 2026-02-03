@@ -19,7 +19,7 @@
     <link rel="manifest" href="manifest.json">
 
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
 
     <!-- Tailwind CSS -->
@@ -62,8 +62,8 @@
         <!-- Sidebar -->
         <aside class="w-full md:w-64 bg-emerald-700 text-white p-6 flex flex-col shadow-xl">
             <div class="flex items-center gap-3 mb-10">
-                <div class="bg-white p-2 rounded-lg text-emerald-700">
-                    <i class="fas fa-carrot text-2xl"></i>
+                <div class="bg-white p-1 rounded-lg">
+                    <img src="icons/icon-192x192.png" alt="Logo" class="w-10 h-10 object-contain">
                 </div>
                 <h1 class="text-xl font-bold tracking-tight">שוק הירקות</h1>
             </div>
@@ -127,7 +127,7 @@
                     </div>
                     <div>
                         <p class="text-slate-500 text-sm font-medium">הזמנות החודש</p>
-                        <h3 class="text-2xl font-bold">24</h3>
+                        <h3 class="text-2xl font-bold" id="stat-orders-month">0</h3>
                     </div>
                 </div>
                 <div
@@ -137,7 +137,7 @@
                     </div>
                     <div>
                         <p class="text-slate-500 text-sm font-medium">ספקים פעילים</p>
-                        <h3 class="text-2xl font-bold">5</h3>
+                        <h3 class="text-2xl font-bold" id="stat-active-suppliers">0</h3>
                     </div>
                 </div>
                 <div
@@ -146,8 +146,8 @@
                         <i class="fas fa-clock text-xl"></i>
                     </div>
                     <div>
-                        <p class="text-slate-500 text-sm font-medium">ממתין לאישור</p>
-                        <h3 class="text-2xl font-bold">3</h3>
+                        <p class="text-slate-500 text-sm font-medium">ממתין לאספקה</p>
+                        <h3 class="text-2xl font-bold" id="stat-pending-orders">0</h3>
                     </div>
                 </div>
                 <div
@@ -157,7 +157,7 @@
                     </div>
                     <div>
                         <p class="text-slate-500 text-sm font-medium">סה"כ הוצאות</p>
-                        <h3 class="text-2xl font-bold">₪4,500</h3>
+                        <h3 class="text-2xl font-bold" id="stat-total-expenses">₪0</h3>
                     </div>
                 </div>
             </div>
@@ -182,34 +182,15 @@
                                     <th class="pb-4 font-medium text-left">סה"כ</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-50">
-                                <!-- Placeholders for now -->
-                                <tr>
-                                    <td class="py-4">#1204</td>
-                                    <td class="py-4 font-semibold">ירקות מודיעין</td>
-                                    <td class="py-4 text-slate-500">02/02/2026</td>
-                                    <td class="py-4">
-                                        <span
-                                            class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">בדרך</span>
-                                    </td>
-                                    <td class="py-4 text-left font-bold">₪450</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-4">#1203</td>
-                                    <td class="py-4 font-semibold">המשק שלי</td>
-                                    <td class="py-4 text-slate-500">31/01/2026</td>
-                                    <td class="py-4">
-                                        <span
-                                            class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">סופק</span>
-                                    </td>
-                                    <td class="py-4 text-left font-bold">₪1,200</td>
-                                </tr>
+                            <tbody class="divide-y divide-slate-50" id="recent-orders-list">
+                                <!-- Orders will be rendered here -->
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
+                    <div id="empty-dashboard-state"
+                        class="mt-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
                         <i class="fas fa-clipboard-list text-3xl text-slate-300 mb-4 block"></i>
-                        <p class="text-slate-400">טרם נוספו הזמנות משמעותיות בתקופת ההרצה</p>
+                        <p class="text-slate-400">טרם נוספו הזמנות למערכת</p>
                     </div>
                 </div>
 
