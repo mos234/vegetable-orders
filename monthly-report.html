@@ -20,6 +20,7 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>(function(){var t=localStorage.getItem('veg-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');if(t==='dark')document.documentElement.classList.add('dark');})();</script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -62,6 +63,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="css/styles.css">
     <script>
         tailwind.config = {
             theme: {
@@ -77,12 +79,23 @@
 </head>
 
 <body class="min-h-screen text-slate-800">
+    <!-- Mobile Header -->
+    <header class="mobile-header-bar md:hidden fixed top-0 left-0 right-0 z-50 bg-emerald-700 text-white px-4 flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-2">
+            <img src="icons/icon-192x192.png" alt="Logo" class="w-8 h-8 object-contain">
+            <span class="font-bold text-lg">שוק הירקות</span>
+        </div>
+        <button onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30" aria-label="מצב כהה/בהיר">
+            <i class="theme-icon fas fa-moon text-lg"></i>
+        </button>
+    </header>
+
 
     <!-- Sidebar / Navigation -->
     <div class="flex flex-col md:flex-row min-h-screen">
 
         <!-- Sidebar -->
-        <aside class="w-full md:w-64 bg-emerald-700 text-white p-6 flex flex-col shadow-xl">
+        <aside class="hidden md:flex md:w-64 bg-emerald-700 text-white p-6 flex-col shadow-xl">
             <div class="flex items-center gap-3 mb-10">
                 <div class="bg-white p-1 rounded-lg">
                     <img src="icons/icon-192x192.png" alt="Logo" class="w-10 h-10 object-contain">
@@ -106,6 +119,21 @@
                     <i class="fas fa-list-ul w-6 text-center"></i>
                     <span class="font-medium">רשימת הזמנות</span>
                 </a>
+                <a href="new-return.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                    <i class="fas fa-rotate-left w-6 text-center"></i>
+                    <span class="font-medium">החזרה חדשה</span>
+                </a>
+                <a href="returns-list.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                    <i class="fas fa-boxes-stacked w-6 text-center"></i>
+                    <span class="font-medium">רשימת החזרות</span>
+                </a>
+                <a href="catalog.html"
+                    class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                    <i class="fas fa-tag w-6 text-center"></i>
+                    <span class="font-medium">קטלוג מחירים</span>
+                </a>
                 <a href="suppliers.html"
                     class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
                     <i class="fas fa-truck w-6 text-center"></i>
@@ -118,8 +146,14 @@
                 </a>
             </nav>
 
-            <div class="mt-auto pt-6 border-t border-white/10">
-                <p class="text-xs text-emerald-200 text-center opacity-60">גרסה 1.0.0 &copy; 2026</p>
+            <div class="mt-auto pt-6 border-t border-white/10 space-y-2">
+                <button onclick="toggleTheme()"
+                    class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition-all"
+                    aria-label="מצב כהה/בהיר">
+                    <i class="theme-icon fas fa-moon w-6 text-center"></i>
+                    <span class="font-medium theme-label">מצב כהה</span>
+                </button>
+                <p class="text-xs text-emerald-200 text-center opacity-60">גרסה 1.1.0 &copy; 2026</p>
             </div>
         </aside>
 
@@ -294,10 +328,32 @@
     </div>
 
     <!-- Scripts -->
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav-container md:hidden fixed bottom-0 left-0 right-0 z-50 bg-emerald-700 text-white shadow-2xl">
+        <div class="flex">
+            <a href="index.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium">
+                <i class="fas fa-home text-xl"></i><span>בית</span>
+            </a>
+            <a href="new-order.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium">
+                <i class="fas fa-plus-circle text-xl"></i><span>הזמנה</span>
+            </a>
+            <a href="orders-list.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium">
+                <i class="fas fa-list-ul text-xl"></i><span>הזמנות</span>
+            </a>
+            <a href="new-return.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium">
+                <i class="fas fa-rotate-left text-xl"></i><span>החזרה</span>
+            </a>
+            <a href="returns-list.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium">
+                <i class="fas fa-boxes-stacked text-xl"></i><span>החזרות</span>
+            </a>
+        </div>
+    </nav>
+
     <script src="js/utils.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/export.js"></script>
     <script src="js/monthly-report.js"></script>
+    <script src="js/theme.js"></script>
 </body>
 
 </html>

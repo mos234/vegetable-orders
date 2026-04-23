@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>החזרה חדשה | מנהל הזמנות</title>
+    <meta name="theme-color" content="#059669">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="שוק הירקות">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>(function(){var t=localStorage.getItem('veg-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');if(t==='dark')document.documentElement.classList.add('dark');})();</script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; }
+        .glass-card { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+        .autocomplete-list { display: none; position: absolute; top: 100%; right: 0; left: 0; z-index: 100; background: white; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 0.5rem 0.5rem; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .autocomplete-list.active { display: block; }
+        .autocomplete-item { padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.875rem; }
+        .autocomplete-item:hover, .autocomplete-item.selected { background: #f0fdf4; color: #059669; }
+        .autocomplete-container { position: relative; }
+    </style>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>tailwind.config = { theme: { extend: { colors: { primary: '#10b981', secondary: '#059669' } } } }</script>
+</head>
+
+<body class="min-h-screen text-slate-800">
+    <!-- Mobile Header -->
+    <header class="mobile-header-bar md:hidden fixed top-0 left-0 right-0 z-50 bg-emerald-700 text-white px-4 flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-2">
+            <img src="icons/icon-192x192.png" alt="Logo" class="w-8 h-8 object-contain">
+            <span class="font-bold text-lg">שוק הירקות</span>
+        </div>
+        <button onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30" aria-label="מצב כהה/בהיר">
+            <i class="theme-icon fas fa-moon text-lg"></i>
+        </button>
+    </header>
+
+<div class="flex flex-col md:flex-row min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="hidden md:flex md:w-64 bg-emerald-700 text-white p-6 flex-col shadow-xl">
+        <div class="flex items-center gap-3 mb-10">
+            <div class="bg-white p-1 rounded-lg">
+                <img src="icons/icon-192x192.png" alt="Logo" class="w-10 h-10 object-contain">
+            </div>
+            <h1 class="text-xl font-bold tracking-tight">שוק הירקות</h1>
+        </div>
+        <nav class="space-y-2 flex-grow">
+            <a href="index.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <i class="fas fa-home w-6 text-center"></i><span class="font-medium">דף הבית</span>
+            </a>
+            <a href="new-order.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <i class="fas fa-plus-circle w-6 text-center"></i><span class="font-medium">הזמנה חדשה</span>
+            </a>
+            <a href="orders-list.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <i class="fas fa-list-ul w-6 text-center"></i><span class="font-medium">רשימת הזמנות</span>
+            </a>
+            <a href="new-return.html" class="flex items-center gap-3 w-full p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all">
+                <i class="fas fa-rotate-left w-6 text-center"></i><span class="font-medium">החזרה חדשה</span>
+            </a>
+            <a href="returns-list.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <i class="fas fa-boxes-stacked w-6 text-center"></i><span class="font-medium">רשימת החזרות</span>
+            </a>
+            <a href="catalog.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <i class="fas fa-tag w-6 text-center"></i><span class="font-medium">קטלוג מחירים</span>
+            </a>
+            <a href="suppliers.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <i class="fas fa-truck w-6 text-center"></i><span class="font-medium">ספקים</span>
+            </a>
+            <a href="monthly-report.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                <i class="fas fa-chart-line w-6 text-center"></i><span class="font-medium">דו"ח חודשי</span>
+            </a>
+        </nav>
+        <div class="mt-auto pt-6 border-t border-white/10 space-y-2">
+            <button onclick="toggleTheme()"
+                class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition-all"
+                aria-label="מצב כהה/בהיר">
+                <i class="theme-icon fas fa-moon w-6 text-center"></i>
+                <span class="font-medium theme-label">מצב כהה</span>
+            </button>
+            <p class="text-xs text-emerald-200 text-center opacity-60">גרסה 1.1.0 &copy; 2026</p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-6 md:p-10">
+        <header class="mb-8">
+            <h2 class="text-3xl font-bold text-slate-900">החזרה חדשה</h2>
+            <p class="text-slate-500 mt-1">תיעוד סחורה מוחזרת לספק</p>
+        </header>
+
+        <div class="max-w-3xl">
+            <div class="glass-card rounded-3xl p-8 shadow-sm mb-6">
+
+                <!-- Supplier & Order -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">ספק *</label>
+                        <select id="return-supplier-select"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                            onchange="onReturnSupplierChange()">
+                            <option value="">-- בחר ספק --</option>
+                        </select>
+                        <p id="no-suppliers-msg" class="hidden text-sm text-amber-600 mt-2">
+                            <a href="suppliers.html" class="underline">הוסף ספק ראשון</a>
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">שיוך להזמנה (אופציונלי)</label>
+                        <select id="return-order-select"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                            onchange="onReturnOrderChange()">
+                            <option value="">-- בחר הזמנה --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Date & Reason -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">תאריך החזרה *</label>
+                        <input type="date" id="return-date"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">סיבת ההחזרה *</label>
+                        <select id="return-reason"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="">-- בחר סיבה --</option>
+                            <option value="damaged">סחורה פגומה</option>
+                            <option value="wrong_order">טעות בהזמנה</option>
+                            <option value="excess">עודפים</option>
+                            <option value="quality">איכות ירודה</option>
+                            <option value="other">אחר</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-800">פריטים להחזרה</h3>
+                        <button onclick="addReturnItemRow()"
+                            class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all">
+                            <i class="fas fa-plus"></i> הוסף פריט
+                        </button>
+                    </div>
+                    <div id="return-empty-state" class="text-center py-8 text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+                        <i class="fas fa-box-open text-2xl mb-2 block"></i>
+                        לחץ "הוסף פריט" להוספת סחורה להחזרה
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 hidden" id="return-items-table-wrap">
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-50">
+                                <tr class="text-slate-500">
+                                    <th class="p-3 text-right font-medium">פריט</th>
+                                    <th class="p-3 text-center font-medium w-24">כמות</th>
+                                    <th class="p-3 text-center font-medium w-24">יחידה</th>
+                                    <th class="p-3 text-center font-medium w-28">מחיר ₪</th>
+                                    <th class="p-3 text-center font-medium w-24">סה"כ</th>
+                                    <th class="p-3 w-12"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="return-items-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="bg-slate-50 rounded-2xl p-4 flex justify-between items-center mb-6">
+                    <div class="text-slate-600 text-sm"><span id="return-items-count">0</span> פריטים</div>
+                    <div class="text-xl font-bold text-slate-800">סה"כ: ₪<span id="return-total">0.00</span></div>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">הערות</label>
+                    <textarea id="return-notes" rows="2"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                        placeholder="הערות נוספות..."></textarea>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-3 flex-wrap">
+                    <button onclick="saveReturnAction('draft')"
+                        class="flex-1 min-w-[120px] py-3 border-2 border-slate-300 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i> שמור טיוטה
+                    </button>
+                    <button onclick="saveReturnAction('whatsapp')"
+                        class="flex-1 min-w-[120px] py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                        <i class="fab fa-whatsapp"></i> שלח WhatsApp
+                    </button>
+                    <button onclick="saveReturnAction('sms')"
+                        class="flex-1 min-w-[120px] py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-comment-sms"></i> שלח SMS
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav-container md:hidden fixed bottom-0 left-0 right-0 z-50 bg-emerald-700 text-white shadow-2xl">
+        <div class="flex">
+            <a href="index.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium"><i class="fas fa-home text-xl"></i><span>בית</span></a>
+            <a href="new-order.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium"><i class="fas fa-plus-circle text-xl"></i><span>הזמנה</span></a>
+            <a href="orders-list.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium"><i class="fas fa-list-ul text-xl"></i><span>הזמנות</span></a>
+            <a href="new-return.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium"><i class="fas fa-rotate-left text-xl"></i><span>החזרה</span></a>
+            <a href="returns-list.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium"><i class="fas fa-boxes-stacked text-xl"></i><span>החזרות</span></a>
+        </div>
+    </nav>
+<script src="js/utils.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/messaging.js"></script>
+<script src="js/returns.js"></script>
+<script src="js/theme.js"></script>
+</body>
+</html>

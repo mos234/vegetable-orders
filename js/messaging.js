@@ -4,25 +4,34 @@
  */
 
 /**
+ * Opens an external URL in PWA standalone mode.
+ * Uses location.href for app:// schemes (whatsapp://, sms:) so the OS
+ * intercepts and opens the right app without navigating the PWA away.
+ * For https:// links falls back to window.open.
+ * @param {string} url
+ */
+function openExternalUrl(url) {
+    if (url.startsWith('http')) {
+        window.open(url, '_blank');
+    } else {
+        window.location.href = url;
+    }
+}
+
+/**
  * Formats a phone number for use in messaging URLs.
  * Removes dashes, spaces, and adds country code if needed.
  * @param {string} phone - The phone number
  * @returns {string} Formatted phone number
  */
 function formatPhoneNumber(phone) {
-    // Remove all non-digit characters
     let cleaned = phone.replace(/\D/g, '');
-
-    // If starts with 0, replace with Israel country code (972)
     if (cleaned.startsWith('0')) {
         cleaned = '972' + cleaned.substring(1);
     }
-
-    // If doesn't start with country code, add Israel code
     if (!cleaned.startsWith('972') && cleaned.length === 9) {
         cleaned = '972' + cleaned;
     }
-
     return cleaned;
 }
 
@@ -32,38 +41,27 @@ function formatPhoneNumber(phone) {
  * @returns {string} Formatted phone number for SMS
  */
 function formatPhoneForSMS(phone) {
-    // Remove all non-digit characters
     let cleaned = phone.replace(/\D/g, '');
-
-    // Ensure it starts with 0 for local SMS
     if (cleaned.startsWith('972')) {
         cleaned = '0' + cleaned.substring(3);
     }
     if (!cleaned.startsWith('0')) {
         cleaned = '0' + cleaned;
     }
-
     return cleaned;
 }
 
 /**
  * Sends an order message via WhatsApp.
- * Opens WhatsApp web/app with pre-filled message.
  * @param {Object} order - The order object
- * @param {string} order.phone - Supplier phone number
- * @param {string} order.supplierName - Supplier name
- * @param {string} [order.message] - Custom message (optional)
- * @param {Array} [order.items] - Order items (optional)
  */
 function sendOrderToWhatsApp(order) {
     const phone = formatPhoneNumber(order.phone);
     let message = order.message;
 
-    // If no custom message, create default order message
     if (!message) {
         message = `שלום ${order.supplierName || ''},\n\n`;
         message += `אני רוצה להזמין:\n`;
-
         if (order.items && order.items.length > 0) {
             order.items.forEach(item => {
                 message += `- ${item.name}: ${item.quantity} ${item.unit || ''}\n`;
@@ -71,50 +69,34 @@ function sendOrderToWhatsApp(order) {
         } else {
             message += `[פרטי ההזמנה]\n`;
         }
-
         message += `\nתודה רבה!`;
     }
 
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
-
-    window.open(whatsappUrl, '_blank');
+    window.location.href = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
 }
 
 /**
  * Sends an order message via SMS.
- * Opens the device's SMS app with pre-filled message.
  * @param {Object} order - The order object
- * @param {string} order.phone - Supplier phone number
- * @param {string} order.supplierName - Supplier name
- * @param {string} [order.message] - Custom message (optional)
- * @param {Array} [order.items] - Order items (optional)
  */
 function sendOrderToSMS(order) {
     const phone = formatPhoneForSMS(order.phone);
     let message = order.message;
 
-    // If no custom message, create default order message
     if (!message) {
         message = `שלום ${order.supplierName || ''}, `;
         message += `אני רוצה להזמין: `;
-
         if (order.items && order.items.length > 0) {
-            const itemsList = order.items.map(item =>
+            message += order.items.map(item =>
                 `${item.name} ${item.quantity}${item.unit || ''}`
             ).join(', ');
-            message += itemsList;
         } else {
             message += `[פרטי ההזמנה]`;
         }
-
         message += `. תודה!`;
     }
 
-    const encodedMessage = encodeURIComponent(message);
-    const smsUrl = `sms:${phone}?body=${encodedMessage}`;
-
-    window.location.href = smsUrl;
+    window.location.href = `sms:${phone}?body=${encodeURIComponent(message)}`;
 }
 
 /**
@@ -122,9 +104,7 @@ function sendOrderToSMS(order) {
  * @param {string} phone - The supplier's phone number
  */
 function openWhatsAppChat(phone) {
-    const formattedPhone = formatPhoneNumber(phone);
-    const whatsappUrl = `https://wa.me/${formattedPhone}`;
-    window.open(whatsappUrl, '_blank');
+    window.location.href = `whatsapp://send?phone=${formatPhoneNumber(phone)}`;
 }
 
 /**
@@ -132,8 +112,29 @@ function openWhatsAppChat(phone) {
  * @param {string} phone - The supplier's phone number
  */
 function openSMSChat(phone) {
-    const formattedPhone = formatPhoneForSMS(phone);
-    window.location.href = `sms:${formattedPhone}`;
+    window.location.href = `sms:${formatPhoneForSMS(phone)}`;
+}
+
+/**
+ * Opens WhatsApp with the message pre-filled in the compose box,
+ * then opens the specific group so the user only needs to tap Send.
+ * Step 1: whatsapp://send?text= fills the compose box in WhatsApp.
+ * Step 2: after a short delay, the group link opens that specific group.
+ * @param {string} message - The message to send
+ */
+function sendToWhatsAppGroup(message) {
+    const encoded = encodeURIComponent(message);
+    const groupLink = (typeof getSettings === 'function')
+        ? (getSettings().whatsappGroupLink || 'https://chat.whatsapp.com/EVklPHHvAGQ6r7lzVHmks6')
+        : 'https://chat.whatsapp.com/EVklPHHvAGQ6r7lzVHmks6';
+
+    // Open WhatsApp with the text pre-filled (works on Android PWA via location.href)
+    window.location.href = `whatsapp://send?text=${encoded}`;
+
+    // After WhatsApp opens, redirect to the specific group
+    setTimeout(() => {
+        window.location.href = groupLink;
+    }, 1500);
 }
 
 /**
@@ -142,10 +143,7 @@ function openSMSChat(phone) {
  * @param {string} message - The message to send
  */
 function sendWhatsAppMessage(phone, message) {
-    const formattedPhone = formatPhoneNumber(phone);
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
-    window.open(whatsappUrl, '_blank');
+    window.location.href = `whatsapp://send?phone=${formatPhoneNumber(phone)}&text=${encodeURIComponent(message)}`;
 }
 
 /**
@@ -154,7 +152,5 @@ function sendWhatsAppMessage(phone, message) {
  * @param {string} message - The message to send
  */
 function sendSMSMessage(phone, message) {
-    const formattedPhone = formatPhoneForSMS(phone);
-    const encodedMessage = encodeURIComponent(message);
-    window.location.href = `sms:${formattedPhone}?body=${encodedMessage}`;
+    window.location.href = `sms:${formatPhoneForSMS(phone)}?body=${encodeURIComponent(message)}`;
 }

@@ -5,8 +5,22 @@
 
 const STORAGE_KEYS = {
     SUPPLIERS: 'vegetable_suppliers',
-    ORDERS: 'vegetable_orders'
+    ORDERS: 'vegetable_orders',
+    RETURNS: 'vegetable_returns',
+    PRICE_CATALOG: 'vegetable_price_catalog',
+    SETTINGS: 'vegetable_settings'
 };
+
+function getSettings() {
+    const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+    return raw ? JSON.parse(raw) : {};
+}
+
+function saveSetting(key, value) {
+    const settings = getSettings();
+    settings[key] = value;
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+}
 
 /**
  * Initializes the storage with empty arrays if not present.
@@ -18,7 +32,12 @@ function initStorage() {
     if (!localStorage.getItem(STORAGE_KEYS.ORDERS)) {
         localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify([]));
     }
-    console.log('Storage initialized');
+    if (!localStorage.getItem(STORAGE_KEYS.RETURNS)) {
+        localStorage.setItem(STORAGE_KEYS.RETURNS, JSON.stringify([]));
+    }
+    if (!localStorage.getItem(STORAGE_KEYS.PRICE_CATALOG)) {
+        localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify({}));
+    }
 }
 
 /**
@@ -140,7 +159,10 @@ function saveOrder(order) {
         supplierPhone: order.supplierPhone,
         orderDate: order.orderDate,
         deliveryDate: order.deliveryDate,
+        deliveryTime: order.deliveryTime || '',
+        mainHallName: order.mainHallName || '',
         items: order.items || [],
+        halls: order.halls || [],
         notes: order.notes || '',
         total: order.total || 0,
         status: order.status || 'draft', // draft, sent, delivered, cancelled
@@ -244,17 +266,22 @@ function exportAllData() {
         const suppliers = getSuppliers();
         const orders = getOrders();
 
+        const returns = getReturns();
+        const catalog = getPriceCatalog();
         const backupData = {
-            version: '1.0',
+            version: '1.1',
             exportDate: new Date().toISOString(),
             appName: 'Vegetable Orders Management',
             data: {
                 suppliers: suppliers,
-                orders: orders
+                orders: orders,
+                returns: returns,
+                catalog: catalog
             },
             stats: {
                 suppliersCount: suppliers.length,
-                ordersCount: orders.length
+                ordersCount: orders.length,
+                returnsCount: returns.length
             }
         };
 
@@ -278,7 +305,7 @@ function exportAllData() {
         URL.revokeObjectURL(url);
 
         // Show success message using shared utility
-        showToast(`גיבוי הושלם בהצלחה! (${suppliers.length} ספקים, ${orders.length} הזמנות)`);
+        showToast(`גיבוי הושלם! (${suppliers.length} ספקים, ${orders.length} הזמנות, ${returns.length} החזרות)`);
 
         console.log('Data exported successfully:', backupData.stats);
         return true;
@@ -342,9 +369,14 @@ function importAllData(event) {
             // Import the data
             saveData(STORAGE_KEYS.SUPPLIERS, backupData.data.suppliers);
             saveData(STORAGE_KEYS.ORDERS, backupData.data.orders);
+            if (backupData.data.returns) {
+                saveData(STORAGE_KEYS.RETURNS, backupData.data.returns);
+            }
+            if (backupData.data.catalog) {
+                localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(backupData.data.catalog));
+            }
 
-            // Show success message using shared utility
-            showToast(`שחזור הושלם בהצלחה! (${newSuppliers} ספקים, ${newOrders} הזמנות)`);
+            showToast(`שחזור הושלם! (${newSuppliers} ספקים, ${newOrders} הזמנות)`);
 
             console.log('Data imported successfully:', {
                 suppliers: newSuppliers,
@@ -370,6 +402,113 @@ function importAllData(event) {
     };
 
     reader.readAsText(file);
+}
+
+// ==================== RETURNS FUNCTIONS ====================
+
+function getReturns() {
+    return getData(STORAGE_KEYS.RETURNS);
+}
+
+function saveReturn(returnObj) {
+    const returns = getReturns();
+    const newReturn = {
+        id: Date.now().toString(),
+        returnNumber: generateReturnNumber(),
+        supplierId: returnObj.supplierId,
+        supplierName: returnObj.supplierName,
+        supplierPhone: returnObj.supplierPhone,
+        orderId: returnObj.orderId || '',
+        orderNumber: returnObj.orderNumber || '',
+        returnDate: returnObj.returnDate,
+        items: returnObj.items || [],
+        reason: returnObj.reason || '',
+        notes: returnObj.notes || '',
+        total: returnObj.total || 0,
+        status: returnObj.status || 'pending',
+        createdAt: new Date().toISOString()
+    };
+    returns.push(newReturn);
+    saveData(STORAGE_KEYS.RETURNS, returns);
+    return newReturn;
+}
+
+function updateReturn(id, updatedData) {
+    const returns = getReturns();
+    const index = returns.findIndex(r => r.id === id);
+    if (index === -1) return null;
+    returns[index] = { ...returns[index], ...updatedData, updatedAt: new Date().toISOString() };
+    saveData(STORAGE_KEYS.RETURNS, returns);
+    return returns[index];
+}
+
+function deleteReturn(id) {
+    const returns = getReturns();
+    const filtered = returns.filter(r => r.id !== id);
+    if (filtered.length === returns.length) return false;
+    saveData(STORAGE_KEYS.RETURNS, filtered);
+    return true;
+}
+
+function getReturnById(id) {
+    return getReturns().find(r => r.id === id) || null;
+}
+
+function getReturnsByStatus(status) {
+    return getReturns().filter(r => r.status === status);
+}
+
+function getReturnsBySupplierId(supplierId) {
+    return getReturns().filter(r => r.supplierId === supplierId);
+}
+
+function generateReturnNumber() {
+    const returns = getReturns();
+    const last = returns[returns.length - 1];
+    let next = 5001;
+    if (last && last.returnNumber) {
+        const n = parseInt(last.returnNumber.replace('R#', ''));
+        if (!isNaN(n)) next = n + 1;
+    }
+    return `R#${next}`;
+}
+
+// ==================== PRICE CATALOG FUNCTIONS ====================
+
+function getPriceCatalog() {
+    const data = localStorage.getItem(STORAGE_KEYS.PRICE_CATALOG);
+    return data ? JSON.parse(data) : {};
+}
+
+function updatePriceCatalog(items) {
+    const catalog = getPriceCatalog();
+    items.forEach(item => {
+        if (!item.name || !(item.price > 0)) return;
+        const existing = catalog[item.name];
+        if (!existing) return; // only update existing fixed-price items
+        if (typeof existing === 'object') {
+            catalog[item.name] = { ...existing, price: item.price };
+        } else {
+            catalog[item.name] = item.price;
+        }
+    });
+    localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
+}
+
+function saveCatalogItem(name, entry) {
+    const catalog = getPriceCatalog();
+    catalog[name] = {
+        price: entry.price || 0,
+        category: entry.category || 'vegetables',
+        notes: entry.notes || ''
+    };
+    localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
+}
+
+function deleteCatalogItem(name) {
+    const catalog = getPriceCatalog();
+    delete catalog[name];
+    localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
 }
 
 // Initialize on load

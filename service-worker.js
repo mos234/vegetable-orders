@@ -3,7 +3,7 @@
  * Enables offline functionality and caching for PWA.
  */
 
-const CACHE_NAME = 'vegetable-orders-v1';
+const CACHE_NAME = 'vegetable-orders-v2';
 const CACHE_URLS = [
     './',
     './index.html',

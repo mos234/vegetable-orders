@@ -35,7 +35,25 @@ function renderDashboard() {
     document.getElementById('stat-pending-orders').textContent = pendingOrders;
     document.getElementById('stat-total-expenses').textContent = `₪${totalExpenses.toLocaleString('he-IL', { minimumFractionDigits: 0 })}`;
 
-    // 3. Render Recent Orders (last 5)
+    // 3. Returns stats
+    if (typeof getReturns === 'function') {
+        const returns = getReturns();
+        const returnsThisMonth = returns.filter(r => {
+            const d = new Date(r.returnDate || r.createdAt);
+            return d.getMonth() + 1 === currentMonth && d.getFullYear() === currentYear;
+        });
+        const pendingReturns = returns.filter(r => r.status === 'pending').length;
+        const creditThisMonth = returnsThisMonth.reduce((sum, r) => sum + (r.total || 0), 0);
+
+        const pendingEl = document.getElementById('dash-pending-returns');
+        const monthEl = document.getElementById('dash-returns-month');
+        const creditEl = document.getElementById('dash-returns-credit');
+        if (pendingEl) pendingEl.textContent = pendingReturns;
+        if (monthEl) monthEl.textContent = returnsThisMonth.length;
+        if (creditEl) creditEl.textContent = `₪${creditThisMonth.toLocaleString('he-IL', { minimumFractionDigits: 0 })}`;
+    }
+
+    // 4. Render Recent Orders (last 5)
     const recentOrdersList = document.getElementById('recent-orders-list');
     const emptyState = document.getElementById('empty-dashboard-state');
 

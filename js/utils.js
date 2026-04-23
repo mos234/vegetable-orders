@@ -45,7 +45,6 @@ function showToast(message, type = 'success') {
 function formatDateHebrew(dateStr) {
     if (!dateStr) return '-';
 
-    // If it's an ISO string (contains T or just date with dashes)
     let year, month, day;
     if (dateStr.includes('T')) {
         const date = new Date(dateStr);
@@ -57,6 +56,54 @@ function formatDateHebrew(dateStr) {
     }
 
     return `${day}/${month}/${year}`;
+}
+
+/**
+ * Converts an Arabic numeral (1-30) to Hebrew letter notation (א', ב', ... ט"ו, ...).
+ * @param {number} num
+ * @returns {string}
+ */
+function arabicToHebrewNumeral(num) {
+    const ones = ['', 'א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט'];
+    if (num <= 0 || num > 30) return String(num);
+    if (num < 10)  return ones[num] + "'";
+    if (num === 10) return "י'";
+    if (num === 15) return 'ט"ו';
+    if (num === 16) return 'ט"ז';
+    if (num < 20)  return 'י"' + ones[num - 10];
+    if (num === 20) return "כ'";
+    if (num === 30) return "ל'";
+    const tensLetters = ['', 'י', 'כ'];
+    return tensLetters[Math.floor(num / 10)] + '"' + ones[num % 10];
+}
+
+/**
+ * Formats a date as: "יום ראשון ד' ניסן 22/3" (Hebrew weekday + Hebrew calendar date + Gregorian day/month).
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @returns {string} Full Hebrew date string
+ */
+function formatDateHebrewFull(dateStr) {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day, 12, 0, 0);
+
+    try {
+        const weekday = new Intl.DateTimeFormat('he-IL', { weekday: 'long' }).format(date);
+
+        // Get Hebrew day number (returned as Arabic numeral by Intl) and convert to Hebrew letters
+        const hebrewDayNum = parseInt(
+            new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { day: 'numeric' }).format(date), 10
+        );
+        const hebrewDay = arabicToHebrewNumeral(hebrewDayNum);
+
+        // Get Hebrew month name, strip leading ב if present
+        const hebrewMonth = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { month: 'long' }).format(date)
+            .replace(/^ב/, '');
+
+        return `${weekday} ${hebrewDay} ${hebrewMonth} ${day}/${month}`;
+    } catch (e) {
+        return `${day}/${month}/${year}`;
+    }
 }
 
 /**
@@ -77,28 +124,36 @@ function escapeHtml(text) {
  * @returns {string} The formatted message
  */
 function buildOrderMessage(order) {
-    let message = `שלום ${order.supplierName},\n\n`;
-    message += `הזמנה ${order.orderNumber}\n`;
-    message += `תאריך אספקה: ${formatDateHebrew(order.deliveryDate)}\n\n`;
-    message += `פריטים:\n`;
+    const dateStr = formatDateHebrewFull(order.deliveryDate);
+    let message = dateStr ? `${dateStr}\n` : '';
 
-    (order.items || []).forEach((item, index) => {
-        message += `${index + 1}. ${item.name} - ${item.quantity} ${item.unit}`;
-        if (item.price > 0) {
-            message += ` (₪${item.price} ליחידה)`;
-        }
-        message += `\n`;
-    });
-
-    message += `\nסה"כ: ₪${(order.total || 0).toFixed(2)}`;
-
-    if (order.notes) {
-        message += `\n\nהערות: ${order.notes}`;
+    if (order.deliveryTime) {
+        message += `לשעה ${order.deliveryTime}\n`;
     }
 
-    message += `\n\nתודה רבה!`;
+    if (order.notes) {
+        message += `${order.notes}\n`;
+    }
 
-    return message;
+    const formatItem = item => {
+        const qty = item.quantity > 0 ? `${item.quantity} ` : '';
+        return `${qty}${item.name}\n`;
+    };
+
+    if (order.items && order.items.length > 0) {
+        message += `${order.mainHallName || "אולם א'"}\n`;
+        order.items.forEach(item => { message += formatItem(item); });
+    }
+
+    if (order.halls && order.halls.length > 0) {
+        order.halls.forEach(hall => {
+            if (!hall.items || hall.items.length === 0) return;
+            message += `\n${hall.name || 'אולם'}\n`;
+            hall.items.forEach(item => { message += formatItem(item); });
+        });
+    }
+
+    return message.trimEnd();
 }
 
 /**

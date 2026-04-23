@@ -1,0 +1,666 @@
+/* ============================================================
+   Vegetable Orders — Design System
+   Animations, Dark Mode, Mobile Optimizations
+   Based on Emil Kowalski's design engineering philosophy
+   ============================================================ */
+
+/* ===== CUSTOM EASING CURVES ===== */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ===== SMOOTH THEME TRANSITION ===== */
+body,
+.glass-card,
+aside,
+input, select, textarea,
+.mobile-header-bar,
+.mobile-bottom-nav-container {
+  transition:
+    background-color 200ms var(--ease-out),
+    color 150ms var(--ease-out),
+    border-color 150ms var(--ease-out);
+}
+
+/* ===== PAGE FADE IN ===== */
+main {
+  animation: pageFadeIn 220ms var(--ease-out) both;
+}
+
+@keyframes pageFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ===== BUTTON PRESS FEEDBACK (Emil: scale on :active) ===== */
+/* Gate hover effects to pointer devices only */
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled):hover,
+  a[href]:not(.mobile-nav-item):hover {
+    opacity: 0.92;
+  }
+}
+
+button:not(:disabled):active,
+a[href]:active {
+  transform: scale(0.97);
+  transition: transform 100ms var(--ease-out) !important;
+}
+
+/* Prevent double-tap zoom on mobile buttons */
+button, a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ===== MODAL / SHEET ENTRANCE ===== */
+/* Mobile: slide up from bottom */
+@media (max-width: 767px) {
+  .fixed.inset-0 > div,
+  .fixed.inset-0 > .bg-white,
+  .fixed.inset-0 > .rounded-2xl {
+    animation: sheetSlideUp 280ms var(--ease-spring) both;
+  }
+}
+
+/* Desktop: scale from center */
+@media (min-width: 768px) {
+  .fixed.inset-0 > div,
+  .fixed.inset-0 > .bg-white {
+    animation: modalScaleIn 200ms var(--ease-out) both;
+  }
+}
+
+@keyframes sheetSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ===== TOAST ANIMATION ===== */
+.toast-notification {
+  animation: toastSlideUp 300ms var(--ease-out) both !important;
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* ===== CARD HOVER (desktop pointer only) ===== */
+@media (hover: hover) and (pointer: fine) {
+  .glass-card {
+    transition:
+      background-color 200ms var(--ease-out),
+      box-shadow 200ms var(--ease-out),
+      transform 200ms var(--ease-out),
+      border-color 150ms var(--ease-out);
+  }
+
+  .glass-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+  }
+}
+
+/* ===== MOBILE LAYOUT ===== */
+.mobile-header-bar {
+  height: 56px;
+}
+
+.mobile-bottom-nav-container {
+  padding-bottom: env(safe-area-inset-bottom, 8px);
+}
+
+/* Main content: offset for mobile header and bottom nav */
+@media (max-width: 767px) {
+  main {
+    padding-top: 72px !important;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* ===== MOBILE NAV ITEMS ===== */
+.mobile-nav-item {
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 150ms var(--ease-out), background-color 150ms var(--ease-out);
+  min-height: 56px;
+}
+
+.mobile-nav-item:active {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: scale(0.96);
+}
+
+.mobile-nav-item.mobile-nav-active {
+  color: #ffffff;
+}
+
+.mobile-nav-item.mobile-nav-active i {
+  transform: scale(1.1);
+  transition: transform 200ms var(--ease-spring);
+}
+
+/* ===== TOUCH TARGET SIZES (min 44px per Apple HIG) ===== */
+@media (max-width: 767px) {
+  button, select, input[type="checkbox"], input[type="radio"] {
+    min-height: 44px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="tel"],
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* ============================================================
+   iOS GLASS AESTHETIC — Premium visual layer
+   Based on iOS Glass UI Designer skill principles
+   ============================================================ */
+
+/* Dynamic gradient background — subtle, fixed position */
+body {
+  background:
+    radial-gradient(ellipse at 10% 0%, rgba(167, 243, 208, 0.35) 0%, transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgba(219, 234, 254, 0.25) 0%, transparent 55%),
+    linear-gradient(160deg, #f0fdf4 0%, #f8fafc 60%, #eff6ff 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Sidebar — depth gradient, not flat */
+@media (min-width: 768px) {
+  aside {
+    background: linear-gradient(168deg, #065f46 0%, #047857 60%, #059669 100%) !important;
+  }
+}
+
+/* iOS glass mobile header — translucent, not opaque */
+.mobile-header-bar {
+  background: rgba(4, 120, 87, 0.82) !important;
+  backdrop-filter: saturate(180%) blur(22px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(22px) !important;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+/* iOS glass tab bar — the most iOS-native element */
+.mobile-bottom-nav-container {
+  background: rgba(4, 120, 87, 0.82) !important;
+  backdrop-filter: saturate(180%) blur(22px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(22px) !important;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.20) !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Clean iOS-style cards — no fake frosted glass on content surfaces */
+.glass-card {
+  background: rgba(255, 255, 255, 0.90) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 0.5px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.02),
+    0 4px 12px rgba(0, 0, 0, 0.04),
+    0 16px 40px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* White surfaces — slightly warm, not clinical */
+.bg-white {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* iOS filled inputs — no hard border, soft fill */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="tel"],
+input[type="email"],
+input[type="search"],
+select,
+textarea {
+  background-color: rgba(120, 120, 128, 0.07) !important;
+  border-color: rgba(120, 120, 128, 0.10) !important;
+  transition: background-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out) !important;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="tel"]:focus,
+select:focus,
+textarea:focus {
+  background-color: rgba(120, 120, 128, 0.11) !important;
+  border-color: rgba(16, 185, 129, 0.40) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.11) !important;
+  outline: none !important;
+}
+
+/* Stronger card hover on desktop (override Emil's subtle version) */
+@media (hover: hover) and (pointer: fine) {
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.97) !important;
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.04),
+      0 8px 28px rgba(0, 0, 0, 0.07),
+      0 24px 64px rgba(0, 0, 0, 0.04) !important;
+    transform: translateY(-2px) !important;
+  }
+}
+
+/* Modals — thick material (iOS sheet feel) */
+.fixed.inset-0 > div > .bg-white,
+.fixed.inset-0 > .bg-white,
+[id$="-modal"] .bg-white,
+[id$="-modal"] > div {
+  background: rgba(255, 255, 255, 0.97) !important;
+  backdrop-filter: saturate(200%) blur(28px) !important;
+  -webkit-backdrop-filter: saturate(200%) blur(28px) !important;
+}
+
+/* ============================================================
+   DARK MODE iOS GLASS
+   ============================================================ */
+
+/* Dark gradient background */
+html.dark body {
+  background:
+    radial-gradient(ellipse at 15% 5%, rgba(6, 78, 59, 0.35) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 95%, rgba(30, 58, 138, 0.15) 0%, transparent 50%),
+    linear-gradient(160deg, #0a1f17 0%, #0f172a 60%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Dark sidebar gradient */
+html.dark aside {
+  background: linear-gradient(168deg, #022c22 0%, #064e3b 100%) !important;
+}
+
+/* Dark glass nav/bottom bar */
+html.dark .mobile-header-bar,
+html.dark .mobile-bottom-nav-container {
+  background: rgba(3, 35, 25, 0.86) !important;
+}
+
+/* Dark cards */
+html.dark .glass-card {
+  background: rgba(18, 28, 42, 0.92) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.35),
+    0 8px 24px rgba(0, 0, 0, 0.28) !important;
+}
+
+html.dark .glass-card:hover {
+  background: rgba(22, 34, 52, 0.96) !important;
+}
+
+/* Dark filled inputs */
+html.dark input[type="text"],
+html.dark input[type="number"],
+html.dark input[type="date"],
+html.dark input[type="tel"],
+html.dark select,
+html.dark textarea {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(52, 211, 153, 0.40) !important;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.10) !important;
+}
+
+/* Dark white surfaces */
+html.dark .bg-white {
+  background-color: rgba(18, 28, 42, 0.92) !important;
+}
+
+/* Dark modals — thick material */
+html.dark [id$="-modal"] .bg-white,
+html.dark [id$="-modal"] > div {
+  background: rgba(20, 30, 46, 0.96) !important;
+}
+
+/* ============================================================
+   DARK MODE — CSS variable overrides for Tailwind classes
+   ============================================================ */
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Body */
+html.dark body {
+  background-color: #0f172a !important;
+  color: #f1f5f9;
+}
+
+/* Sidebar */
+html.dark aside {
+  background-color: #064e3b !important;
+}
+
+/* Mobile header & bottom nav */
+html.dark .mobile-header-bar,
+html.dark .mobile-bottom-nav-container {
+  background-color: #064e3b !important;
+}
+
+/* Glass card */
+html.dark .glass-card {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* White backgrounds — handled by iOS glass section above */
+html.dark .bg-white {
+  background-color: rgba(18, 28, 42, 0.92) !important;
+}
+
+/* Slate scale */
+html.dark .bg-slate-50 {
+  background-color: #0f172a !important;
+}
+
+html.dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-slate-200 {
+  background-color: #293548 !important;
+}
+
+/* Text colors */
+html.dark .text-slate-900 { color: #f1f5f9 !important; }
+html.dark .text-slate-800 { color: #e2e8f0 !important; }
+html.dark .text-slate-700 { color: #cbd5e1 !important; }
+html.dark .text-slate-600 { color: #94a3b8 !important; }
+html.dark .text-slate-500 { color: #94a3b8 !important; }
+html.dark .text-slate-400 { color: #94a3b8 !important; }
+
+/* Borders */
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-300 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .border-t { border-top-color: rgba(255, 255, 255, 0.08) !important; }
+html.dark .border-b { border-bottom-color: rgba(255, 255, 255, 0.08) !important; }
+html.dark .border-r { border-right-color: rgba(255, 255, 255, 0.08) !important; }
+html.dark .border-l { border-left-color: rgba(255, 255, 255, 0.08) !important; }
+html.dark .divide-y > * + * { border-color: rgba(255, 255, 255, 0.06) !important; }
+html.dark .divide-slate-50 > * + * { border-color: rgba(255, 255, 255, 0.04) !important; }
+
+/* Inputs */
+html.dark input[type="text"],
+html.dark input[type="number"],
+html.dark input[type="date"],
+html.dark input[type="tel"],
+html.dark input[type="email"],
+html.dark input[type="search"],
+html.dark select,
+html.dark textarea {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark select option {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #475569 !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+  outline: none !important;
+}
+
+/* Readonly inputs */
+html.dark input[readonly] {
+  background-color: #1e293b !important;
+  color: #94a3b8 !important;
+}
+
+/* ===== STATUS & ACCENT BACKGROUNDS ===== */
+
+/* Emerald */
+html.dark .bg-emerald-50  { background-color: rgba(6, 78, 59, 0.25) !important; }
+html.dark .bg-emerald-100 { background-color: rgba(6, 78, 59, 0.45) !important; }
+html.dark .text-emerald-600 { color: #34d399 !important; }
+html.dark .text-emerald-700 { color: #6ee7b7 !important; }
+html.dark .text-emerald-800 { color: #a7f3d0 !important; }
+
+/* Amber */
+html.dark .bg-amber-50  { background-color: rgba(120, 53, 15, 0.25) !important; }
+html.dark .bg-amber-100 { background-color: rgba(120, 53, 15, 0.45) !important; }
+html.dark .text-amber-600 { color: #fbbf24 !important; }
+html.dark .text-amber-700 { color: #fcd34d !important; }
+html.dark .text-amber-800 { color: #fde68a !important; }
+
+/* Blue */
+html.dark .bg-blue-50  { background-color: rgba(30, 58, 138, 0.25) !important; }
+html.dark .bg-blue-100 { background-color: rgba(30, 58, 138, 0.45) !important; }
+html.dark .text-blue-600 { color: #60a5fa !important; }
+html.dark .text-blue-700 { color: #93c5fd !important; }
+html.dark .text-blue-800 { color: #bfdbfe !important; }
+
+/* Red */
+html.dark .bg-red-50  { background-color: rgba(127, 29, 29, 0.25) !important; }
+html.dark .bg-red-100 { background-color: rgba(127, 29, 29, 0.45) !important; }
+html.dark .text-red-600 { color: #f87171 !important; }
+html.dark .text-red-700 { color: #fca5a5 !important; }
+html.dark .text-red-800 { color: #fecaca !important; }
+
+/* Purple */
+html.dark .bg-purple-100 { background-color: rgba(88, 28, 135, 0.45) !important; }
+html.dark .text-purple-600 { color: #c084fc !important; }
+
+/* Orange */
+html.dark .bg-orange-100 { background-color: rgba(124, 45, 18, 0.45) !important; }
+html.dark .text-orange-700 { color: #fdba74 !important; }
+
+/* Green */
+html.dark .bg-green-500 { background-color: #16a34a !important; }
+
+/* ===== TABLES ===== */
+html.dark thead,
+html.dark .bg-slate-100 thead {
+  background-color: #1e293b !important;
+}
+
+html.dark tbody tr:hover,
+html.dark .hover\:bg-slate-50:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.dark .hover\:bg-slate-100:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.dark .hover\:bg-slate-200:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ===== MODAL OVERLAY ===== */
+html.dark .bg-black\/50 {
+  background-color: rgba(0, 0, 0, 0.72) !important;
+}
+
+/* ===== TOAST ===== */
+html.dark .toast-notification {
+  background-color: #1e293b !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ===== STATUS BADGES ===== */
+html.dark .bg-amber-100.text-amber-700  { background-color: rgba(120, 53, 15, 0.45) !important; color: #fcd34d !important; }
+html.dark .bg-emerald-100.text-emerald-700 { background-color: rgba(6, 78, 59, 0.45) !important; color: #6ee7b7 !important; }
+html.dark .bg-blue-100.text-blue-700   { background-color: rgba(30, 58, 138, 0.45) !important; color: #93c5fd !important; }
+html.dark .bg-red-100.text-red-700     { background-color: rgba(127, 29, 29, 0.45) !important; color: #fca5a5 !important; }
+
+/* ===== AUTOCOMPLETE ===== */
+html.dark .autocomplete-list {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark .autocomplete-item:hover,
+html.dark .autocomplete-item.selected {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+/* ===== SCROLLBARS (webkit) ===== */
+html.dark ::-webkit-scrollbar {
+  background-color: #0f172a;
+  width: 6px;
+  height: 6px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 6px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
+}
+
+/* ============================================================
+   FINAL POLISH — Depth & Premium Details
+   ============================================================ */
+
+/* Primary CTA buttons — subtle inner glow for depth */
+.bg-emerald-600,
+.bg-emerald-700 {
+  box-shadow:
+    0 2px 8px rgba(5, 150, 105, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+}
+
+.bg-emerald-600:active,
+.bg-emerald-700:active {
+  box-shadow:
+    0 1px 3px rgba(5, 150, 105, 0.18) !important;
+}
+
+/* Autocomplete dropdown — iOS popover feel */
+.autocomplete-list {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.10),
+    0 16px 48px rgba(0, 0, 0, 0.07) !important;
+  border: 0.5px solid rgba(0, 0, 0, 0.07) !important;
+  backdrop-filter: saturate(180%) blur(16px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(16px) !important;
+}
+
+html.dark .autocomplete-list {
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 16px 48px rgba(0, 0, 0, 0.3) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Stat/icon colored blobs — subtle glow to match */
+.bg-emerald-100 .text-emerald-600,
+.bg-emerald-100 [class*="fas"] {
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.3));
+}
+
+/* Tables — cleaner row separators */
+tbody tr {
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.04) !important;
+  transition: background-color 120ms var(--ease-out) !important;
+}
+
+html.dark tbody tr {
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Smooth page scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better focus outline (iOS-style ring) */
+:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* iOS-like rounded corners on table containers */
+.overflow-x-auto,
+.overflow-hidden {
+  border-radius: inherit;
+}
+
+/* Subtle separator between nav items on desktop */
+nav a + a {
+  margin-top: 1px;
+}
+
+/* Page header large title — iOS-like weight */
+h2.text-3xl {
+  letter-spacing: -0.02em;
+}
+
+/* Version text in sidebar */
+aside .opacity-60 {
+  opacity: 0.45 !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.03em !important;
+}
