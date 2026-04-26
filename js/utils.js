@@ -223,3 +223,71 @@ function getStatusBadgeHtml(status) {
     `;
     document.head.appendChild(style);
 })();
+
+// ===== MOBILE "MORE" MENU =====
+// Injects a hamburger button into the mobile header and a bottom-sheet
+// with links to pages not shown in the bottom nav.
+// Runs on DOMContentLoaded so it works on every page that loads utils.js.
+
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        var header = document.querySelector('.mobile-header-bar');
+        if (!header) return; // desktop or no header
+
+        // Create hamburger button
+        var btn = document.createElement('button');
+        btn.id = 'mobile-more-btn';
+        btn.setAttribute('aria-label', 'תפריט נוסף');
+        btn.className = 'w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30';
+        btn.innerHTML = '<i class="fas fa-bars text-lg"></i>';
+        btn.style.marginRight = '8px';
+        btn.addEventListener('click', toggleMobileMenu);
+
+        // Insert before the theme toggle (first button in header)
+        var themeBtn = header.querySelector('button');
+        if (themeBtn) {
+            themeBtn.parentNode.insertBefore(btn, themeBtn);
+        } else {
+            header.appendChild(btn);
+        }
+    });
+
+    function toggleMobileMenu() {
+        var existing = document.getElementById('mobile-more-overlay');
+        if (existing) { existing.remove(); return; }
+
+        var overlay = document.createElement('div');
+        overlay.id = 'mobile-more-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;';
+
+        overlay.innerHTML =
+            '<div style="background:#fff;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 40px rgba(0,0,0,0.15);">' +
+                '<div style="width:36px;height:4px;background:#cbd5e1;border-radius:4px;margin:0 auto 20px;"></div>' +
+                '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">' +
+                    moreMenuItem('catalog.html', 'fa-tag', 'קטלוג', '#10b981') +
+                    moreMenuItem('suppliers.html', 'fa-truck', 'ספקים', '#3b82f6') +
+                    moreMenuItem('groups.html', 'fa-users', 'קבוצות WA', '#14b8a6') +
+                    moreMenuItem('settings.html', 'fa-cog', 'הגדרות', '#6366f1') +
+                    moreMenuItem('monthly-report.html', 'fa-chart-line', 'דו"ח חודשי', '#f59e0b') +
+                '</div>' +
+            '</div>';
+
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) overlay.remove();
+        });
+
+        document.body.appendChild(overlay);
+    }
+
+    function moreMenuItem(href, icon, label, color) {
+        return '<a href="' + href + '" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;border-radius:16px;background:#f8fafc;text-decoration:none;border:1px solid #e2e8f0;">' +
+            '<div style="width:44px;height:44px;border-radius:12px;background:' + color + '15;display:flex;align-items:center;justify-content:center;">' +
+                '<i class="fas ' + icon + '" style="color:' + color + ';font-size:18px;"></i>' +
+            '</div>' +
+            '<span style="font-size:13px;font-weight:600;color:#334155;">' + label + '</span>' +
+        '</a>';
+    }
+
+    // Expose for inline use if needed
+    window.toggleMobileMenu = toggleMobileMenu;
+})();
