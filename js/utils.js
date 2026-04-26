@@ -230,9 +230,12 @@ function getStatusBadgeHtml(status) {
 // Runs on DOMContentLoaded so it works on every page that loads utils.js.
 
 (function () {
-    document.addEventListener('DOMContentLoaded', function () {
+    function initMobileMenu() {
         var header = document.querySelector('.mobile-header-bar');
         if (!header) return; // desktop or no header
+
+        // Avoid adding multiple buttons
+        if (document.getElementById('mobile-more-btn')) return;
 
         // Create hamburger button
         var btn = document.createElement('button');
@@ -250,7 +253,13 @@ function getStatusBadgeHtml(status) {
         } else {
             header.appendChild(btn);
         }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileMenu);
+    } else {
+        initMobileMenu();
+    }
 
     function toggleMobileMenu() {
         var existing = document.getElementById('mobile-more-overlay');
