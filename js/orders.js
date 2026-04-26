@@ -234,8 +234,8 @@ function showAutocompleteList(acId, query, onSelect) {
     list.innerHTML = filtered.map((item, i) => {
         const price = getCatalogPrice(item);
         const priceTag = price !== null ? `<span class="text-emerald-600 text-xs mr-2">₪${price}</span>` : '';
-        return `<div class="autocomplete-item ${i === 0 ? 'selected' : ''}" data-value="${item}" data-index="${i}">
-            ${item}${priceTag}
+        return `<div class="autocomplete-item ${i === 0 ? 'selected' : ''}" data-value="${escapeAttr(item)}" data-index="${i}">
+            ${escapeHtml(item)}${priceTag}
         </div>`;
     }).join('');
     list.querySelectorAll('.autocomplete-item').forEach(el => {

@@ -30,7 +30,7 @@ function renderCatalogTable() {
     tbody.innerHTML = entries.map(([name, entry]) => {
         const price = typeof entry === 'object' ? entry.price : entry;
         const notes = typeof entry === 'object' ? (entry.notes || '') : '';
-        const safeName = name.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+        const safeName = escapeAttr(name);
         return `
         <tr class="border-t border-slate-100 hover:bg-slate-50 transition-colors">
             <td class="p-4 font-medium">${escapeHtml(name)}</td>

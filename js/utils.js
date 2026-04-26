@@ -107,15 +107,31 @@ function formatDateHebrewFull(dateStr) {
 }
 
 /**
- * Escapes HTML to prevent XSS.
- * @param {string} text - The text to escape
- * @returns {string} Escaped text
+ * Escapes HTML to prevent XSS (for text content).
+ * @param {string} text
+ * @returns {string}
  */
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+/**
+ * Escapes a string for safe use inside an HTML attribute value (delimited by double quotes).
+ * Handles Hebrew text with geresh/gershayim (׳ ״ ' ").
+ * @param {string} text
+ * @returns {string}
+ */
+function escapeAttr(text) {
+    if (!text) return '';
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
 }
 
 /**
