@@ -8,7 +8,7 @@
  * @param {string} message - The message to show
  * @param {string} type - 'success', 'error', 'info' (default: 'success')
  */
-function showToast(message, type = 'success') {
+function showToast(message, type = 'success', duration = 4000) {
     const existing = document.querySelector('.toast-notification');
     if (existing) existing.remove();
 
@@ -30,11 +30,10 @@ function showToast(message, type = 'success') {
 
     document.body.appendChild(toast);
 
-    // Remove after 3-4 seconds
     setTimeout(() => {
         toast.style.animation = 'fadeOutDown 0.3s ease-out';
         setTimeout(() => toast.remove(), 300);
-    }, 4000);
+    }, duration);
 }
 
 /**

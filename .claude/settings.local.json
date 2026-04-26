@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(claude plugin marketplace add:*)",
+      "WebFetch(domain:aviz.github.io)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(ls:*)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:gist.github.com)",
+      "Bash(wt:*)",
+      "Bash(powershell:*)",
+      "Bash(cd:*)"
+    ]
+  }
+}

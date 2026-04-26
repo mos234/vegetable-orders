@@ -4,11 +4,38 @@
  */
 
 let editingCatalogItem = null; // name of item being edited, null = new
+let activeCategory = 'all';   // active category filter
+
+const CATALOG_CATEGORIES = [
+    { key: 'all',    label: 'הכל',          icon: 'fa-tag' },
+    { key: 'breads', label: 'לחמים',        icon: 'fa-bread-slice' },
+    { key: 'dry',    label: 'יבשים',        icon: 'fa-seedling' },
+    { key: 'misc',   label: 'שונות',        icon: 'fa-boxes-stacked' },
+    { key: 'frozen', label: 'קפואים',       icon: 'fa-snowflake' },
+    { key: 'meat',   label: 'בשרים/עופות',  icon: 'fa-drumstick-bite' },
+];
 
 document.addEventListener('DOMContentLoaded', () => {
     renderCatalogTable();
     document.getElementById('catalog-search').addEventListener('input', debounce(renderCatalogTable, 200));
 });
+
+function setActiveCategory(cat) {
+    activeCategory = cat;
+    // Update tab styles
+    CATALOG_CATEGORIES.forEach(({ key }) => {
+        const btn = document.getElementById(`cat-tab-${key}`);
+        if (!btn) return;
+        if (key === cat) {
+            btn.classList.add('cat-tab-active');
+            btn.classList.remove('cat-tab-inactive');
+        } else {
+            btn.classList.remove('cat-tab-active');
+            btn.classList.add('cat-tab-inactive');
+        }
+    });
+    renderCatalogTable();
+}
 
 function renderCatalogTable() {
     const search = document.getElementById('catalog-search').value.trim().toLowerCase();
@@ -17,6 +44,13 @@ function renderCatalogTable() {
     const emptyState = document.getElementById('catalog-empty-state');
 
     let entries = Object.entries(catalog);
+    // Filter by active category (items without a category appear only under 'all')
+    if (activeCategory !== 'all') {
+        entries = entries.filter(([, entry]) => {
+            const cat = typeof entry === 'object' ? (entry.category || '') : '';
+            return cat === activeCategory;
+        });
+    }
     if (search) entries = entries.filter(([name]) => name.toLowerCase().includes(search));
     entries.sort(([a], [b]) => a.localeCompare(b, 'he'));
 
@@ -60,6 +94,7 @@ function openAddCatalogModal() {
     document.getElementById('catalog-name').value = '';
     document.getElementById('catalog-price').value = '';
     document.getElementById('catalog-notes').value = '';
+    document.getElementById('catalog-category').value = '';
     document.getElementById('catalog-name').removeAttribute('readonly');
     document.getElementById('catalog-modal').classList.remove('hidden');
     setTimeout(() => document.getElementById('catalog-name').focus(), 100);
@@ -77,8 +112,10 @@ function openEditCatalogModal(name) {
 
     const price = typeof entry === 'object' ? entry.price : entry;
     const notes = typeof entry === 'object' ? (entry.notes || '') : '';
+    const category = typeof entry === 'object' ? (entry.category || '') : '';
     document.getElementById('catalog-price').value = price || '';
     document.getElementById('catalog-notes').value = notes;
+    document.getElementById('catalog-category').value = category;
     document.getElementById('catalog-modal').classList.remove('hidden');
     setTimeout(() => document.getElementById('catalog-price').focus(), 100);
 }
@@ -91,6 +128,7 @@ function saveCatalogModal() {
     const name = document.getElementById('catalog-name').value.trim();
     const price = parseFloat(document.getElementById('catalog-price').value);
     const notes = document.getElementById('catalog-notes').value.trim();
+    const category = document.getElementById('catalog-category').value;
 
     if (!name) { alert('נא להזין שם פריט'); return; }
     if (isNaN(price) || price <= 0) { alert('נא להזין מחיר תקין'); return; }
@@ -103,7 +141,7 @@ function saveCatalogModal() {
         }
     }
 
-    saveCatalogItem(name, { price, notes });
+    saveCatalogItem(name, { price, notes, category });
     closeCatalogModal();
     renderCatalogTable();
     showToast(editingCatalogItem ? 'המחיר עודכן' : `"${name}" נוסף לקטלוג`);
@@ -118,5 +156,6 @@ function deleteCatalogItemConfirm(name) {
 
 Object.assign(window, {
     openAddCatalogModal, openEditCatalogModal, closeCatalogModal,
-    saveCatalogModal, deleteCatalogItemConfirm
+    saveCatalogModal, deleteCatalogItemConfirm,
+    setActiveCategory,
 });

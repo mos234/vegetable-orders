@@ -94,8 +94,14 @@ function renderOrdersList() {
 
             <!-- Total -->
             <div class="bg-emerald-50 rounded-xl p-3 mb-4 text-center">
-                <p class="text-sm text-emerald-600">סה"כ</p>
-                <p class="text-2xl font-bold text-emerald-700">₪${(order.total || 0).toFixed(2)}</p>
+                ${order.actualTotal != null ? `
+                    <p class="text-xs text-slate-400 line-through">הוזמן: ₪${(order.total || 0).toFixed(2)}</p>
+                    <p class="text-sm text-emerald-600">סה"כ בפועל</p>
+                    <p class="text-2xl font-bold text-emerald-700">₪${(order.actualTotal || 0).toFixed(2)}</p>
+                ` : `
+                    <p class="text-sm text-emerald-600">סה"כ</p>
+                    <p class="text-2xl font-bold text-emerald-700">₪${(order.total || 0).toFixed(2)}</p>
+                `}
             </div>
 
             <!-- Actions -->
@@ -227,29 +233,49 @@ function viewOrder(orderId) {
                             <tr>
                                 <th class="p-3 text-right font-medium">פריט</th>
                                 <th class="p-3 text-center font-medium">כמות</th>
-                                <th class="p-3 text-center font-medium">מחיר</th>
+                                <th class="p-3 text-center font-medium">מחיר הזמנה</th>
+                                <th class="p-3 text-center font-medium">מחיר בפועל</th>
                                 <th class="p-3 text-left font-medium">סה"כ</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${(order.items || []).map(item => `
+                            ${(order.items || []).map(item => {
+                                const displayPrice = item.actualPrice != null ? item.actualPrice : item.price;
+                                const displayTotal = item.actualTotal != null ? item.actualTotal : item.total;
+                                const hasDiff = item.actualPrice != null && Math.abs(item.actualPrice - item.price) > 0.001;
+                                return `
                                 <tr class="border-t border-slate-200">
                                     <td class="p-3">${item.name}</td>
                                     <td class="p-3 text-center">${item.quantity} ${item.unit}</td>
-                                    <td class="p-3 text-center">₪${(item.price || 0).toFixed(2)}</td>
-                                    <td class="p-3 text-left font-bold">₪${(item.total || 0).toFixed(2)}</td>
-                                </tr>
-                            `).join('')}
+                                    <td class="p-3 text-center text-slate-500">₪${(item.price || 0).toFixed(2)}</td>
+                                    <td class="p-3 text-center font-bold ${hasDiff ? 'text-amber-600' : 'text-slate-700'}">
+                                        ₪${(displayPrice || 0).toFixed(2)}
+                                        ${hasDiff ? '<i class="fas fa-pen text-xs mr-1 opacity-60"></i>' : ''}
+                                    </td>
+                                    <td class="p-3 text-left font-bold">₪${(displayTotal || 0).toFixed(2)}</td>
+                                </tr>`;
+                            }).join('')}
                         </tbody>
                     </table>
                 </div>
             </div>
 
             <!-- Total -->
+            ${order.actualTotal != null ? `
+            <div class="space-y-2">
+                <div class="bg-slate-100 rounded-xl p-3 flex justify-between items-center">
+                    <span class="text-sm text-slate-500">מחיר הוזמן</span>
+                    <span class="text-lg text-slate-400 line-through">₪${(order.total || 0).toFixed(2)}</span>
+                </div>
+                <div class="bg-emerald-100 rounded-xl p-4 flex justify-between items-center">
+                    <span class="font-bold text-emerald-800">סה"כ בפועל</span>
+                    <span class="text-2xl font-bold text-emerald-700">₪${(order.actualTotal || 0).toFixed(2)}</span>
+                </div>
+            </div>` : `
             <div class="bg-emerald-100 rounded-xl p-4 flex justify-between items-center">
                 <span class="font-bold text-emerald-800">סה"כ להזמנה</span>
                 <span class="text-2xl font-bold text-emerald-700">₪${(order.total || 0).toFixed(2)}</span>
-            </div>
+            </div>`}
 
             <!-- Notes -->
             ${order.notes ? `
@@ -269,18 +295,12 @@ function viewOrder(orderId) {
                     סמן כסופק
                 </button>
                 <button
-                    onclick="editReceivedQuantities('${order.id}')"
-                    class="bg-orange-100 hover:bg-orange-200 text-orange-700 px-4 py-3 rounded-xl transition-all"
-                    title="עריכת כמויות שהתקבלו"
+                    onclick="editDeliveryDetails('${order.id}')"
+                    class="bg-orange-100 hover:bg-orange-200 text-orange-700 px-4 py-3 rounded-xl transition-all font-medium flex items-center gap-2"
+                    title="עריכת קבלה — כמות ומחיר בפועל"
                 >
                     <i class="fas fa-scale-balanced"></i>
-                </button>
-                <button
-                    onclick="editOrderPrices('${order.id}')"
-                    class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-4 py-3 rounded-xl transition-all"
-                    title="תיקון מחיר"
-                >
-                    <i class="fas fa-shekel-sign"></i>
+                    <span class="text-sm">עריכת קבלה</span>
                 </button>
                 <button
                     onclick="resendWhatsApp('${order.id}')"
@@ -401,106 +421,72 @@ function deleteOrderConfirm(orderId) {
     showToast('ההזמנה נמחקה');
 }
 
-function editReceivedQuantities(orderId) {
+function editDeliveryDetails(orderId) {
     const order = getOrderById(orderId);
     if (!order) return;
 
-    const rows = (order.items || []).map((item, i) => `
-        <tr class="border-t border-slate-200">
-            <td class="p-3">${escapeHtml(item.name)}</td>
-            <td class="p-3 text-center text-slate-500">${item.quantity} ${item.unit}</td>
-            <td class="p-3 text-center">
-                <input type="number" min="0" step="0.5"
+    const rows = (order.items || []).map((item, i) => {
+        const recvQty    = item.receivedQty != null ? item.receivedQty : item.quantity;
+        const actualPrice = item.actualPrice  != null ? item.actualPrice  : (item.price || 0);
+        const rowTotal   = recvQty * actualPrice;
+        return `
+        <tr class="border-t border-slate-200" id="delivery-row-${i}" data-ordered-qty="${item.quantity || 0}">
+            <td class="p-2 font-medium text-sm">${escapeHtml(item.name)}</td>
+            <td class="p-2 text-center text-slate-400 text-xs">${item.quantity} ${item.unit}</td>
+            <td class="p-2 text-center">
+                <input type="number" min="0" step="0.5" inputmode="decimal"
                     id="recv-qty-${i}"
-                    value="${(item.receivedQty != null ? item.receivedQty : item.quantity)}"
-                    class="w-20 text-center border border-slate-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-orange-500">
-                <span class="text-xs text-slate-500 mr-1">${item.unit}</span>
+                    data-unit="${item.unit}"
+                    value="${recvQty}"
+                    oninput="recalcDeliveryRow(${i})"
+                    class="w-20 text-center border-2 border-orange-300 rounded-lg px-1 py-1.5 text-sm font-bold focus:outline-none focus:border-orange-500 bg-orange-50">
             </td>
-        </tr>`).join('');
-
-    const content = document.getElementById('view-order-content');
-    content.innerHTML = `
-        <div class="space-y-4">
-            <p class="text-sm text-slate-500">הזן את הכמות שהתקבלה בפועל לכל פריט:</p>
-            <div class="bg-slate-50 rounded-xl overflow-hidden">
-                <table class="w-full text-sm">
-                    <thead class="bg-slate-100">
-                        <tr>
-                            <th class="p-3 text-right font-medium">פריט</th>
-                            <th class="p-3 text-center font-medium">הוזמן</th>
-                            <th class="p-3 text-center font-medium">התקבל</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-            </div>
-            <div class="flex gap-3 pt-2">
-                <button onclick="saveReceivedQuantities('${orderId}')"
-                    class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold transition-all">
-                    <i class="fas fa-save ml-2"></i>שמור כמויות
-                </button>
-                <button onclick="viewOrder('${orderId}')"
-                    class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-xl font-bold transition-all">
-                    ביטול
-                </button>
-            </div>
-        </div>`;
-}
-
-function saveReceivedQuantities(orderId) {
-    const order = getOrderById(orderId);
-    if (!order) return;
-
-    const updatedItems = (order.items || []).map((item, i) => {
-        const input = document.getElementById(`recv-qty-${i}`);
-        const receivedQty = input ? parseFloat(input.value) || 0 : item.quantity;
-        return { ...item, receivedQty };
-    });
-
-    updateOrder(orderId, { items: updatedItems });
-    viewOrder(orderId);
-    showToast('הכמויות שהתקבלו עודכנו');
-}
-
-function editOrderPrices(orderId) {
-    const order = getOrderById(orderId);
-    if (!order) return;
-
-    const rows = (order.items || []).map((item, i) => `
-        <tr class="border-t border-slate-200">
-            <td class="p-3">${escapeHtml(item.name)}</td>
-            <td class="p-3 text-center text-slate-500">${item.quantity} ${item.unit}</td>
-            <td class="p-3 text-center">
-                <div class="flex items-center justify-center gap-1">
-                    <input type="number" min="0" step="0.01"
-                        id="edit-price-${i}"
-                        value="${(item.price || 0).toFixed(2)}"
-                        class="w-24 text-center border border-slate-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-amber-500">
-                    <span class="text-xs text-slate-500">₪</span>
+            <td class="p-2 text-center">
+                <div class="flex items-center justify-center gap-0.5">
+                    <span class="text-slate-400 text-xs">₪</span>
+                    <input type="number" min="0" step="0.01" inputmode="decimal"
+                        id="actual-price-${i}"
+                        value="${actualPrice.toFixed(2)}"
+                        oninput="recalcDeliveryRow(${i})"
+                        class="w-20 text-center border-2 border-amber-300 rounded-lg px-1 py-1.5 text-sm font-bold focus:outline-none focus:border-amber-500 bg-amber-50">
                 </div>
             </td>
-        </tr>`).join('');
+            <td class="p-2 text-center font-bold text-emerald-700 text-sm" id="delivery-total-${i}">₪${rowTotal.toFixed(2)}</td>
+        </tr>`;
+    }).join('');
+
+    const grandTotal = (order.items || []).reduce((sum, item) => {
+        const qty   = item.receivedQty  != null ? item.receivedQty  : (item.quantity || 0);
+        const price = item.actualPrice  != null ? item.actualPrice  : (item.price   || 0);
+        return sum + qty * price;
+    }, 0);
 
     const content = document.getElementById('view-order-content');
     content.innerHTML = `
         <div class="space-y-4">
-            <p class="text-sm text-slate-500">עדכן את המחיר בפועל לכל פריט:</p>
-            <div class="bg-slate-50 rounded-xl overflow-hidden">
+            <p class="text-sm text-slate-500">עדכן כמות שהתקבלה ומחיר בפועל — הסה"כ מתעדכן אוטומטית:</p>
+            <div class="bg-slate-50 rounded-xl overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-slate-100">
                         <tr>
-                            <th class="p-3 text-right font-medium">פריט</th>
-                            <th class="p-3 text-center font-medium">כמות</th>
-                            <th class="p-3 text-center font-medium">מחיר לק"ג</th>
+                            <th class="p-2 text-right font-medium">פריט</th>
+                            <th class="p-2 text-center font-medium text-slate-400">הוזמן</th>
+                            <th class="p-2 text-center font-medium text-orange-600">קיבלתי</th>
+                            <th class="p-2 text-center font-medium text-amber-600">מחיר בפועל ₪</th>
+                            <th class="p-2 text-center font-medium">סה"כ</th>
                         </tr>
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>
             </div>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex justify-between items-center">
+                <span class="font-bold text-emerald-800">סה"כ בפועל</span>
+                <span class="text-2xl font-bold text-emerald-700" id="delivery-grand-total">₪${grandTotal.toFixed(2)}</span>
+            </div>
             <div class="flex gap-3 pt-2">
-                <button onclick="saveOrderPrices('${orderId}')"
-                    class="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-xl font-bold transition-all">
-                    <i class="fas fa-save ml-2"></i>שמור מחירים
+                <button onclick="saveDeliveryDetails('${orderId}')"
+                    class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold transition-all">
+                    <i class="fas fa-save ml-2"></i>שמור
                 </button>
                 <button onclick="viewOrder('${orderId}')"
                     class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-xl font-bold transition-all">
@@ -510,26 +496,50 @@ function editOrderPrices(orderId) {
         </div>`;
 }
 
-function saveOrderPrices(orderId) {
+function recalcDeliveryRow(rowIndex) {
+    const qtyInput   = document.getElementById(`recv-qty-${rowIndex}`);
+    const priceInput = document.getElementById(`actual-price-${rowIndex}`);
+    const totalEl    = document.getElementById(`delivery-total-${rowIndex}`);
+    if (!qtyInput || !priceInput || !totalEl) return;
+
+    const qty   = parseFloat(qtyInput.value)   || 0;
+    const price = parseFloat(priceInput.value)  || 0;
+    totalEl.textContent = '₪' + (qty * price).toFixed(2);
+
+    // Recalc grand total
+    let grand = 0;
+    let i = 0;
+    while (document.getElementById(`recv-qty-${i}`)) {
+        const q = parseFloat(document.getElementById(`recv-qty-${i}`).value)   || 0;
+        const p = parseFloat(document.getElementById(`actual-price-${i}`).value) || 0;
+        grand += q * p;
+        i++;
+    }
+    const grandEl = document.getElementById('delivery-grand-total');
+    if (grandEl) grandEl.textContent = '₪' + grand.toFixed(2);
+}
+
+function saveDeliveryDetails(orderId) {
     const order = getOrderById(orderId);
     if (!order) return;
 
     const updatedItems = (order.items || []).map((item, i) => {
-        const input = document.getElementById(`edit-price-${i}`);
-        const price = input ? parseFloat(input.value) || 0 : item.price;
-        const total = price * (item.quantity || 0);
-        return { ...item, price, total };
+        const qtyInput   = document.getElementById(`recv-qty-${i}`);
+        const priceInput = document.getElementById(`actual-price-${i}`);
+        const receivedQty  = qtyInput   ? (parseFloat(qtyInput.value)   || 0) : (item.receivedQty  ?? item.quantity);
+        const actualPrice  = priceInput ? (parseFloat(priceInput.value)  || 0) : (item.actualPrice  ?? item.price);
+        const actualTotal  = receivedQty * actualPrice;
+        return { ...item, receivedQty, actualPrice, actualTotal };
     });
 
-    const newTotal = updatedItems.reduce((sum, item) => sum + (item.total || 0), 0);
-    updateOrder(orderId, { items: updatedItems, total: newTotal });
+    const newActualTotal = updatedItems.reduce((sum, it) => sum + (it.actualTotal || 0), 0);
+    updateOrder(orderId, { items: updatedItems, actualTotal: newActualTotal });
     viewOrder(orderId);
-    showToast('המחירים עודכנו');
+    showToast('פרטי הקבלה עודכנו ✓');
 }
 
 Object.assign(window, {
     viewOrder, closeViewModal, updateOrderStatus,
     resendWhatsApp, resendWhatsAppGroup, resendSMS, deleteOrderConfirm,
-    editReceivedQuantities, saveReceivedQuantities,
-    editOrderPrices, saveOrderPrices
+    editDeliveryDetails, recalcDeliveryRow, saveDeliveryDetails
 });

@@ -4,6 +4,35 @@
    Based on Emil Kowalski's design engineering philosophy
    ============================================================ */
 
+/* ===== RTL — עברית: כיוון ויישור ===== */
+html[dir="rtl"],
+html[dir="rtl"] body {
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: embed;
+}
+
+/* שדות קלט בעברית — יישור לימין כברירת מחדל */
+html[dir="rtl"] input:not([dir="ltr"]),
+html[dir="rtl"] textarea:not([dir="ltr"]),
+html[dir="rtl"] select:not([dir="ltr"]) {
+  direction: rtl;
+  text-align: right;
+}
+
+/* פסקאות, כותרות ותוויות */
+html[dir="rtl"] p,
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3,
+html[dir="rtl"] h4,
+html[dir="rtl"] label,
+html[dir="rtl"] span,
+html[dir="rtl"] td,
+html[dir="rtl"] th {
+  text-align: right;
+}
+
 /* ===== CUSTOM EASING CURVES ===== */
 :root {
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
