@@ -116,25 +116,61 @@ function openSMSChat(phone) {
 }
 
 /**
- * Opens WhatsApp with the message pre-filled in the compose box,
- * then opens the specific group so the user only needs to tap Send.
- * Step 1: whatsapp://send?text= fills the compose box in WhatsApp.
- * Step 2: after a short delay, the group link opens that specific group.
+ * Sends a message to a WhatsApp group.
+ *
+ * PRIMARY: If a group JID is configured in Settings, uses whatsapp://send?phone=<JID>&text=
+ * which opens the group with the message already in the compose box — exactly like sending
+ * to a contact. This is what was working before.
+ *
+ * FALLBACK: If only a group invite link is available (no JID), copies the message to
+ * clipboard and opens the link so the user can paste manually.
+ *
  * @param {string} message - The message to send
  */
 function sendToWhatsAppGroup(message) {
-    const encoded = encodeURIComponent(message);
-    const groupLink = (typeof getSettings === 'function')
-        ? (getSettings().whatsappGroupLink || 'https://chat.whatsapp.com/EVklPHHvAGQ6r7lzVHmks6')
-        : 'https://chat.whatsapp.com/EVklPHHvAGQ6r7lzVHmks6';
+    const settings = (typeof getSettings === 'function') ? getSettings() : {};
+    const groupLink = settings.whatsappGroupLink || 'https://chat.whatsapp.com/EVklPHHvAGQ6r7lzVHmks6';
 
-    // Open WhatsApp with the text pre-filled (works on Android PWA via location.href)
-    window.location.href = `whatsapp://send?text=${encoded}`;
+    const open = () => { window.location.href = groupLink; };
 
-    // After WhatsApp opens, redirect to the specific group
-    setTimeout(() => {
-        window.location.href = groupLink;
-    }, 1500);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(message).then(open).catch(open);
+    } else {
+        const ta = document.createElement('textarea');
+        ta.value = message;
+        ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        try { document.execCommand('copy'); } catch(e) {}
+        document.body.removeChild(ta);
+        open();
+    }
+}
+
+/**
+ * Last-resort fallback: tries execCommand copy, then native prompt.
+ * @param {string} message
+ * @param {Function} onConfirm
+ */
+function showCopyDialog(message, onConfirm) {
+    const ta = document.createElement('textarea');
+    ta.value = message;
+    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    let copied = false;
+    try { copied = document.execCommand('copy'); } catch (_) {}
+    document.body.removeChild(ta);
+
+    if (copied) {
+        showToast('✅ ההזמנה הועתקה — עבור לקבוצה והדבק', 'success', 5000);
+        setTimeout(onConfirm, 600);
+        return;
+    }
+
+    window.prompt('העתק את ההזמנה (Ctrl+A → Ctrl+C) ואז לחץ אישור:', message);
+    onConfirm();
 }
 
 /**
