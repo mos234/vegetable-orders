@@ -30,7 +30,6 @@ const CACHE_URLS = [
     './js/export.js',
     './js/orders.js',
     './js/orders-list.js',
-    './js/new-order.js',
     './js/returns.js',
     './js/returns-list.js',
     './js/suppliers.js',

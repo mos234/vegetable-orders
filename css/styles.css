@@ -38,6 +38,27 @@ html[dir="rtl"] th {
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Light mode CSS variables */
+  --bg-color: #f8fafc;
+  --text-color: #1e293b;
+  --card-bg: #ffffff;
+}
+
+/* ===== DARK MODE — system preference CSS variables ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #0f172a;
+    --text-color: #f1f5f9;
+    --card-bg: #1e293b;
+  }
+}
+
+/* Manual dark class overrides the system preference variables */
+html.dark {
+  --bg-color: #0f172a;
+  --text-color: #f1f5f9;
+  --card-bg: #1e293b;
 }
 
 /* ===== SMOOTH THEME TRANSITION ===== */
