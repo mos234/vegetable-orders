@@ -2,3 +2,16 @@
 Thumbs.db
 .vscode/
 *.log
+
+# Claude Code config
+.claude/
+
+# Helper scripts (not part of the project)
+apply_dark.py
+apply_ui.py
+claude_menu.reg
+
+# Planning docs
+CODE_MAP.md
+PROJECT_STATUS.md
+vegetable-orders-improvements.md
