@@ -1,5 +1,72 @@
+// ===== Splash Screen =====
+(function initSplash() {
+    const splash = document.getElementById('splash-screen');
+    if (!splash) return;
+
+    // Show only once per session
+    if (sessionStorage.getItem('splash-shown')) {
+        splash.remove();
+        return;
+    }
+
+    setTimeout(() => {
+        splash.classList.add('splash-hidden');
+        splash.addEventListener('transitionend', () => splash.remove(), { once: true });
+        sessionStorage.setItem('splash-shown', '1');
+    }, 1500);
+})();
+
+// ===== PWA Install Prompt =====
+let _deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    _deferredInstallPrompt = event;
+
+    const btn = document.getElementById('install-btn');
+    if (btn) btn.classList.remove('hidden');
+});
+
+window.addEventListener('appinstalled', () => {
+    const btn = document.getElementById('install-btn');
+    if (btn) btn.classList.add('hidden');
+    _deferredInstallPrompt = null;
+});
+
+function triggerInstallPrompt() {
+    if (!_deferredInstallPrompt) return;
+    _deferredInstallPrompt.prompt();
+    _deferredInstallPrompt.userChoice.then(() => {
+        _deferredInstallPrompt = null;
+        const btn = document.getElementById('install-btn');
+        if (btn) btn.classList.add('hidden');
+    });
+}
+
+// ===== Background Sync — handle pending orders pushed from SW =====
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data?.type === 'SYNC_PENDING_ORDER') {
+            const order = event.data.order;
+            // Merge the pending order into localStorage if not already there
+            const orders = getOrders ? getOrders() : [];
+            const exists = orders.some(o => o.id === order.id);
+            if (!exists && typeof saveOrder === 'function') {
+                saveOrder(order);
+                console.log('[App] Synced pending order from SW:', order.id);
+            }
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('App initialized');
+
+    // Wire up install button
+    const installBtn = document.getElementById('install-btn');
+    if (installBtn) {
+        installBtn.addEventListener('click', triggerInstallPrompt);
+    }
 
     // Initialize UI components
     setupNavigation();

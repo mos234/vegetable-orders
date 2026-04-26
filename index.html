@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ניהול הזמנות ירקות | Vegetable Orders Management</title>
 
     <!-- PWA Meta Tags -->
@@ -57,6 +57,19 @@
 </head>
 
 <body class="min-h-screen text-slate-800">
+
+    <!-- Splash Screen (shown on first load) -->
+    <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-emerald-700" aria-hidden="true">
+        <img src="icons/icon-192x192.png" alt="שוק הירקות" class="w-24 h-24 mb-6 drop-shadow-xl">
+        <h1 class="text-white text-2xl font-bold tracking-tight">שוק הירקות</h1>
+        <p class="text-emerald-200 text-sm mt-2">מערכת ניהול הזמנות</p>
+    </div>
+
+    <!-- Install Button (hidden by default, shown when PWA can be installed) -->
+    <button id="install-btn" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-lg font-bold text-sm flex items-center gap-2 active:scale-95 transition-transform" aria-label="התקן אפליקציה">
+        <i class="fas fa-download"></i>
+        התקן כאפליקציה
+    </button>
 
     <!-- Mobile Header -->
     <header class="mobile-header-bar md:hidden fixed top-0 left-0 right-0 z-50 bg-emerald-700 text-white px-4 flex items-center justify-between shadow-lg">

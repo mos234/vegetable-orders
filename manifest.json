@@ -1,11 +1,13 @@
 {
+    "id": "vegetable-orders-pwa",
     "name": "ניהול הזמנות ירקות",
     "short_name": "שוק הירקות",
     "description": "מערכת חכמה לניהול הזמנות ירקות, ספקים ודוחות חודשיים",
     "start_url": "index.html",
     "scope": ".",
     "display": "standalone",
-    "orientation": "portrait-primary",
+    "display_override": ["window-controls-overlay", "standalone"],
+    "orientation": "portrait",
     "background_color": "#f8fafc",
     "theme_color": "#10b981",
     "lang": "he",
@@ -26,6 +28,22 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable any"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "icons/screenshot-wide.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "לוח בקרה — מסך רחב"
+        },
+        {
+            "src": "icons/screenshot-narrow.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "לוח בקרה — מובייל"
         }
     ],
     "shortcuts": [

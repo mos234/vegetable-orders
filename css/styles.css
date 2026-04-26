@@ -78,10 +78,12 @@ a[href]:active {
   transition: transform 100ms var(--ease-out) !important;
 }
 
-/* Prevent double-tap zoom on mobile buttons */
+/* Prevent double-tap zoom on mobile buttons; no text selection on interactive elements */
 button, a {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* ===== MODAL / SHEET ENTRANCE ===== */
@@ -208,6 +210,16 @@ button, a {
   textarea {
     font-size: 16px !important; /* Prevents iOS zoom on focus */
   }
+}
+
+/* ===== SPLASH SCREEN ===== */
+#splash-screen {
+  transition: opacity 400ms var(--ease-out);
+  pointer-events: none;
+}
+
+#splash-screen.splash-hidden {
+  opacity: 0;
 }
 
 /* ===== REDUCED MOTION ===== */
