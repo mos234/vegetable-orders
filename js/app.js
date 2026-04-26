@@ -48,13 +48,11 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data?.type === 'SYNC_PENDING_ORDER') {
             const order = event.data.order;
-            // Merge the pending order into localStorage if not already there
-            const orders = getOrders ? getOrders() : [];
-            const exists = orders.some(o => o.id === order.id);
-            if (!exists && typeof saveOrder === 'function') {
-                saveOrder(order);
-                console.log('[App] Synced pending order from SW:', order.id);
+            // Order is already in localStorage (saved before queuing) — just notify user
+            if (typeof showToast === 'function') {
+                showToast(`הרשת חזרה — הזמנה לספק ${order.supplierName} ממתינה לשליחה`, 'info');
             }
+            console.log('[App] Pending order ready to send:', order.id);
         }
     });
 }

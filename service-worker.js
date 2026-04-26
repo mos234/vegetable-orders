@@ -88,12 +88,12 @@ async function syncPendingOrders() {
 
     if (pending.length === 0) return;
 
-    // Notify all open app windows so they can process pending orders
+    // Notify all open app windows so they can prompt the user to send
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const order of pending) {
-        clients.forEach(client => {
+        for (const client of clients) {
             client.postMessage({ type: 'SYNC_PENDING_ORDER', order });
-        });
+        }
         await idbDelete(store, order.id);
     }
 

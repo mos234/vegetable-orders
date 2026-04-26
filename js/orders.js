@@ -730,8 +730,13 @@ function saveOrderAction(action) {
     };
 
     const savedOrder = saveOrder(order);
+    const isOffline = !navigator.onLine;
 
-    if (action === 'whatsapp') {
+    // When offline and the intent was to send — queue for Background Sync
+    if (isOffline && (action === 'whatsapp' || action === 'sms' || action === 'group')) {
+        queueOfflineOrder({ ...savedOrder, _pendingAction: action });
+        showToast('אין חיבור — ההזמנה נשמרה ותישלח כשהרשת תחזור', 'warning');
+    } else if (action === 'whatsapp') {
         sendWhatsAppMessage(supplierPhone, buildOrderMessage(savedOrder));
         showToast('ההזמנה נשמרה ונשלחה ב-WhatsApp');
     } else if (action === 'sms') {
@@ -770,6 +775,38 @@ function resetOrderForm() {
 
     addNewItemRow();
     updateOrderSummary();
+}
+
+// ─── Offline / Background Sync ────────────────────────────────────────────────
+
+function openPendingOrdersDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open('vegetable-orders-db', 1);
+        req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('pending-orders')) {
+                db.createObjectStore('pending-orders', { keyPath: 'id' });
+            }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = (e) => reject(e.target.error);
+    });
+}
+
+async function queueOfflineOrder(order) {
+    try {
+        const db = await openPendingOrdersDB();
+        const tx = db.transaction('pending-orders', 'readwrite');
+        tx.objectStore('pending-orders').put(order);
+
+        // Register Background Sync so SW processes it when network returns
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            const reg = await navigator.serviceWorker.ready;
+            await reg.sync.register('sync-orders');
+        }
+    } catch (err) {
+        console.error('[Orders] Failed to queue offline order:', err);
+    }
 }
 
 // Expose globals needed by inline onclick handlers in dynamically created HTML
