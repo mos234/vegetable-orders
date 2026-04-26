@@ -511,5 +511,56 @@ function deleteCatalogItem(name) {
     localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
 }
 
+// ==================== WHATSAPP GROUPS FUNCTIONS ====================
+
+/**
+ * Gets all WhatsApp groups.
+ * @returns {Array} Array of group objects { id, name, link }
+ */
+function getGroups() {
+    return getData(STORAGE_KEYS.GROUPS || 'vegetable_groups');
+}
+
+/**
+ * Saves a new WhatsApp group.
+ * @param {Object} group - { name, link }
+ * @returns {Object} Saved group with generated ID
+ */
+function saveGroup(group) {
+    const groups = getGroups();
+    const newGroup = {
+        id: Date.now().toString(),
+        name: group.name.trim(),
+        link: group.link.trim(),
+        createdAt: new Date().toISOString()
+    };
+    groups.push(newGroup);
+    localStorage.setItem('vegetable_groups', JSON.stringify(groups));
+    return newGroup;
+}
+
+/**
+ * Updates an existing group.
+ * @param {string} id
+ * @param {Object} updatedData - { name, link }
+ */
+function updateGroup(id, updatedData) {
+    const groups = getGroups();
+    const idx = groups.findIndex(g => g.id === id);
+    if (idx === -1) return null;
+    groups[idx] = { ...groups[idx], ...updatedData, updatedAt: new Date().toISOString() };
+    localStorage.setItem('vegetable_groups', JSON.stringify(groups));
+    return groups[idx];
+}
+
+/**
+ * Deletes a group by ID.
+ * @param {string} id
+ */
+function deleteGroup(id) {
+    const groups = getGroups().filter(g => g.id !== id);
+    localStorage.setItem('vegetable_groups', JSON.stringify(groups));
+}
+
 // Initialize on load
 initStorage();

@@ -190,3 +190,96 @@ function sendWhatsAppMessage(phone, message) {
 function sendSMSMessage(phone, message) {
     window.location.href = `sms:${formatPhoneForSMS(phone)}?body=${encodeURIComponent(message)}`;
 }
+
+/**
+ * Shows a modal to pick which WhatsApp group to send the message to.
+ * If no groups are configured, redirects to groups management page.
+ * @param {string} message - The pre-built order message
+ */
+function showGroupPicker(message) {
+    const groups = (typeof getGroups === 'function') ? getGroups() : [];
+
+    // Also check the old single-group setting for backward compat
+    let legacyLink = '';
+    try {
+        const s = JSON.parse(localStorage.getItem('vegetable_settings') || '{}');
+        legacyLink = s.whatsappGroupLink || '';
+        if (!legacyLink) {
+            const old = JSON.parse(localStorage.getItem('veg-settings') || '{}');
+            legacyLink = old.whatsappGroupLink || '';
+        }
+    } catch (_) {}
+
+    if (groups.length === 0 && !legacyLink) {
+        showToast('נא להוסיף קבוצה בדף הקבוצות תחילה', 'error', 3000);
+        setTimeout(() => { window.location.href = 'groups.html'; }, 1500);
+        return;
+    }
+
+    // Build list items — groups from storage + legacy single-group if not already in list
+    const allGroups = [...groups];
+    if (legacyLink && !allGroups.some(g => g.link === legacyLink)) {
+        allGroups.unshift({ id: '__legacy__', name: 'הקבוצה הראשית', link: legacyLink });
+    }
+
+    // Remove existing picker if open
+    document.getElementById('group-picker-overlay')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'group-picker-overlay';
+    overlay.className = 'fixed inset-0 z-50 flex items-end justify-center bg-black/50';
+    overlay.innerHTML = `
+        <div class="bg-white w-full max-w-lg rounded-t-3xl p-6 shadow-2xl animate-slide-up">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800">בחר קבוצה לשליחה</h3>
+                <button onclick="document.getElementById('group-picker-overlay').remove()"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+            <div class="space-y-2 max-h-64 overflow-y-auto">
+                ${allGroups.map(g => `
+                <button onclick="_sendToSpecificGroup('${escapeAttr(g.link)}', '__MSG__')"
+                    class="w-full flex items-center gap-3 p-4 rounded-xl bg-slate-50 hover:bg-green-50 border border-slate-200 hover:border-green-300 transition-all text-right active:scale-95">
+                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fab fa-whatsapp text-green-600 text-lg"></i>
+                    </div>
+                    <span class="font-semibold text-slate-700">${escapeHtml(g.name)}</span>
+                </button>`).join('')}
+            </div>
+            <a href="groups.html" class="mt-4 flex items-center justify-center gap-2 text-sm text-emerald-600 font-medium py-2">
+                <i class="fas fa-plus-circle"></i> נהל קבוצות
+            </a>
+        </div>`;
+
+    // Inject the message into button onclick handlers (safe replacement)
+    overlay.querySelectorAll('button[onclick*="__MSG__"]').forEach((btn, i) => {
+        btn.onclick = () => _sendToSpecificGroup(allGroups[i].link, message);
+    });
+
+    // Close on backdrop click
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+}
+
+/**
+ * Copies message to clipboard then opens a specific group link.
+ * @param {string} link - WhatsApp group invite link
+ * @param {string} message
+ */
+function _sendToSpecificGroup(link, message) {
+    document.getElementById('group-picker-overlay')?.remove();
+
+    const doOpen = () => openExternalUrl(link);
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(message)
+            .then(() => {
+                showToast('✅ ההזמנה הועתקה — הדבק בקבוצה ושלח', 'success', 5000);
+                setTimeout(doOpen, 400);
+            })
+            .catch(() => showCopyDialog(message, doOpen));
+    } else {
+        showCopyDialog(message, doOpen);
+    }
+}

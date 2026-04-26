@@ -25,6 +25,10 @@ let itemIdCounter = 0;
 let halls = [];
 let hallIdCounter = 0;
 
+// When adding to an existing order
+let addToOrderId = null;
+let addToOrderOriginalItemCount = 0;
+
 document.addEventListener('DOMContentLoaded', () => {
     initOrderPage();
 });
@@ -34,8 +38,63 @@ function initOrderPage() {
     populateSupplierDropdown();
     setupAddItemButton();
     setupActionButtons();
-    addNewItemRow();
+
+    const params = new URLSearchParams(window.location.search);
+    const addToId = params.get('addTo');
+    if (addToId) {
+        loadOrderForAddition(addToId);
+    } else {
+        addNewItemRow();
+    }
     updateOrderSummary();
+}
+
+function loadOrderForAddition(orderId) {
+    const order = getOrderById(orderId);
+    if (!order) { addNewItemRow(); return; }
+
+    addToOrderId = orderId;
+
+    // Show banner
+    const banner = document.createElement('div');
+    banner.className = 'bg-amber-50 border border-amber-300 rounded-2xl px-4 py-3 mb-4 text-amber-800 text-sm font-medium flex items-center gap-2';
+    banner.innerHTML = `<i class="fas fa-plus-circle"></i> מוסיף פריטים להזמנה ${order.orderNumber || ''} — ${order.supplierName}`;
+    const form = document.querySelector('main') || document.body;
+    form.prepend(banner);
+
+    // Pre-fill supplier
+    const supplierSelect = document.getElementById('supplier-select');
+    if (supplierSelect && order.supplierId) {
+        supplierSelect.value = order.supplierId;
+    }
+
+    // Pre-fill dates
+    const orderDateInput = document.getElementById('order-date');
+    const deliveryDateInput = document.getElementById('delivery-date');
+    if (orderDateInput && order.orderDate) orderDateInput.value = order.orderDate;
+    if (deliveryDateInput && order.deliveryDate) deliveryDateInput.value = order.deliveryDate;
+
+    // Load existing items (read-only visual) + one new empty row
+    const tbody = document.getElementById('items-table-body');
+    const emptyState = document.getElementById('empty-items-state');
+    if (emptyState) emptyState.classList.add('hidden');
+
+    (order.items || []).forEach(item => {
+        const id = ++itemIdCounter;
+        const row = document.createElement('tr');
+        row.id = `item-row-${id}`;
+        row.className = 'opacity-50';
+        row.innerHTML = `
+            <td class="p-2 text-sm text-slate-600" colspan="4">
+                <i class="fas fa-lock text-xs ml-1"></i>${item.name} — ${item.quantity} ${item.unit}
+            </td>`;
+        tbody.appendChild(row);
+        // Push placeholder so summary counts are correct
+        orderItems.push({ id, name: item.name, qty: item.quantity, unit: 'kg', price: item.price || 0, total: item.total || 0 });
+    });
+
+    addToOrderOriginalItemCount = orderItems.length;
+    addNewItemRow();
 }
 
 function setupDateDefaults() {
@@ -586,6 +645,36 @@ function updateOrderSummary() {
 // ─── Save & Send ───────────────────────────────────────────────────────────────
 
 function saveOrderAction(action) {
+    // ── "Add to existing order" mode ──
+    if (addToOrderId) {
+        const newItems = orderItems.slice(addToOrderOriginalItemCount).filter(i => i.name && i.qty > 0);
+        if (newItems.length === 0) { alert('נא להוסיף לפחות פריט חדש'); return; }
+
+        const existing = getOrderById(addToOrderId);
+        const mappedNew = newItems.map(i => ({
+            name: i.name, quantity: i.qty,
+            unit: UNIT_OPTIONS.find(u => u.value === i.unit)?.label || i.unit,
+            unitValue: i.unit, price: i.price, total: i.total
+        }));
+        const allItems = [...(existing.items || []), ...mappedNew];
+        const newTotal = allItems.reduce((s, i) => s + (i.total || 0), 0);
+        updateOrder(addToOrderId, { items: allItems, total: newTotal });
+
+        const additionMsg = `תוספת להזמנה ${existing.orderNumber || ''}:\n` +
+            mappedNew.map(i => `• ${i.name}: ${i.quantity} ${i.unit}`).join('\n');
+
+        if (action === 'whatsapp') {
+            sendWhatsAppMessage(existing.supplierPhone, additionMsg);
+        } else if (action === 'sms') {
+            sendSMSMessage(existing.supplierPhone, additionMsg);
+        } else if (action === 'group') {
+            showGroupPicker(additionMsg);
+        }
+        showToast('הפריטים נוספו להזמנה ✓');
+        setTimeout(() => { window.location.href = 'orders-list.html'; }, 800);
+        return;
+    }
+
     const supplierSelect = document.getElementById('supplier-select');
     const supplierId = supplierSelect.value;
     if (!supplierId) {
@@ -649,8 +738,7 @@ function saveOrderAction(action) {
         sendSMSMessage(supplierPhone, buildOrderMessage(savedOrder));
         showToast('ההזמנה נשמרה ונשלחה ב-SMS');
     } else if (action === 'group') {
-        sendToWhatsAppGroup(buildOrderMessage(savedOrder));
-        showToast('ההזמנה נשמרה ונשלחה לקבוצת WhatsApp');
+        showGroupPicker(buildOrderMessage(savedOrder));
     } else {
         showToast('ההזמנה נשמרה כטיוטה');
     }

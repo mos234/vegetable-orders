@@ -115,6 +115,13 @@ function renderOrdersList() {
                     <span class="hidden sm:inline">צפה</span>
                 </button>
                 <button
+                    onclick="window.location.href='new-order.html?addTo=${order.id}'"
+                    class="bg-amber-500 hover:bg-amber-600 text-white p-2 rounded-lg transition-all"
+                    title="הוסף פריטים להזמנה"
+                >
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button
                     onclick="resendWhatsApp('${order.id}')"
                     class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition-all"
                     title="שלח ב-WhatsApp לספק"
@@ -378,10 +385,8 @@ function resendWhatsApp(orderId) {
 function resendWhatsAppGroup(orderId) {
     const order = getOrderById(orderId);
     if (!order) return;
-
     const message = buildOrderMessage(order);
-    sendToWhatsAppGroup(message);
-
+    showGroupPicker(message);
     if (order.status === 'draft') {
         updateOrderStatus(orderId, 'sent');
     }
