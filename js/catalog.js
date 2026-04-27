@@ -6,19 +6,42 @@
 let editingCatalogItem = null; // name of item being edited, null = new
 let activeCategory = 'all';   // active category filter
 
-const CATALOG_CATEGORIES = [
-    { key: 'all',    label: 'הכל',          icon: 'fa-tag' },
-    { key: 'breads', label: 'לחמים',        icon: 'fa-bread-slice' },
-    { key: 'dry',    label: 'יבשים',        icon: 'fa-seedling' },
-    { key: 'misc',   label: 'שונות',        icon: 'fa-boxes-stacked' },
-    { key: 'frozen', label: 'קפואים',       icon: 'fa-snowflake' },
-    { key: 'meat',   label: 'בשרים/עופות',  icon: 'fa-drumstick-bite' },
-];
+let CATALOG_CATEGORIES = [];
+
+function loadCategories() {
+    CATALOG_CATEGORIES = getCatalogCategories();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+    loadCategories();
+    renderCategoryTabs();
+    populateCategoryDropdowns();
     renderCatalogTable();
     document.getElementById('catalog-search').addEventListener('input', debounce(renderCatalogTable, 200));
 });
+
+function renderCategoryTabs() {
+    const container = document.getElementById('catalog-category-tabs');
+    if (!container) return;
+    
+    container.innerHTML = CATALOG_CATEGORIES.map(c => `
+        <button id="cat-tab-${c.key}" class="${c.key === activeCategory ? 'cat-tab-active' : 'cat-tab-inactive'}" onclick="setActiveCategory('${c.key}')">
+            <i class="fas ${c.icon}"></i> ${c.label}
+        </button>
+    `).join('');
+}
+
+function populateCategoryDropdowns() {
+    const select = document.getElementById('catalog-category');
+    if (!select) return;
+    
+    // exclude 'all' from dropdown
+    const options = CATALOG_CATEGORIES.filter(c => c.key !== 'all').map(c => 
+        `<option value="${c.key}">${c.label}</option>`
+    );
+    
+    select.innerHTML = `<option value="">ללא קטגוריה</option>\n` + options.join('\n');
+}
 
 function setActiveCategory(cat) {
     activeCategory = cat;
@@ -154,8 +177,86 @@ function deleteCatalogItemConfirm(name) {
     showToast(`"${name}" הוסר מהקטלוג`);
 }
 
+let tempCategories = [];
+
+function openManageCategoriesModal() {
+    tempCategories = JSON.parse(JSON.stringify(CATALOG_CATEGORIES));
+    renderManageCategoriesList();
+    document.getElementById('manage-categories-modal').classList.remove('hidden');
+}
+
+function closeManageCategoriesModal() {
+    document.getElementById('manage-categories-modal').classList.add('hidden');
+}
+
+function renderManageCategoriesList() {
+    const container = document.getElementById('categories-list-container');
+    container.innerHTML = tempCategories.map((c, index) => {
+        if (c.key === 'all') {
+            return `
+            <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <div class="flex items-center gap-2 text-slate-700 font-bold">
+                    <i class="fas ${c.icon}"></i> ${c.label}
+                </div>
+                <span class="text-xs text-slate-400">ברירת מחדל</span>
+            </div>`;
+        }
+        return `
+        <div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
+            <div class="flex items-center gap-2 text-slate-700">
+                <i class="fas ${c.icon}"></i> ${c.label}
+            </div>
+            <button onclick="removeTempCategory(${index})" class="text-red-500 hover:text-red-700 p-1">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>`;
+    }).join('');
+}
+
+function addNewCategory() {
+    const label = document.getElementById('new-category-label').value.trim();
+    let icon = document.getElementById('new-category-icon').value.trim();
+    
+    if (!label) return alert('יש להזין שם כרטסיה');
+    if (!icon) icon = 'fa-tag';
+    if (!icon.startsWith('fa-')) icon = 'fa-' + icon;
+
+    // generate unique key
+    const key = 'cat_' + Date.now();
+    tempCategories.push({ key, label, icon });
+    
+    document.getElementById('new-category-label').value = '';
+    document.getElementById('new-category-icon').value = 'fa-tag';
+    
+    renderManageCategoriesList();
+}
+
+function removeTempCategory(index) {
+    if (tempCategories[index].key === 'all') return; // protect 'all'
+    if (confirm('האם אתה בטוח שברצונך למחוק כרטסיה זו? (פריטים ששויכו אליה יישארו ללא קטגוריה)')) {
+        tempCategories.splice(index, 1);
+        renderManageCategoriesList();
+    }
+}
+
+function saveCategoriesAndClose() {
+    saveCatalogCategories(tempCategories);
+    loadCategories();
+    renderCategoryTabs();
+    populateCategoryDropdowns();
+    
+    // Ensure active category still exists, otherwise reset to 'all'
+    if (!CATALOG_CATEGORIES.find(c => c.key === activeCategory)) {
+        setActiveCategory('all');
+    }
+    
+    closeManageCategoriesModal();
+    showToast('הכרטסיות עודכנו בהצלחה');
+}
+
 Object.assign(window, {
     openAddCatalogModal, openEditCatalogModal, closeCatalogModal,
     saveCatalogModal, deleteCatalogItemConfirm,
     setActiveCategory,
+    openManageCategoriesModal, closeManageCategoriesModal, addNewCategory, removeTempCategory, saveCategoriesAndClose
 });

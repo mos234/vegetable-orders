@@ -80,6 +80,7 @@ function saveSupplier(supplier) {
         id: Date.now().toString(),
         name: supplier.name,
         phone: supplier.phone,
+        email: supplier.email || '',
         notes: supplier.notes || '',
         createdAt: new Date().toISOString()
     };
@@ -103,7 +104,8 @@ function updateSupplier(id, updatedData) {
         ...suppliers[index],
         name: updatedData.name,
         phone: updatedData.phone,
-        notes: updatedData.notes || '',
+        email: updatedData.email !== undefined ? updatedData.email : suppliers[index].email,
+        notes: updatedData.notes !== undefined ? updatedData.notes : suppliers[index].notes,
         updatedAt: new Date().toISOString()
     };
     saveData(STORAGE_KEYS.SUPPLIERS, suppliers);
@@ -564,3 +566,37 @@ function deleteGroup(id) {
 
 // Initialize on load
 initStorage();
+
+// ====== CATALOG CATEGORIES =======
+
+function getCatalogCategories() {
+    const defaultCategories = [
+        { key: 'all',    label: 'הכל',          icon: 'fa-tag' },
+        { key: 'breads', label: 'לחמים',        icon: 'fa-bread-slice' },
+        { key: 'dry',    label: 'יבשים',        icon: 'fa-seedling' },
+        { key: 'misc',   label: 'שונות',        icon: 'fa-boxes-stacked' },
+        { key: 'frozen', label: 'קפואים',       icon: 'fa-snowflake' },
+        { key: 'meat',   label: 'בשרים/עופות',  icon: 'fa-drumstick-bite' }
+    ];
+    try {
+        const stored = localStorage.getItem('vegetable_catalog_categories');
+        if (stored) return JSON.parse(stored);
+    } catch(e) {}
+    return defaultCategories;
+}
+
+function saveCatalogCategories(cats) {
+    localStorage.setItem('vegetable_catalog_categories', JSON.stringify(cats));
+}
+
+// Ensure exports match
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        saveOrder, getOrders, getOrderById, updateOrder, deleteOrder,
+        saveSupplier, getSuppliers, getSupplierById, deleteSupplier,
+        savePriceCatalog, getPriceCatalog, saveCatalogItem, deleteCatalogItem,
+        saveGroup, getGroups, updateGroup, deleteGroup,
+        saveReturn, getReturns, getReturnById, updateReturn, deleteReturn, getReturnHistory: null,
+        getSettings, saveSettings, getCatalogCategories, saveCatalogCategories
+    };
+}

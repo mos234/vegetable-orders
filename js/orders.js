@@ -149,6 +149,8 @@ function setupActionButtons() {
     if (saveWhatsappBtn) saveWhatsappBtn.addEventListener('click', () => saveOrderAction('whatsapp'));
     if (saveSmsBtn)      saveSmsBtn.addEventListener('click', () => saveOrderAction('sms'));
     if (saveGroupBtn)    saveGroupBtn.addEventListener('click', () => saveOrderAction('group'));
+    const saveEmailBtn = document.getElementById('save-email-btn');
+    if (saveEmailBtn)    saveEmailBtn.addEventListener('click', () => saveOrderAction('email'));
     if (addHallBtn)      addHallBtn.addEventListener('click', addHall);
 }
 
@@ -738,7 +740,7 @@ function saveOrderAction(action) {
     const isOffline = !navigator.onLine;
 
     // When offline and the intent was to send — queue for Background Sync
-    if (isOffline && (action === 'whatsapp' || action === 'sms' || action === 'group')) {
+    if (isOffline && (action === 'whatsapp' || action === 'sms' || action === 'group' || action === 'email')) {
         queueOfflineOrder({ ...savedOrder, _pendingAction: action });
         showToast('אין חיבור — ההזמנה נשמרה ותישלח כשהרשת תחזור', 'warning');
         handlePostSaveRedirect();
@@ -754,6 +756,12 @@ function saveOrderAction(action) {
         showGroupPicker(buildOrderMessage(savedOrder), () => {
             handlePostSaveRedirect(1000);
         });
+    } else if (action === 'email') {
+        const supplier = getSupplierById(supplierId);
+        const emailAddress = supplier && supplier.email ? supplier.email : '';
+        sendEmailMessage(supplierName, emailAddress, buildOrderMessage(savedOrder));
+        showToast('ההזמנה נשמרה ומוכנה לשליחה באימייל');
+        handlePostSaveRedirect();
     } else {
         showToast('ההזמנה נשמרה כטיוטה');
         handlePostSaveRedirect();

@@ -28,6 +28,7 @@ function setupSupplierForm() {
 
         const name = document.getElementById('supplier-name').value.trim();
         const phone = document.getElementById('supplier-phone').value.trim();
+        const email = document.getElementById('supplier-email').value.trim();
         const notes = document.getElementById('supplier-notes').value.trim();
 
         if (!name || !phone) {
@@ -35,7 +36,7 @@ function setupSupplierForm() {
             return;
         }
 
-        const supplier = saveSupplier({ name, phone, notes });
+        const supplier = saveSupplier({ name, phone, email, notes });
         console.log('Supplier saved:', supplier);
 
         // Reset form
@@ -83,6 +84,7 @@ function setupEditModal() {
             const id = document.getElementById('edit-id').value;
             const name = document.getElementById('edit-name').value.trim();
             const phone = document.getElementById('edit-phone').value.trim();
+            const email = document.getElementById('edit-email').value.trim();
             const notes = document.getElementById('edit-notes').value.trim();
 
             if (!name || !phone) {
@@ -90,7 +92,7 @@ function setupEditModal() {
                 return;
             }
 
-            const updated = updateSupplier(id, { name, phone, notes });
+            const updated = updateSupplier(id, { name, phone, email, notes });
             if (updated) {
                 closeEditModal();
                 renderSuppliersList();
@@ -111,6 +113,7 @@ function openEditModal(id) {
     document.getElementById('edit-id').value = supplier.id;
     document.getElementById('edit-name').value = supplier.name;
     document.getElementById('edit-phone').value = supplier.phone;
+    document.getElementById('edit-email').value = supplier.email || '';
     document.getElementById('edit-notes').value = supplier.notes || '';
 
     const modal = document.getElementById('edit-modal');
@@ -160,6 +163,9 @@ function renderSuppliersList() {
             </td>
             <td class="py-4">
                 <span class="text-slate-600 font-mono">${escapeHtml(supplier.phone)}</span>
+            </td>
+            <td class="py-4">
+                <span class="text-slate-600">${escapeHtml(supplier.email || '-')}</span>
             </td>
             <td class="py-4">
                 <span class="text-slate-500 text-sm">${escapeHtml(supplier.notes) || '-'}</span>

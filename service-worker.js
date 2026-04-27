@@ -89,14 +89,19 @@ async function syncPendingOrders() {
 
     // Notify all open app windows so they can prompt the user to send
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (clients.length === 0) {
+        console.log('[Service Worker] No open windows to handle pending orders. Waiting for app to open.');
+        return;
+    }
+
     for (const order of pending) {
         for (const client of clients) {
             client.postMessage({ type: 'SYNC_PENDING_ORDER', order });
         }
-        await idbDelete(store, order.id);
+        // Client window will handle the prompt and deletion.
     }
 
-    console.log(`[Service Worker] Synced ${pending.length} pending order(s)`);
+    console.log(`[Service Worker] Notified windows about ${pending.length} pending order(s)`);
 }
 
 // ===== Install — cache all static assets =====

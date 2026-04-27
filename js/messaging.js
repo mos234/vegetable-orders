@@ -293,3 +293,15 @@ function _sendToSpecificGroup(link, message, onComplete) {
         showCopyDialog(message, doOpen);
     }
 }
+
+/**
+ * Opens the device's native Email application.
+ * @param {string} supplierName - Name of the supplier
+ * @param {string} emailAddress - Target email address
+ * @param {string} message - Message body
+ */
+function sendEmailMessage(supplierName, emailAddress, message) {
+    const subject = encodeURIComponent(`הזמנה חדשה מ-${supplierName}`);
+    const encodedMessage = encodeURIComponent(message);
+    window.location.href = `mailto:${emailAddress || ''}?subject=${subject}&body=${encodedMessage}`;
+}
