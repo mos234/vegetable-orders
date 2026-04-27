@@ -45,37 +45,23 @@
             </button>
         </div>
 
-        <!-- WhatsApp Group -->
+        <!-- WhatsApp Groups -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-5">
             <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-1 flex items-center gap-2">
                 <i class="fab fa-whatsapp text-green-500"></i>
-                קבוצת WhatsApp
+                קבוצות WhatsApp
             </h2>
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                הכנס את קישור ההזמנה לקבוצה. בעת שליחה לקבוצה — ההזמנה תועתק ללוח, וה-WhatsApp ייפתח ישירות לקבוצה — רק תדביק ותשלח.
+                ניהול קישורי ההצטרפות לקבוצות WhatsApp שאליהן נשלחות ההזמנות.
             </p>
-
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">קישור הקבוצה</label>
-            <input id="group-link-input" type="url" dir="ltr"
-                placeholder="https://chat.whatsapp.com/XXXXXXXXXXXXXX"
-                class="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-gray-50 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 mb-3">
-
-            <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-xl p-3 mb-4 text-sm text-blue-800 dark:text-blue-300">
-                <b>איך מוצאים את קישור הקבוצה?</b><br>
-                1. פתח את הקבוצה ב-WhatsApp<br>
-                2. לחץ על שם הקבוצה ← <b>הוסף משתתפים</b> ← <b>קישור הזמנה</b><br>
-                3. העתק את הקישור (מתחיל ב-<code>https://chat.whatsapp.com/</code>)
-            </div>
-
-            <div class="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 rounded-xl p-3 mb-4 text-sm text-emerald-800">
-                <b>איך זה עובד?</b><br>
-                לחיצה על "שלח לקבוצה" → ההזמנה מועתקת → WhatsApp נפתח לקבוצה → לחץ לחיצה ארוכה ← הדבק ← שלח
-            </div>
-
-            <button onclick="saveGroupSettings()"
-                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors active:scale-95">
-                <i class="fas fa-save ml-2"></i>שמור
-            </button>
+            <a href="groups.html"
+                class="w-full flex items-center justify-between bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-5 py-4 transition-colors active:scale-95">
+                <span class="font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-3">
+                    <i class="fas fa-users text-lg text-emerald-500"></i>
+                    ניהול קבוצות
+                </span>
+                <i class="fas fa-chevron-left text-gray-400"></i>
+            </a>
         </div>
 
     </main>
@@ -83,25 +69,25 @@
     <script src="js/storage.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/theme.js"></script>
-    <script>
-        // Read from both possible keys (old 'veg-settings' and new 'vegetable_settings')
-        // so users who had a link saved don't lose it
-        function _loadGroupLink() {
-            const newKey = JSON.parse(localStorage.getItem('vegetable_settings') || '{}');
-            if (newKey.whatsappGroupLink) return newKey.whatsappGroupLink;
-            const oldKey = JSON.parse(localStorage.getItem('veg-settings') || '{}');
-            return oldKey.whatsappGroupLink || oldKey.whatsappGroupJid || '';
-        }
-
-        document.getElementById('group-link-input').value = _loadGroupLink();
-
-        function saveGroupSettings() {
-            const link = document.getElementById('group-link-input').value.trim();
-            // Save to the correct key (vegetable_settings via storage.js)
-            saveSetting('whatsappGroupLink', link);
-            saveSetting('whatsappGroupJid', '');
-            showToast('ההגדרות נשמרו ✓');
-        }
-    </script>
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav-container md:hidden fixed bottom-0 left-0 right-0 z-50 bg-emerald-700 text-white shadow-2xl">
+        <div class="flex">
+            <a href="index.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-home text-xl"></i><span>בית</span>
+            </a>
+            <a href="catalog.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-tag text-xl"></i><span>קטלוג</span>
+            </a>
+            <a href="suppliers.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-truck text-xl"></i><span>ספקים</span>
+            </a>
+            <a href="monthly-report.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-chart-line text-xl"></i><span>דוחות</span>
+            </a>
+            <a href="settings.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-amber-300">
+                <i class="fas fa-cog text-xl"></i><span>הגדרות</span>
+            </a>
+        </div>
+    </nav>
 </body>
 </html>

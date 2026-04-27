@@ -163,7 +163,27 @@
                             class="pr-10 pl-4 py-2 rounded-full border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-64 bg-white shadow-sm transition-all focus:w-80">
                     </div>
                 </div>
-            </header>
+        </header>
+
+        <!-- Mobile Orders Quick Actions (Visible on Mobile, hidden on Desktop) -->
+        <div class="md:hidden grid grid-cols-2 gap-4 mb-8">
+            <a href="new-order.html" class="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-md active:scale-95 transition-transform text-center">
+                <i class="fas fa-plus-circle text-3xl mb-2"></i>
+                <span class="font-bold text-sm">הזמנה חדשה</span>
+            </a>
+            <a href="orders-list.html" class="bg-white text-emerald-700 border border-emerald-100 rounded-2xl p-4 flex flex-col items-center justify-center shadow-md active:scale-95 transition-transform text-center">
+                <i class="fas fa-list-ul text-3xl mb-2 text-emerald-500"></i>
+                <span class="font-bold text-sm">רשימת הזמנות</span>
+            </a>
+            <a href="new-return.html" class="bg-gradient-to-br from-amber-400 to-amber-600 text-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-md active:scale-95 transition-transform text-center">
+                <i class="fas fa-rotate-left text-3xl mb-2"></i>
+                <span class="font-bold text-sm">החזרה חדשה</span>
+            </a>
+            <a href="returns-list.html" class="bg-white text-amber-600 border border-amber-100 rounded-2xl p-4 flex flex-col items-center justify-center shadow-md active:scale-95 transition-transform text-center">
+                <i class="fas fa-boxes-stacked text-3xl mb-2 text-amber-500"></i>
+                <span class="font-bold text-sm">רשימת החזרות</span>
+            </a>
+        </div>
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -317,23 +337,23 @@
         </main>
     </div>
 
-    <!-- Mobile Bottom Navigation -->
+        <!-- Mobile Bottom Navigation -->
     <nav class="mobile-bottom-nav-container md:hidden fixed bottom-0 left-0 right-0 z-50 bg-emerald-700 text-white shadow-2xl">
         <div class="flex">
-            <a href="index.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium">
+            <a href="index.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-amber-300">
                 <i class="fas fa-home text-xl"></i><span>בית</span>
             </a>
-            <a href="new-order.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium">
-                <i class="fas fa-plus-circle text-xl"></i><span>הזמנה</span>
+            <a href="catalog.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-tag text-xl"></i><span>קטלוג</span>
             </a>
-            <a href="orders-list.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium">
-                <i class="fas fa-list-ul text-xl"></i><span>הזמנות</span>
+            <a href="suppliers.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-truck text-xl"></i><span>ספקים</span>
             </a>
-            <a href="new-return.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium">
-                <i class="fas fa-rotate-left text-xl"></i><span>החזרה</span>
+            <a href="monthly-report.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-chart-line text-xl"></i><span>דוחות</span>
             </a>
-            <a href="returns-list.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium">
-                <i class="fas fa-boxes-stacked text-xl"></i><span>החזרות</span>
+            <a href="settings.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-cog text-xl"></i><span>הגדרות</span>
             </a>
         </div>
     </nav>
