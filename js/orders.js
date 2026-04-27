@@ -761,10 +761,14 @@ function saveOrderAction(action) {
 
     function handlePostSaveRedirect(delay = 500) {
         setTimeout(() => {
-            if (confirm('האם לעבור לרשימת ההזמנות?')) {
+            if (action === 'group') {
                 window.location.href = 'orders-list.html';
             } else {
-                resetOrderForm();
+                if (confirm('האם לעבור לרשימת ההזמנות?')) {
+                    window.location.href = 'orders-list.html';
+                } else {
+                    resetOrderForm();
+                }
             }
         }, delay);
     }
