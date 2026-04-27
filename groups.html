@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>קבוצות | שוק הירקות</title>
 
     <!-- PWA Meta Tags -->
@@ -24,18 +25,112 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>(function(){var t=localStorage.getItem('veg-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');if(t==='dark')document.documentElement.classList.add('dark');})();</script>
+    <script>(function () { var t = localStorage.getItem('veg-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); if (t === 'dark') document.documentElement.classList.add('dark'); })();</script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom styles -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
-<body class="bg-slate-50 text-slate-900 min-h-screen">
-    <main class="p-4">
-        <h2 class="text-2xl font-bold text-emerald-700 mb-4">קבוצות WhatsApp</h2>
-        <p class="text-slate-500">ניהול קבוצות WhatsApp יועבר לדף זה.</p>
-    </main>
+<body class="min-h-screen text-slate-800">
+    <!-- Mobile Header -->
+    <header class="mobile-header-bar md:hidden fixed top-0 left-0 right-0 z-50 bg-emerald-700 text-white px-4 flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-2">
+            <button onclick="window.location.href='index.html'" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30" aria-label="חזור">
+                <i class="fas fa-arrow-right text-lg"></i>
+            </button>
+            <span class="font-bold text-lg">קבוצות WhatsApp</span>
+        </div>
+        <button onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30" aria-label="מצב כהה/בהיר">
+            <i class="theme-icon fas fa-moon text-lg"></i>
+        </button>
+    </header>
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <!-- Desktop Sidebar (Hidden on mobile) -->
+        <aside class="hidden md:flex md:w-64 bg-emerald-700 text-white p-6 flex-col shadow-xl">
+            <div class="flex items-center gap-3 mb-10">
+                <div class="bg-white p-1 rounded-lg">
+                    <img src="icons/icon-192x192.png" alt="Logo" class="w-10 h-10 object-contain">
+                </div>
+                <h1 class="text-xl font-bold tracking-tight">שוק הירקות</h1>
+            </div>
+            <nav class="space-y-4 flex-grow">
+                <a href="index.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
+                    <i class="fas fa-home w-6 text-center"></i><span class="font-medium">דף הבית</span>
+                </a>
+                <a href="groups.html" class="flex items-center gap-3 w-full p-3 rounded-xl bg-white/10 transition-all">
+                    <i class="fas fa-users w-6 text-center"></i><span class="font-medium">קבוצות WhatsApp</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-grow p-4 md:p-10 max-w-3xl mx-auto w-full">
+            <div class="flex justify-between items-center mb-6 mt-2 md:mt-0">
+                <h2 class="text-2xl font-bold text-slate-900 hidden md:block">ניהול קבוצות</h2>
+                <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 mr-auto">
+                    <i class="fas fa-plus"></i> הוסף קבוצה
+                </button>
+            </div>
+
+            <!-- Empty State -->
+            <div id="groups-empty" class="hidden glass-card rounded-3xl p-10 text-center shadow-sm border border-slate-100 mt-8">
+                <div class="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fab fa-whatsapp text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">אין קבוצות מוגדרות</h3>
+                <p class="text-slate-500 mb-6">הוסף קישורי הצטרפות לקבוצות WhatsApp כדי שתוכל לשלוח אליהן הזמנות בלחיצת כפתור.</p>
+                <button onclick="openAddModal()" class="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 px-6 py-2 rounded-xl font-bold transition-all">
+                    הוסף קבוצה ראשונה
+                </button>
+            </div>
+
+            <!-- Groups List -->
+            <div id="groups-list" class="space-y-4">
+                <!-- Rendered by JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Add/Edit -->
+    <div id="group-modal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="text-xl font-bold text-slate-800" id="modal-title">הוסף קבוצה</h3>
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">שם הקבוצה</label>
+                        <input type="text" id="group-name-input" placeholder="למשל: הזמנות ירקות צפון" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-slate-800 placeholder-slate-400">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">קישור הצטרפות (Invite Link)</label>
+                        <input type="text" id="group-link-input" placeholder="https://chat.whatsapp.com/..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-slate-800 placeholder-slate-400 dir-ltr text-left">
+                        <p class="text-xs text-slate-500 mt-2"><i class="fas fa-info-circle"></i> העתק את הקישור מהגדרות הקבוצה בוואטסאפ (הזמן באמצעות קישור).</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-slate-100 flex gap-3 bg-slate-50">
+                <button onclick="saveGroupForm()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold transition-all shadow-sm">
+                    שמור קבוצה
+                </button>
+                <button onclick="closeModal()" class="flex-1 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 py-3 rounded-xl font-bold transition-all">
+                    ביטול
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/groups.js"></script>
 </body>
 
 </html>
