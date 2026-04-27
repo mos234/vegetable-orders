@@ -663,15 +663,20 @@ function saveOrderAction(action) {
         const additionMsg = `תוספת להזמנה ${existing.orderNumber || ''}:\n` +
             mappedNew.map(i => `• ${i.name}: ${i.quantity} ${i.unit}`).join('\n');
 
+        const redirectToList = () => {
+            showToast('הפריטים נוספו להזמנה ✓');
+            setTimeout(() => { window.location.href = 'orders-list.html'; }, 800);
+        };
+
         if (action === 'whatsapp') {
             sendWhatsAppMessage(existing.supplierPhone, additionMsg);
+            redirectToList();
         } else if (action === 'sms') {
             sendSMSMessage(existing.supplierPhone, additionMsg);
+            redirectToList();
         } else if (action === 'group') {
-            showGroupPicker(additionMsg);
+            showGroupPicker(additionMsg, redirectToList);
         }
-        showToast('הפריטים נוספו להזמנה ✓');
-        setTimeout(() => { window.location.href = 'orders-list.html'; }, 800);
         return;
     }
 
@@ -736,25 +741,33 @@ function saveOrderAction(action) {
     if (isOffline && (action === 'whatsapp' || action === 'sms' || action === 'group')) {
         queueOfflineOrder({ ...savedOrder, _pendingAction: action });
         showToast('אין חיבור — ההזמנה נשמרה ותישלח כשהרשת תחזור', 'warning');
+        handlePostSaveRedirect();
     } else if (action === 'whatsapp') {
         sendWhatsAppMessage(supplierPhone, buildOrderMessage(savedOrder));
         showToast('ההזמנה נשמרה ונשלחה ב-WhatsApp');
+        handlePostSaveRedirect();
     } else if (action === 'sms') {
         sendSMSMessage(supplierPhone, buildOrderMessage(savedOrder));
         showToast('ההזמנה נשמרה ונשלחה ב-SMS');
+        handlePostSaveRedirect();
     } else if (action === 'group') {
-        showGroupPicker(buildOrderMessage(savedOrder));
+        showGroupPicker(buildOrderMessage(savedOrder), () => {
+            handlePostSaveRedirect(1000);
+        });
     } else {
         showToast('ההזמנה נשמרה כטיוטה');
+        handlePostSaveRedirect();
     }
 
-    setTimeout(() => {
-        if (confirm('האם לעבור לרשימת ההזמנות?')) {
-            window.location.href = 'orders-list.html';
-        } else {
-            resetOrderForm();
-        }
-    }, 500);
+    function handlePostSaveRedirect(delay = 500) {
+        setTimeout(() => {
+            if (confirm('האם לעבור לרשימת ההזמנות?')) {
+                window.location.href = 'orders-list.html';
+            } else {
+                resetOrderForm();
+            }
+        }, delay);
+    }
 }
 
 function resetOrderForm() {

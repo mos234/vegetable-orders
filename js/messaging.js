@@ -195,8 +195,9 @@ function sendSMSMessage(phone, message) {
  * Shows a modal to pick which WhatsApp group to send the message to.
  * If no groups are configured, redirects to groups management page.
  * @param {string} message - The pre-built order message
+ * @param {Function} onComplete - Callback executed after group is selected and opened
  */
-function showGroupPicker(message) {
+function showGroupPicker(message, onComplete) {
     const groups = (typeof getGroups === 'function') ? getGroups() : [];
 
     // Also check the old single-group setting for backward compat
@@ -254,11 +255,16 @@ function showGroupPicker(message) {
 
     // Inject the message into button onclick handlers (safe replacement)
     overlay.querySelectorAll('button[onclick*="__MSG__"]').forEach((btn, i) => {
-        btn.onclick = () => _sendToSpecificGroup(allGroups[i].link, message);
+        btn.onclick = () => _sendToSpecificGroup(allGroups[i].link, message, onComplete);
     });
 
     // Close on backdrop click
-    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    overlay.addEventListener('click', e => { 
+        if (e.target === overlay) {
+            overlay.remove();
+            if (onComplete) onComplete();
+        }
+    });
     document.body.appendChild(overlay);
 }
 
@@ -266,11 +272,15 @@ function showGroupPicker(message) {
  * Copies message to clipboard then opens a specific group link.
  * @param {string} link - WhatsApp group invite link
  * @param {string} message
+ * @param {Function} onComplete
  */
-function _sendToSpecificGroup(link, message) {
+function _sendToSpecificGroup(link, message, onComplete) {
     document.getElementById('group-picker-overlay')?.remove();
 
-    const doOpen = () => openExternalUrl(link);
+    const doOpen = () => {
+        openExternalUrl(link);
+        if (onComplete) onComplete();
+    };
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(message)

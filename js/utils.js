@@ -151,12 +151,16 @@ function buildOrderMessage(order) {
     }
 
     const formatItem = item => {
-        const qty = item.quantity > 0 ? `${item.quantity} ` : '';
-        return `${qty}${item.name}\n`;
+        const qty = item.quantity > 0 ? `${item.quantity}` : '';
+        const unitLabel = item.unit ? ` ${item.unit}` : '';
+        const prefix = qty ? `${qty}${unitLabel} ` : '';
+        return `${prefix}${item.name}\n`;
     };
 
     if (order.items && order.items.length > 0) {
-        message += `${order.mainHallName || "אולם א'"}\n`;
+        if (order.mainHallName) {
+            message += `${order.mainHallName}\n`;
+        }
         order.items.forEach(item => { message += formatItem(item); });
     }
 

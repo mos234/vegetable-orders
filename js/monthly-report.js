@@ -104,7 +104,7 @@ function renderSupplierBreakdown(orders) {
         return;
     }
 
-    // Group by supplier
+    // Group by supplier and accumulate products
     const supplierTotals = {};
     orders.forEach(order => {
         const key = order.supplierId || 'unknown';
@@ -112,11 +112,29 @@ function renderSupplierBreakdown(orders) {
             supplierTotals[key] = {
                 name: order.supplierName || 'ספק לא ידוע',
                 total: 0,
-                count: 0
+                count: 0,
+                products: {}
             };
         }
         supplierTotals[key].total += order.total || 0;
         supplierTotals[key].count++;
+
+        // Process items within the order
+        if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+                const prodKey = item.productId || item.id || item.name;
+                if (!supplierTotals[key].products[prodKey]) {
+                    supplierTotals[key].products[prodKey] = {
+                        name: item.name,
+                        quantity: 0,
+                        unit: item.unit || 'יח׳',
+                        total: 0
+                    };
+                }
+                supplierTotals[key].products[prodKey].quantity += item.quantity || 0;
+                supplierTotals[key].products[prodKey].total += item.total || (item.price * item.quantity) || 0;
+            });
+        }
     });
 
     // Sort by total (descending)
@@ -130,22 +148,70 @@ function renderSupplierBreakdown(orders) {
         const percentage = grandTotal > 0 ? (supplier.total / grandTotal * 100) : 0;
         const color = colors[index % colors.length];
 
+        // Generate products list HTML
+        const productsSorted = Object.values(supplier.products).sort((a, b) => b.total - a.total);
+        const productsHtml = productsSorted.length > 0 ? productsSorted.map(prod => `
+            <div class="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 text-sm">
+                <div>
+                    <span class="font-medium text-slate-700">${escapeHtml(prod.name)}</span>
+                    <span class="text-slate-400 text-xs mr-2">${prod.quantity} ${prod.unit}</span>
+                </div>
+                <span class="font-bold text-slate-700">₪${prod.total.toFixed(2)}</span>
+            </div>
+        `).join('') : '<div class="text-sm text-slate-400 py-2">אין פירוט מוצרים להזמנות אלו</div>';
+
+        // Unique ID for the accordion content
+        const contentId = `supplier-content-${index}`;
+
         return `
-            <div class="bg-slate-50 rounded-xl p-4">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="font-semibold">${escapeHtml(supplier.name)}</span>
-                    <span class="text-sm text-slate-500">${supplier.count} הזמנות</span>
+            <div class="bg-slate-50 rounded-xl overflow-hidden border border-slate-100 mb-3">
+                <!-- Header (Clickable) -->
+                <div class="p-4 cursor-pointer hover:bg-slate-100 transition-colors flex flex-col gap-2" onclick="toggleAccordion('${contentId}')">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300" id="icon-${contentId}"></i>
+                            <span class="font-semibold text-slate-800">${escapeHtml(supplier.name)}</span>
+                        </div>
+                        <span class="text-sm text-slate-500">${supplier.count} הזמנות</span>
+                    </div>
+                    
+                    <!-- Progress bar -->
+                    <div class="w-full bg-slate-200 rounded-full h-2">
+                        <div class="${color} h-2 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                    </div>
+                    
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-500">${percentage.toFixed(1)}%</span>
+                        <span class="font-bold text-slate-800">₪${supplier.total.toFixed(2)}</span>
+                    </div>
                 </div>
-                <div class="w-full bg-slate-200 rounded-full h-3 mb-2">
-                    <div class="${color} h-3 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
-                </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-slate-500">${percentage.toFixed(1)}%</span>
-                    <span class="font-bold">₪${supplier.total.toFixed(2)}</span>
+                
+                <!-- Expanded Content (Products List) -->
+                <div id="${contentId}" class="hidden bg-white px-4 py-2 border-t border-slate-100">
+                    <div class="py-2">
+                        <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">פירוט מוצרים שהוזמנו:</h4>
+                        ${productsHtml}
+                    </div>
                 </div>
             </div>
         `;
     }).join('');
+
+    // Add a simple toggle function to the global scope if not already present
+    if (!window.toggleAccordion) {
+        window.toggleAccordion = function(contentId) {
+            const content = document.getElementById(contentId);
+            const icon = document.getElementById('icon-' + contentId);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        };
+    }
 }
 
 /**
