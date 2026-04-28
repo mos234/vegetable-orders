@@ -162,15 +162,6 @@ function renderSuppliersList() {
                 <div class="font-semibold text-slate-900">${escapeHtml(supplier.name)}</div>
             </td>
             <td class="py-4">
-                <span class="text-slate-600 font-mono">${escapeHtml(supplier.phone)}</span>
-            </td>
-            <td class="py-4">
-                <span class="text-slate-600">${escapeHtml(supplier.email || '-')}</span>
-            </td>
-            <td class="py-4">
-                <span class="text-slate-500 text-sm">${escapeHtml(supplier.notes) || '-'}</span>
-            </td>
-            <td class="py-4">
                 <div class="flex items-center justify-center gap-2 flex-wrap">
                     <!-- WhatsApp Button -->
                     <button
