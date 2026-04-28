@@ -1,7 +1,7 @@
 {
     "id": "vegetable-orders-pwa",
     "name": "ניהול הזמנות ירקות",
-    "short_name": "שוק הירקות",
+    "short_name": "מנהל ההזמנות",
     "description": "מערכת חכמה לניהול הזמנות ירקות, ספקים ודוחות חודשיים",
     "start_url": "index.html",
     "scope": ".",
