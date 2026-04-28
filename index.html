@@ -165,24 +165,13 @@
                 </div>
         </header>
 
-        <!-- Mobile Orders Quick Actions (Visible on Mobile, hidden on Desktop) -->
-        <div class="md:hidden grid grid-cols-2 gap-4 mb-8">
-            <a href="new-order.html" class="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-md active:scale-95 transition-transform text-center">
-                <i class="fas fa-plus-circle text-3xl mb-2"></i>
-                <span class="font-bold text-sm">הזמנה חדשה</span>
-            </a>
-            <a href="suppliers.html" class="bg-white text-emerald-700 border border-emerald-100 rounded-2xl p-4 flex flex-col items-center justify-center shadow-md active:scale-95 transition-transform text-center">
-                <i class="fas fa-truck text-3xl mb-2 text-emerald-500"></i>
-                <span class="font-bold text-sm">ספקים</span>
-            </a>
-        </div>
-
+        <!-- Removed Mobile Quick Actions as requested -->
             <!-- Stats Grid Removed for Simplicity -->
 
             <!-- Dashboard Content Areas -->
-            <div id="dashboard-view" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div id="dashboard-view" class="w-full">
                 <!-- Today's Orders -->
-                <div class="lg:col-span-2 glass-card rounded-3xl p-8 shadow-sm">
+                <div class="glass-card rounded-3xl p-8 shadow-sm">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-xl font-bold">הזמנות להיום</h4>
                         <a href="orders-list.html" class="text-emerald-600 text-sm font-semibold hover:underline">כל ההזמנות</a>
@@ -210,24 +199,6 @@
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
-                <div class="space-y-8">
-                    <div
-                        class="glass-card rounded-3xl p-6 shadow-sm bg-gradient-to-br from-emerald-600 to-emerald-800 text-white">
-                        <h4 class="text-lg font-bold mb-4">פעולות מהירות</h4>
-                        <div class="space-y-3">
-                            <a href="new-order.html"
-                                class="w-full py-3 bg-white text-emerald-700 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-50 transition-all">
-                                <i class="fas fa-plus"></i>
-                                יצירת הזמנה מהירה
-                            </a>
-                            <a href="suppliers.html"
-                                class="w-full py-3 border border-white/30 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
-                                <i class="fas fa-user-plus"></i>
-                                ניהול ספקים
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </main>
