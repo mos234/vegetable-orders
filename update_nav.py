@@ -7,8 +7,11 @@ nav_template = """    <!-- Mobile Bottom Navigation -->
             <a href="index.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium {home_active}">
                 <i class="fas fa-home text-xl"></i><span>בית</span>
             </a>
+            <a href="orders-list.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium {orders_active}">
+                <i class="fas fa-list-ul text-xl"></i><span>הזמנות</span>
+            </a>
             <a href="catalog.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium {catalog_active}">
-                <i class="fas fa-tag text-xl"></i><span>קטלוג</span>
+                <i class="fas fa-tag text-xl"></i><span>מחירונים</span>
             </a>
             <a href="suppliers.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium {suppliers_active}">
                 <i class="fas fa-truck text-xl"></i><span>ספקים</span>
@@ -30,6 +33,7 @@ for file in os.listdir('.'):
             content = f.read()
         
         home_active = 'text-amber-300' if file == 'index.html' else 'text-white/80 hover:text-white'
+        orders_active = 'text-amber-300' if file == 'orders-list.html' else 'text-white/80 hover:text-white'
         catalog_active = 'text-amber-300' if file == 'catalog.html' else 'text-white/80 hover:text-white'
         suppliers_active = 'text-amber-300' if file == 'suppliers.html' else 'text-white/80 hover:text-white'
         report_active = 'text-amber-300' if file == 'monthly-report.html' else 'text-white/80 hover:text-white'
@@ -37,6 +41,7 @@ for file in os.listdir('.'):
         
         new_nav = nav_template.format(
             home_active=home_active,
+            orders_active=orders_active,
             catalog_active=catalog_active,
             suppliers_active=suppliers_active,
             report_active=report_active,

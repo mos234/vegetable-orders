@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ניהול הזמנות ירקות | Vegetable Orders Management</title>
 
     <!-- PWA Meta Tags -->
@@ -24,7 +25,7 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>(function(){var t=localStorage.getItem('veg-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');if(t==='dark')document.documentElement.classList.add('dark');})();</script>
+    <script>(function () { var t = localStorage.getItem('veg-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); if (t === 'dark') document.documentElement.classList.add('dark'); })();</script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -59,25 +60,31 @@
 <body class="min-h-screen text-slate-800">
 
     <!-- Splash Screen (shown on first load) -->
-    <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-emerald-700" aria-hidden="true">
+    <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-emerald-700"
+        aria-hidden="true">
         <img src="icons/icon-192x192.png" alt="מנהל ההזמנות" class="w-24 h-24 mb-6 drop-shadow-xl">
         <h1 class="text-white text-2xl font-bold tracking-tight">מנהל ההזמנות</h1>
         <p class="text-emerald-200 text-sm mt-2">מערכת ניהול הזמנות</p>
     </div>
 
     <!-- Install Button (hidden by default, shown when PWA can be installed) -->
-    <button id="install-btn" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-lg font-bold text-sm flex items-center gap-2 active:scale-95 transition-transform" aria-label="התקן אפליקציה">
+    <button id="install-btn"
+        class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-lg font-bold text-sm flex items-center gap-2 active:scale-95 transition-transform"
+        aria-label="התקן אפליקציה">
         <i class="fas fa-download"></i>
         התקן כאפליקציה
     </button>
 
     <!-- Mobile Header -->
-    <header class="mobile-header-bar md:hidden fixed top-0 left-0 right-0 z-50 bg-emerald-700 text-white px-4 flex items-center justify-between shadow-lg">
+    <header
+        class="mobile-header-bar md:hidden fixed top-0 left-0 right-0 z-50 bg-emerald-700 text-white px-4 flex items-center justify-between shadow-lg">
         <div class="flex items-center gap-2">
             <img src="icons/icon-192x192.png" alt="Logo" class="w-8 h-8 object-contain">
             <span class="font-bold text-lg">מנהל ההזמנות</span>
         </div>
-        <button onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30" aria-label="מצב כהה/בהיר">
+        <button onclick="toggleTheme()"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30"
+            aria-label="מצב כהה/בהיר">
             <i class="theme-icon fas fa-moon text-lg"></i>
         </button>
     </header>
@@ -163,16 +170,17 @@
                             class="pr-10 pl-4 py-2 rounded-full border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-64 bg-white shadow-sm transition-all focus:w-80">
                     </div>
                 </div>
-        </header>
+            </header>
 
-        <!-- Removed Mobile Quick Actions as requested -->
+            <!-- Removed Mobile Quick Actions as requested -->
             <!-- Stats Grid Removed for Simplicity -->
 
             <!-- Dashboard Content Areas -->
             <div id="dashboard-view" class="w-full space-y-6">
                 <!-- Action Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <a href="new-order.html" class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md hover:bg-emerald-50/50 transition-all cursor-pointer">
+                    <a href="new-order.html"
+                        class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md hover:bg-emerald-50/50 transition-all cursor-pointer">
                         <div class="bg-emerald-100 text-emerald-600 p-4 rounded-2xl">
                             <i class="fas fa-plus-circle text-2xl"></i>
                         </div>
@@ -181,7 +189,8 @@
                             <p class="text-slate-500 text-sm">צור הזמנה חדשה לספק</p>
                         </div>
                     </a>
-                    <a href="suppliers.html" class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md hover:bg-blue-50/50 transition-all cursor-pointer">
+                    <a href="suppliers.html"
+                        class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md hover:bg-blue-50/50 transition-all cursor-pointer">
                         <div class="bg-blue-100 text-blue-600 p-4 rounded-2xl">
                             <i class="fas fa-truck text-2xl"></i>
                         </div>
@@ -196,7 +205,8 @@
                 <div class="glass-card rounded-3xl p-8 shadow-sm">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-xl font-bold">הזמנות להיום</h4>
-                        <a href="orders-list.html" class="text-emerald-600 text-sm font-semibold hover:underline">כל ההזמנות</a>
+                        <a href="orders-list.html" class="text-emerald-600 text-sm font-semibold hover:underline">כל
+                            ההזמנות</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-right">
@@ -223,7 +233,8 @@
 
                 <!-- Return Actions -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    <a href="new-return.html" class="glass-card p-4 rounded-2xl border border-slate-100 flex items-center gap-3 hover:shadow-sm hover:bg-amber-50/50 transition-all cursor-pointer">
+                    <a href="new-return.html"
+                        class="glass-card p-4 rounded-2xl border border-slate-100 flex items-center gap-3 hover:shadow-sm hover:bg-amber-50/50 transition-all cursor-pointer">
                         <div class="bg-amber-100 text-amber-600 p-3 rounded-xl">
                             <i class="fas fa-rotate-left text-lg"></i>
                         </div>
@@ -232,7 +243,8 @@
                             <p class="text-slate-500 text-xs">רישום החזרת סחורה פגומה/עודפת</p>
                         </div>
                     </a>
-                    <a href="returns-list.html" class="glass-card p-4 rounded-2xl border border-slate-100 flex items-center gap-3 hover:shadow-sm hover:bg-amber-50/50 transition-all cursor-pointer">
+                    <a href="returns-list.html"
+                        class="glass-card p-4 rounded-2xl border border-slate-100 flex items-center gap-3 hover:shadow-sm hover:bg-amber-50/50 transition-all cursor-pointer">
                         <div class="bg-amber-100 text-amber-600 p-3 rounded-xl">
                             <i class="fas fa-boxes-stacked text-lg"></i>
                         </div>
@@ -243,16 +255,46 @@
                     </a>
                 </div>
 
-                </div>
             </div>
-        </main>
     </div>
+    </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav
+        class="mobile-bottom-nav-container md:hidden fixed bottom-0 left-0 right-0 z-50 bg-emerald-700 text-white shadow-2xl">
+        <div class="flex">
+            <a href="index.html"
+                class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-amber-300">
+                <i class="fas fa-home text-xl"></i><span>בית</span>
+            </a>
+            <a href="catalog.html"
+                class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-tag text-xl"></i><span>מחירונים</span>
+            </a>
+            <a href="suppliers.html"
+                class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-truck text-xl"></i><span>ספקים</span>
+            </a>
+            <a href="monthly-report.html"
+                class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-chart-line text-xl"></i><span>דוחות</span>
+            </a>
+            <a href="settings.html"
+                class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-cog text-xl"></i><span>הגדרות</span>
+            </a>
+        </div>
+    </nav>
 
         <!-- Mobile Bottom Navigation -->
     <nav class="mobile-bottom-nav-container md:hidden fixed bottom-0 left-0 right-0 z-50 bg-emerald-700 text-white shadow-2xl">
         <div class="flex">
             <a href="index.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-amber-300">
                 <i class="fas fa-home text-xl"></i><span>בית</span>
+            </a>
+            <a href="orders-list.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+                <i class="fas fa-list-ul text-xl"></i><span>הזמנות</span>
             </a>
             <a href="catalog.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
                 <i class="fas fa-tag text-xl"></i><span>מחירונים</span>
