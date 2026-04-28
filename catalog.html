@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>קטלוג מחירים | מנהל הזמנות</title>
+    <title>מחירונים ותבניות | מנהל הזמנות</title>
     <meta name="theme-color" content="#059669">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
@@ -17,7 +17,6 @@
     <style>
         body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; }
         .glass-card { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
-        /* Category tabs */
         .cat-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
         .cat-tab-active {
             background: #059669; color: #fff;
@@ -80,7 +79,7 @@
                 <i class="fas fa-boxes-stacked w-6 text-center"></i><span class="font-medium">רשימת החזרות</span>
             </a>
             <a href="catalog.html" class="flex items-center gap-3 w-full p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all">
-                <i class="fas fa-tag w-6 text-center"></i><span class="font-medium">קטלוג מחירים</span>
+                <i class="fas fa-tag w-6 text-center"></i><span class="font-medium">מחירונים ותבניות</span>
             </a>
             <a href="suppliers.html" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all">
                 <i class="fas fa-truck w-6 text-center"></i><span class="font-medium">ספקים</span>
@@ -104,23 +103,14 @@
     <main class="flex-grow p-6 md:p-10">
         <header class="flex justify-between items-center mb-8 flex-wrap gap-4">
             <div>
-                <h2 class="text-3xl font-bold text-slate-900">קטלוג מחירים</h2>
-                <p class="text-slate-500 mt-1">מחירים קבועים לעלים וירקות קלופים</p>
+                <h2 class="text-3xl font-bold text-slate-900">מחירונים ותבניות</h2>
+                <p class="text-slate-500 mt-1">הגדר פריטים ומחירים לפי ספק, והפוך אותם להזמנה בלחיצה</p>
             </div>
-            <button onclick="openAddCatalogModal()"
+            <button onclick="openAddCatalogModal('')"
                 class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-200">
                 <i class="fas fa-plus"></i> הוסף פריט
             </button>
         </header>
-
-        <!-- Info Banner -->
-        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6 flex items-start gap-3">
-            <i class="fas fa-info-circle text-blue-500 mt-0.5 shrink-0"></i>
-            <p class="text-sm text-blue-700">
-                <strong>הקטלוג מיועד לפריטים עם מחיר קבוע בלבד</strong> — עלים (חסה, פטרוזיליה, כוסברה...) וירקות קלופים (תפו"א קלוף...).
-                ירקות ופירות חיים שמחירם משתנה יומיומית — אין צורך להוסיפם לכאן.
-            </p>
-        </div>
 
         <!-- Search -->
         <div class="relative mb-4 max-w-md">
@@ -131,36 +121,23 @@
 
         <!-- Category Tabs Header -->
         <div class="flex justify-between items-center mb-2">
-            <h3 class="text-sm font-bold text-slate-500">סינון לפי כרטסיה:</h3>
+            <h3 class="text-sm font-bold text-slate-500">סינון לפי קטגוריה:</h3>
             <button onclick="openManageCategoriesModal()" class="text-xs text-emerald-600 hover:text-emerald-800 font-bold flex items-center gap-1">
-                <i class="fas fa-cog"></i> ערוך כרטסיות
+                <i class="fas fa-cog"></i> ערוך קטגוריות
             </button>
         </div>
 
         <!-- Category Tabs -->
-        <div class="cat-tabs" id="catalog-category-tabs">
-            <!-- Rendered dynamically -->
-        </div>
+        <div class="cat-tabs" id="catalog-category-tabs"></div>
 
-        <!-- Catalog Table -->
-        <div class="glass-card rounded-3xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-slate-50 border-b border-slate-200">
-                        <tr>
-                            <th class="p-4 text-right font-semibold text-slate-600">שם הפריט</th>
-                            <th class="p-4 text-center font-semibold text-slate-600">מחיר ₪</th>
-                            <th class="p-4 text-right font-semibold text-slate-600">הערות</th>
-                            <th class="p-4 text-center font-semibold text-slate-600 w-28">פעולות</th>
-                        </tr>
-                    </thead>
-                    <tbody id="catalog-tbody"></tbody>
-                </table>
-            </div>
-            <div id="catalog-empty-state" class="hidden text-center py-16 text-slate-400">
-                <i class="fas fa-tag text-3xl mb-3 block"></i>
-                <p>הקטלוג ריק — לחץ "הוסף פריט" להוספת פריט עם מחיר קבוע</p>
-            </div>
+        <!-- Supplier Blocks -->
+        <div id="catalog-content"></div>
+
+        <!-- Empty State -->
+        <div id="catalog-empty-state" class="hidden text-center py-20 text-slate-400">
+            <i class="fas fa-tags text-4xl mb-4 block"></i>
+            <p class="text-lg font-semibold mb-1">המחירון ריק</p>
+            <p class="text-sm">לחץ "הוסף פריט" כדי להתחיל לבנות את המחירון שלך</p>
         </div>
     </main>
 </div>
@@ -179,27 +156,41 @@
                 <label class="block text-sm font-semibold text-slate-700 mb-2">שם הפריט *</label>
                 <input type="text" id="catalog-name"
                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder='לדוגמה: חסה, פטרוזיליה, תפו"א קלוף'>
+                    placeholder="לדוגמה: חזה עוף, אנטריקוט">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">מחיר ₪ *</label>
+                    <div class="relative">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">₪</span>
+                        <input type="number" id="catalog-price" min="0" step="0.01"
+                            class="w-full pr-8 pl-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            placeholder="0.00">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">יחידה</label>
+                    <select id="catalog-unit"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                        <option value="kg">ק"ג</option>
+                        <option value="unit">יחידה</option>
+                        <option value="carton">קרטון</option>
+                        <option value="liter">ליטר</option>
+                    </select>
+                </div>
             </div>
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">מחיר ₪ *</label>
-                <div class="relative">
-                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">₪</span>
-                    <input type="number" id="catalog-price" min="0" step="0.01"
-                        class="w-full pr-8 pl-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        placeholder="0.00">
-                </div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">ספק</label>
+                <select id="catalog-supplier"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                    <option value="">ללא ספק</option>
+                </select>
             </div>
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-2">קטגוריה</label>
                 <select id="catalog-category"
                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
                     <option value="">ללא קטגוריה</option>
-                    <option value="breads">לחמים</option>
-                    <option value="dry">יבשים</option>
-                    <option value="misc">שונות</option>
-                    <option value="frozen">קפואים</option>
-                    <option value="meat">בשרים/עופות</option>
                 </select>
             </div>
             <div>
@@ -226,59 +217,58 @@
 <div id="manage-categories-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl max-h-[90vh] flex flex-col">
         <div class="flex justify-between items-center mb-5 shrink-0">
-            <h3 class="text-xl font-bold">עריכת כרטסיות קטלוג</h3>
+            <h3 class="text-xl font-bold">עריכת קטגוריות</h3>
             <button onclick="closeManageCategoriesModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100">
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
-        
-        <div class="flex-grow overflow-y-auto mb-4 p-1 space-y-3" id="categories-list-container">
-            <!-- Categories rendered here -->
-        </div>
-
+        <div class="flex-grow overflow-y-auto mb-4 p-1 space-y-3" id="categories-list-container"></div>
         <div class="border-t border-slate-200 pt-4 shrink-0">
-            <h4 class="text-sm font-bold text-slate-700 mb-2">הוסף כרטסיה חדשה</h4>
+            <h4 class="text-sm font-bold text-slate-700 mb-2">הוסף קטגוריה חדשה</h4>
             <div class="flex gap-2">
-                <input type="text" id="new-category-label" placeholder="שם הכרטסיה" class="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
-                <input type="text" id="new-category-icon" placeholder="אייקון (למשל fa-star)" class="w-1/3 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" value="fa-tag">
+                <input type="text" id="new-category-label" placeholder="שם הקטגוריה"
+                    class="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                <input type="text" id="new-category-icon" placeholder="אייקון (fa-star)"
+                    class="w-1/3 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" value="fa-tag">
                 <button onclick="addNewCategory()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
         </div>
-        
         <div class="flex gap-3 mt-4 shrink-0">
-            <button onclick="saveCategoriesAndClose()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold transition-all">
-                שמור כרטסיות
+            <button onclick="saveCategoriesAndClose()"
+                class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold transition-all">
+                שמור קטגוריות
             </button>
         </div>
     </div>
 </div>
 
-        <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-bottom-nav-container md:hidden fixed bottom-0 left-0 right-0 z-50 bg-emerald-700 text-white shadow-2xl">
-        <div class="flex">
-            <a href="index.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
-                <i class="fas fa-home text-xl"></i><span>בית</span>
-            </a>
-            <a href="catalog.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-amber-300">
-                <i class="fas fa-tag text-xl"></i><span>קטלוג</span>
-            </a>
-            <a href="suppliers.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
-                <i class="fas fa-truck text-xl"></i><span>ספקים</span>
-            </a>
-            <a href="monthly-report.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
-                <i class="fas fa-chart-line text-xl"></i><span>דוחות</span>
-            </a>
-            <a href="settings.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
-                <i class="fas fa-cog text-xl"></i><span>הגדרות</span>
-            </a>
-        </div>
-    </nav>
+<!-- Mobile Bottom Navigation -->
+<nav class="mobile-bottom-nav-container md:hidden fixed bottom-0 left-0 right-0 z-50 bg-emerald-700 text-white shadow-2xl">
+    <div class="flex">
+        <a href="index.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+            <i class="fas fa-home text-xl"></i><span>בית</span>
+        </a>
+        <a href="catalog.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-amber-300">
+            <i class="fas fa-tag text-xl"></i><span>מחירונים</span>
+        </a>
+        <a href="suppliers.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+            <i class="fas fa-truck text-xl"></i><span>ספקים</span>
+        </a>
+        <a href="monthly-report.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+            <i class="fas fa-chart-line text-xl"></i><span>דוחות</span>
+        </a>
+        <a href="settings.html" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium text-white/80 hover:text-white">
+            <i class="fas fa-cog text-xl"></i><span>הגדרות</span>
+        </a>
+    </div>
+</nav>
+
 <script src="js/utils.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/catalog.js"></script>
 <script src="js/theme.js"></script>
-    <script src="js/sync.js"></script>
+<script src="js/sync.js"></script>
 </body>
 </html>

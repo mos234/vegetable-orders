@@ -479,38 +479,68 @@ function generateReturnNumber() {
 
 function getPriceCatalog() {
     const data = localStorage.getItem(STORAGE_KEYS.PRICE_CATALOG);
-    return data ? JSON.parse(data) : {};
+    if (!data) return [];
+    try {
+        const parsed = JSON.parse(data);
+        // Migration: old format was object keyed by name
+        if (!Array.isArray(parsed)) {
+            const arr = Object.entries(parsed).map(([name, entry], i) => ({
+                id: 'migrated_' + Date.now() + '_' + i,
+                name,
+                price: typeof entry === 'object' ? (entry.price || 0) : (entry || 0),
+                category: typeof entry === 'object' ? (entry.category || '') : '',
+                notes: typeof entry === 'object' ? (entry.notes || '') : '',
+                supplierId: '',
+                unit: 'kg'
+            }));
+            localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(arr));
+            return arr;
+        }
+        return parsed;
+    } catch(e) { return []; }
+}
+
+function saveCatalogItem(item) {
+    const catalog = getPriceCatalog();
+    if (item.id) {
+        const idx = catalog.findIndex(c => c.id === item.id);
+        if (idx !== -1) {
+            catalog[idx] = { ...catalog[idx], ...item };
+        } else {
+            catalog.push(item);
+        }
+    } else {
+        catalog.push({
+            id: 'cat_' + Date.now(),
+            name: item.name || '',
+            price: item.price || 0,
+            category: item.category || '',
+            notes: item.notes || '',
+            supplierId: item.supplierId || '',
+            unit: item.unit || 'kg'
+        });
+    }
+    localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
+}
+
+function deleteCatalogItem(id) {
+    const catalog = getPriceCatalog().filter(c => c.id !== id);
+    localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
 }
 
 function updatePriceCatalog(items) {
     const catalog = getPriceCatalog();
     items.forEach(item => {
         if (!item.name || !(item.price > 0)) return;
-        const existing = catalog[item.name];
-        if (!existing) return; // only update existing fixed-price items
-        if (typeof existing === 'object') {
-            catalog[item.name] = { ...existing, price: item.price };
-        } else {
-            catalog[item.name] = item.price;
-        }
+        const existing = catalog.find(c => c.name === item.name &&
+            (!item.supplierId || c.supplierId === item.supplierId));
+        if (existing) existing.price = item.price;
     });
     localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
 }
 
-function saveCatalogItem(name, entry) {
-    const catalog = getPriceCatalog();
-    catalog[name] = {
-        price: entry.price || 0,
-        category: entry.category || 'vegetables',
-        notes: entry.notes || ''
-    };
-    localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
-}
-
-function deleteCatalogItem(name) {
-    const catalog = getPriceCatalog();
-    delete catalog[name];
-    localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
+function getCatalogItemsBySupplier(supplierId) {
+    return getPriceCatalog().filter(c => c.supplierId === supplierId);
 }
 
 // ==================== WHATSAPP GROUPS FUNCTIONS ====================
@@ -571,12 +601,7 @@ initStorage();
 
 function getCatalogCategories() {
     const defaultCategories = [
-        { key: 'all',    label: 'הכל',          icon: 'fa-tag' },
-        { key: 'breads', label: 'לחמים',        icon: 'fa-bread-slice' },
-        { key: 'dry',    label: 'יבשים',        icon: 'fa-seedling' },
-        { key: 'misc',   label: 'שונות',        icon: 'fa-boxes-stacked' },
-        { key: 'frozen', label: 'קפואים',       icon: 'fa-snowflake' },
-        { key: 'meat',   label: 'בשרים/עופות',  icon: 'fa-drumstick-bite' }
+        { key: 'all', label: 'הכל', icon: 'fa-tag' }
     ];
     try {
         const stored = localStorage.getItem('vegetable_catalog_categories');

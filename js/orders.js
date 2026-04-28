@@ -44,10 +44,45 @@ function initOrderPage() {
     const addToId = params.get('addTo');
     if (addToId) {
         loadOrderForAddition(addToId);
+    } else if (params.get('fromTemplate')) {
+        loadFromTemplate();
     } else {
         addNewItemRow();
     }
     updateOrderSummary();
+}
+
+function loadFromTemplate() {
+    const raw = sessionStorage.getItem('templateOrder');
+    sessionStorage.removeItem('templateOrder');
+    if (!raw) { addNewItemRow(); return; }
+
+    let template;
+    try { template = JSON.parse(raw); } catch(e) { addNewItemRow(); return; }
+
+    // Pre-select supplier
+    if (template.supplierId) {
+        const select = document.getElementById('supplier-select');
+        if (select) select.value = template.supplierId;
+    }
+
+    // Add a row per item
+    (template.items || []).forEach(item => {
+        addNewItemRow();
+        const id = itemIdCounter;
+        const nameInput  = document.getElementById(`item-name-${id}`);
+        const qtyInput   = document.getElementById(`item-qty-${id}`);
+        const unitSelect = document.getElementById(`item-unit-${id}`);
+        const priceInput = document.getElementById(`item-price-${id}`);
+        if (nameInput)  { nameInput.value  = item.name;  updateItemData(id, 'name',  item.name); }
+        if (qtyInput)   { qtyInput.value   = item.qty;   updateItemData(id, 'qty',   item.qty); }
+        if (unitSelect) { unitSelect.value = item.unit || 'kg'; updateItemData(id, 'unit', item.unit || 'kg'); }
+        if (priceInput) { priceInput.value = item.price; updateItemData(id, 'price', item.price); }
+        calculateItemTotal(id);
+    });
+
+    // Clean URL
+    history.replaceState(null, '', 'new-order.html');
 }
 
 function loadOrderForAddition(orderId) {
@@ -282,12 +317,22 @@ function setupItemRowListeners(itemId) {
     });
 }
 
+function getSelectedSupplierId() {
+    return document.getElementById('supplier-select')?.value || '';
+}
+
 function showAutocompleteList(acId, query, onSelect) {
     const list = document.getElementById(acId);
     if (!list || !query) { hideAutocomplete(acId); return; }
 
-    const catalog = getPriceCatalog();
-    const catalogNames = Object.keys(catalog);
+    const catalog = getPriceCatalog(); // now array
+    const supplierId = getSelectedSupplierId();
+
+    // Filter catalog by selected supplier; fallback to full catalog if no items for supplier
+    let supplierItems = supplierId ? catalog.filter(c => c.supplierId === supplierId) : catalog;
+    if (supplierItems.length === 0) supplierItems = catalog;
+
+    const catalogNames = [...new Set(supplierItems.map(c => c.name))];
     // Catalog items first, then common vegetables (no duplicates)
     const allItems = [...new Set([...catalogNames, ...COMMON_VEGETABLES])];
     const filtered = allItems.filter(v => v.includes(query) || query.includes(v)).slice(0, 10);
@@ -332,10 +377,13 @@ function handleAutocompleteKeydown(e, acId, onSelect) {
 }
 
 function getCatalogPrice(name) {
-    const entry = getPriceCatalog()[name];
+    const catalog = getPriceCatalog(); // array
+    const supplierId = getSelectedSupplierId();
+    // Prefer match for selected supplier; fallback to any item with that name
+    const entry = (supplierId ? catalog.find(c => c.name === name && c.supplierId === supplierId) : null)
+        || catalog.find(c => c.name === name);
     if (!entry) return null;
-    const price = typeof entry === 'object' ? entry.price : entry;
-    return price > 0 ? price : null;
+    return entry.price > 0 ? entry.price : null;
 }
 
 function selectMainAutocomplete(itemId, value) {
