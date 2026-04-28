@@ -4,6 +4,7 @@
  */
 
 const RETURN_UNIT_OPTIONS = [
+    { value: 'none', label: 'ללא (רק מספר)' },
     { value: 'kg', label: 'ק"ג' },
     { value: 'unit', label: 'יחידה' },
     { value: 'box', label: 'ארגז' },
@@ -117,7 +118,7 @@ function prefillFromOrder(orderId) {
     });
 }
 
-function addReturnItemRow(name = '', qty = 0, unit = 'kg', price = 0) {
+function addReturnItemRow(name = '', qty = 0, unit = 'none', price = 0) {
     const tbody = document.getElementById('return-items-tbody');
     const emptyState = document.getElementById('return-empty-state');
     const tableWrap = document.getElementById('return-items-table-wrap');
@@ -333,7 +334,8 @@ function buildReturnMessage(ret) {
     msg += `סיבה: ${reasonLabel}\n\n`;
     msg += `פריטים:\n`;
     (ret.items || []).forEach((item, i) => {
-        msg += `${i + 1}. ${item.name} — ${item.quantity} ${item.unit}`;
+        const unitText = (item.unitValue === 'none' || item.unit === 'ללא (רק מספר)') ? '' : ` ${item.unit}`;
+        msg += `${i + 1}. ${item.name} — ${item.quantity}${unitText}`;
         if (item.price > 0) msg += ` (₪${item.price})`;
         msg += '\n';
     });

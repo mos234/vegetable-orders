@@ -12,6 +12,7 @@ const COMMON_VEGETABLES = [
 ];
 
 const UNIT_OPTIONS = [
+    { value: 'none', label: 'ללא (רק מספר)' },
     { value: 'kg', label: 'ק"ג' },
     { value: 'unit', label: 'יחידה' },
     { value: 'carton', label: 'קרטון' }
@@ -232,7 +233,7 @@ function addNewItemRow(tableBodyId, itemsArray, isHall, hallId) {
     `;
     tableBody.appendChild(row);
 
-    itemsArray.push({ id: itemId, name: '', qty: 0, unit: 'kg', price: 0, total: 0 });
+    itemsArray.push({ id: itemId, name: '', qty: 0, unit: 'none', price: 0, total: 0 });
 
     if (isHall) {
         setupHallItemRowListeners(hallId, itemId);

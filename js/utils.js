@@ -152,7 +152,7 @@ function buildOrderMessage(order) {
 
     const formatItem = item => {
         const qty = item.quantity > 0 ? `${item.quantity}` : '';
-        const unitLabel = item.unit ? ` ${item.unit}` : '';
+        const unitLabel = (item.unitValue === 'none' || item.unit === 'ללא (רק מספר)') ? '' : (item.unit ? ` ${item.unit}` : '');
         const prefix = qty ? `${qty}${unitLabel} ` : '';
         return `${prefix}${item.name}\n`;
     };
