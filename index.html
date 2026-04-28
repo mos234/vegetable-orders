@@ -171,72 +171,21 @@
                 <i class="fas fa-plus-circle text-3xl mb-2"></i>
                 <span class="font-bold text-sm">הזמנה חדשה</span>
             </a>
-            <a href="orders-list.html" class="bg-white text-emerald-700 border border-emerald-100 rounded-2xl p-4 flex flex-col items-center justify-center shadow-md active:scale-95 transition-transform text-center">
-                <i class="fas fa-list-ul text-3xl mb-2 text-emerald-500"></i>
-                <span class="font-bold text-sm">רשימת הזמנות</span>
-            </a>
-            <a href="new-return.html" class="bg-gradient-to-br from-amber-400 to-amber-600 text-white rounded-2xl p-4 flex flex-col items-center justify-center shadow-md active:scale-95 transition-transform text-center">
-                <i class="fas fa-rotate-left text-3xl mb-2"></i>
-                <span class="font-bold text-sm">החזרה חדשה</span>
-            </a>
-            <a href="returns-list.html" class="bg-white text-amber-600 border border-amber-100 rounded-2xl p-4 flex flex-col items-center justify-center shadow-md active:scale-95 transition-transform text-center">
-                <i class="fas fa-boxes-stacked text-3xl mb-2 text-amber-500"></i>
-                <span class="font-bold text-sm">רשימת החזרות</span>
+            <a href="suppliers.html" class="bg-white text-emerald-700 border border-emerald-100 rounded-2xl p-4 flex flex-col items-center justify-center shadow-md active:scale-95 transition-transform text-center">
+                <i class="fas fa-truck text-3xl mb-2 text-emerald-500"></i>
+                <span class="font-bold text-sm">ספקים</span>
             </a>
         </div>
 
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <div
-                    class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-                    <div class="bg-emerald-100 text-emerald-600 p-4 rounded-2xl">
-                        <i class="fas fa-shopping-basket text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-slate-500 text-sm font-medium">הזמנות החודש</p>
-                        <h3 class="text-2xl font-bold" id="stat-orders-month">0</h3>
-                    </div>
-                </div>
-                <div
-                    class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-                    <div class="bg-blue-100 text-blue-600 p-4 rounded-2xl">
-                        <i class="fas fa-truck text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-slate-500 text-sm font-medium">ספקים פעילים</p>
-                        <h3 class="text-2xl font-bold" id="stat-active-suppliers">0</h3>
-                    </div>
-                </div>
-                <div
-                    class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-                    <div class="bg-amber-100 text-amber-600 p-4 rounded-2xl">
-                        <i class="fas fa-clock text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-slate-500 text-sm font-medium">ממתין לאספקה</p>
-                        <h3 class="text-2xl font-bold" id="stat-pending-orders">0</h3>
-                    </div>
-                </div>
-                <div
-                    class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-                    <div class="bg-purple-100 text-purple-600 p-4 rounded-2xl">
-                        <i class="fas fa-dollar-sign text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-slate-500 text-sm font-medium">סה"כ הוצאות</p>
-                        <h3 class="text-2xl font-bold" id="stat-total-expenses">₪0</h3>
-                    </div>
-                </div>
-            </div>
+            <!-- Stats Grid Removed for Simplicity -->
 
             <!-- Dashboard Content Areas -->
             <div id="dashboard-view" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Recent Orders -->
+                <!-- Today's Orders -->
                 <div class="lg:col-span-2 glass-card rounded-3xl p-8 shadow-sm">
                     <div class="flex justify-between items-center mb-6">
-                        <h4 class="text-xl font-bold">הזמנות אחרונות</h4>
-                        <a href="orders-list.html" class="text-emerald-600 text-sm font-semibold hover:underline">הצג
-                            הכל</a>
+                        <h4 class="text-xl font-bold">הזמנות להיום</h4>
+                        <a href="orders-list.html" class="text-emerald-600 text-sm font-semibold hover:underline">כל ההזמנות</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-right">
@@ -244,7 +193,7 @@
                                 <tr class="text-slate-400 text-sm border-b border-slate-100">
                                     <th class="pb-4 font-medium">מס' הזמנה</th>
                                     <th class="pb-4 font-medium">ספק</th>
-                                    <th class="pb-4 font-medium">תאריך</th>
+                                    <th class="pb-4 font-medium">שעת אספקה</th>
                                     <th class="pb-4 font-medium">סטטוס</th>
                                     <th class="pb-4 font-medium text-left">סה"כ</th>
                                 </tr>
@@ -256,12 +205,12 @@
                     </div>
                     <div id="empty-dashboard-state"
                         class="mt-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
-                        <i class="fas fa-clipboard-list text-3xl text-slate-300 mb-4 block"></i>
-                        <p class="text-slate-400">טרם נוספו הזמנות למערכת</p>
+                        <i class="fas fa-calendar-check text-3xl text-slate-300 mb-4 block"></i>
+                        <p class="text-slate-400">אין הזמנות שצריכות להגיע היום</p>
                     </div>
                 </div>
 
-                <!-- Quick Actions / Sidebar Info -->
+                <!-- Quick Actions -->
                 <div class="space-y-8">
                     <div
                         class="glass-card rounded-3xl p-6 shadow-sm bg-gradient-to-br from-emerald-600 to-emerald-800 text-white">
@@ -275,62 +224,9 @@
                             <a href="suppliers.html"
                                 class="w-full py-3 border border-white/30 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
                                 <i class="fas fa-user-plus"></i>
-                                הוספת ספק חדש
+                                ניהול ספקים
                             </a>
                         </div>
-                    </div>
-
-                    <div class="glass-card rounded-3xl p-6 shadow-sm">
-                        <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-lg font-bold">סיכום החזרות</h4>
-                            <a href="returns-list.html" class="text-emerald-600 text-sm font-semibold hover:underline">הצג הכל</a>
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center bg-amber-50 rounded-xl p-3">
-                                <span class="text-sm text-amber-700">ממתינות לאישור</span>
-                                <span class="font-bold text-amber-700 text-lg" id="dash-pending-returns">0</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-emerald-50 rounded-xl p-3">
-                                <span class="text-sm text-emerald-700">החזרות החודש</span>
-                                <span class="font-bold text-emerald-700 text-lg" id="dash-returns-month">0</span>
-                            </div>
-                            <div class="flex justify-between items-center bg-red-50 rounded-xl p-3">
-                                <span class="text-sm text-red-700">זיכוי החודש</span>
-                                <span class="font-bold text-red-700 text-lg" id="dash-returns-credit">₪0</span>
-                            </div>
-                        </div>
-                        <a href="new-return.html"
-                            class="mt-4 w-full py-2 border border-slate-300 text-slate-600 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-50 transition-all text-sm">
-                            <i class="fas fa-rotate-left"></i>
-                            החזרה חדשה
-                        </a>
-                    </div>
-
-                    <!-- Data Management -->
-                    <div class="glass-card rounded-3xl p-6 shadow-sm border border-slate-200">
-                        <h4 class="text-lg font-bold mb-4 flex items-center gap-2">
-                            <i class="fas fa-database text-slate-500"></i>
-                            ניהול נתונים
-                        </h4>
-                        <p class="text-sm text-slate-500 mb-4">גיבוי ושחזור נתוני המערכת</p>
-                        <div class="space-y-3">
-                            <button onclick="exportAllData()"
-                                class="w-full py-3 border border-slate-300 text-slate-600 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-400 transition-all">
-                                <i class="fas fa-download text-slate-500"></i>
-                                גיבוי נתונים (Export)
-                            </button>
-                            <label
-                                class="w-full py-3 border border-slate-300 text-slate-600 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-400 transition-all cursor-pointer">
-                                <i class="fas fa-upload text-slate-500"></i>
-                                שחזור נתונים (Import)
-                                <input type="file" id="import-file-input" accept=".json" onchange="importAllData(event)"
-                                    class="hidden">
-                            </label>
-                        </div>
-                        <p class="text-xs text-slate-400 mt-3 text-center">
-                            <i class="fas fa-info-circle"></i>
-                            מומלץ לגבות לפני עדכונים משמעותיים
-                        </p>
                     </div>
                 </div>
             </div>

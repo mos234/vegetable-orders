@@ -75,54 +75,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/**
- * Renders the dashboard stats and recent orders.
- */
 function renderDashboard() {
     const orders = getOrders();
-    const suppliers = getSuppliers();
     const now = new Date();
-    const currentMonth = now.getMonth() + 1;
-    const currentYear = now.getFullYear();
+    const todayString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-    // 1. Stats Calculation
-    const ordersThisMonth = orders.filter(o => {
-        const d = new Date(o.orderDate);
-        return d.getMonth() + 1 === currentMonth && d.getFullYear() === currentYear;
-    });
+    // Filter orders for today
+    const ordersToday = orders.filter(o => o.deliveryDate === todayString || o.orderDate === todayString);
 
-    const totalExpenses = ordersThisMonth.reduce((sum, o) => sum + (o.total || 0), 0);
-    const pendingOrders = orders.filter(o => o.status === 'sent').length;
-
-    // 2. Update UI Stats
-    document.getElementById('stat-orders-month').textContent = ordersThisMonth.length;
-    document.getElementById('stat-active-suppliers').textContent = suppliers.length;
-    document.getElementById('stat-pending-orders').textContent = pendingOrders;
-    document.getElementById('stat-total-expenses').textContent = `₪${totalExpenses.toLocaleString('he-IL', { minimumFractionDigits: 0 })}`;
-
-    // 3. Returns stats
-    if (typeof getReturns === 'function') {
-        const returns = getReturns();
-        const returnsThisMonth = returns.filter(r => {
-            const d = new Date(r.returnDate || r.createdAt);
-            return d.getMonth() + 1 === currentMonth && d.getFullYear() === currentYear;
-        });
-        const pendingReturns = returns.filter(r => r.status === 'pending').length;
-        const creditThisMonth = returnsThisMonth.reduce((sum, r) => sum + (r.total || 0), 0);
-
-        const pendingEl = document.getElementById('dash-pending-returns');
-        const monthEl = document.getElementById('dash-returns-month');
-        const creditEl = document.getElementById('dash-returns-credit');
-        if (pendingEl) pendingEl.textContent = pendingReturns;
-        if (monthEl) monthEl.textContent = returnsThisMonth.length;
-        if (creditEl) creditEl.textContent = `₪${creditThisMonth.toLocaleString('he-IL', { minimumFractionDigits: 0 })}`;
-    }
-
-    // 4. Render Recent Orders (last 5)
+    // 4. Render Today's Orders
     const recentOrdersList = document.getElementById('recent-orders-list');
     const emptyState = document.getElementById('empty-dashboard-state');
 
-    if (orders.length === 0) {
+    if (ordersToday.length === 0) {
         recentOrdersList.closest('table').classList.add('hidden');
         emptyState.classList.remove('hidden');
         return;
@@ -131,14 +96,14 @@ function renderDashboard() {
     recentOrdersList.closest('table').classList.remove('hidden');
     emptyState.classList.add('hidden');
 
-    // Sort by date newest first
-    const sortedOrders = [...orders].sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate)).slice(0, 5);
+    // Sort by delivery time if available
+    const sortedOrders = [...ordersToday].sort((a, b) => (a.deliveryTime || '').localeCompare(b.deliveryTime || ''));
 
     recentOrdersList.innerHTML = sortedOrders.map(order => `
         <tr class="hover:bg-slate-50 transition-colors">
             <td class="py-4 font-mono text-sm">${order.orderNumber}</td>
             <td class="py-4 font-semibold">${escapeHtml(order.supplierName)}</td>
-            <td class="py-4 text-slate-500 text-sm">${formatDateHebrew(order.orderDate)}</td>
+            <td class="py-4 text-slate-500 text-sm">${escapeHtml(order.deliveryTime || 'לא צוין')}</td>
             <td class="py-4">${getStatusBadgeHtml(order.status)}</td>
             <td class="py-4 text-left font-bold text-slate-900">₪${(order.total || 0).toLocaleString('he-IL', { minimumFractionDigits: 2 })}</td>
         </tr>
