@@ -51,8 +51,10 @@ function renderPriceLists() {
 
     let items = getPriceCatalog();
 
-    // Filter by category
-    if (activeCategory !== 'all') {
+    // Filter by category; 'all' tab shows only uncategorized items
+    if (activeCategory === 'all') {
+        items = items.filter(item => !item.category);
+    } else {
         items = items.filter(item => item.category === activeCategory);
     }
     // Filter by search
