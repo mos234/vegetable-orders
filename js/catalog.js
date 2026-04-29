@@ -200,6 +200,7 @@ function openAddCatalogModal(presetSupplierId) {
     document.getElementById('catalog-price').value = '';
     document.getElementById('catalog-unit').value = 'kg';
     document.getElementById('catalog-notes').value = '';
+    populateCategoryDropdowns();
     document.getElementById('catalog-category').value = '';
     populateSupplierDropdown();
     document.getElementById('catalog-supplier').value = presetSupplierId || '';
@@ -218,6 +219,7 @@ function openEditCatalogModal(id) {
     document.getElementById('catalog-price').value = item.price || '';
     document.getElementById('catalog-unit').value = item.unit || 'kg';
     document.getElementById('catalog-notes').value = item.notes || '';
+    populateCategoryDropdowns();
     document.getElementById('catalog-category').value = item.category || '';
     populateSupplierDropdown();
     document.getElementById('catalog-supplier').value = item.supplierId || '';
@@ -284,11 +286,12 @@ function renderManageCategoriesList() {
     container.innerHTML = tempCategories.map((c, index) => {
         if (c.key === 'all') {
             return `
-            <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                <div class="flex items-center gap-2 text-slate-700 font-bold">
-                    <i class="fas ${c.icon}"></i> ${c.label}
-                </div>
-                <span class="text-xs text-slate-400">ברירת מחדל</span>
+            <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg gap-3">
+                <i class="fas ${c.icon} text-slate-400 shrink-0"></i>
+                <input type="text" value="${escapeAttr(c.label)}"
+                    onchange="tempCategories[${index}].label = this.value"
+                    class="flex-1 px-2 py-1 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm font-bold">
+                <span class="text-xs text-slate-400 shrink-0">ברירת מחדל</span>
             </div>`;
         }
         return `
