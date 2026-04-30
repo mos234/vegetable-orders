@@ -203,7 +203,8 @@ export function getStatusBadgeHtml(status) {
         draft: '<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">טיוטה</span>',
         sent: '<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">נשלח</span>',
         delivered: '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">סופק</span>',
-        cancelled: '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">בוטל</span>'
+        cancelled: '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">בוטל</span>',
+        not_delivered: '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">לא סופק</span>'
     };
     return badges[status] || badges.draft;
 }
