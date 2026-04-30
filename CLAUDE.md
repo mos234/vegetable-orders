@@ -1,6 +1,7 @@
 # CLAUDE.md — מנהל ההזמנות
 
-קובץ זה מתאר את מבנה הפרויקט לשימוש Claude. קרא אותו לפני כל שינוי.
+קובץ זה מתאר את מבנה הפרויקט. קרא אותו לפני כל שינוי.
+לתיעוד כללי של הפרויקט (הרצה, פריסה, מבנה קבצים) — ראה `README.md`.
 
 ---
 
@@ -47,17 +48,21 @@ vegetable-orders/
 
 ## איזה דף טוען איזה JS
 
-| דף HTML | קבצי JS (לפי סדר טעינה) |
+כל דף HTML טוען **קובץ entry point אחד בלבד** עם `type="module"`.
+הקובץ מייבא את שאר התלויות עצמאית.
+
+| דף HTML | entry point |
 |---|---|
-| `index.html` | utils, storage, messaging, app, theme, sync |
-| `new-order.html` | utils, storage, messaging, orders, theme, sync |
-| `orders-list.html` | utils, storage, messaging, orders-list, theme, sync |
-| `new-return.html` | utils, storage, messaging, returns, theme, sync |
-| `returns-list.html` | utils, storage, messaging, returns-list, theme, sync |
-| `catalog.html` | utils, storage, catalog, theme, sync |
-| `suppliers.html` | utils, storage, messaging, suppliers, theme, sync |
-| `monthly-report.html` | utils, storage, monthly-report, export, theme, sync |
-| `settings.html` | utils, storage, theme, sync |
+| `index.html` | `js/app.js` |
+| `new-order.html` | `js/orders.js` |
+| `orders-list.html` | `js/orders-list.js` |
+| `new-return.html` | `js/returns.js` |
+| `returns-list.html` | `js/returns-list.js` |
+| `catalog.html` | `js/catalog.js` |
+| `suppliers.html` | `js/suppliers.js` |
+| `monthly-report.html` | `js/monthly-report.js` |
+| `groups.html` | `js/groups.js` |
+| `settings.html` | `js/settings.js` |
 
 ---
 
@@ -162,7 +167,37 @@ vegetable_groups           → [{id, name, link, createdAt}]
 
 1. **אין framework** — Vanilla JS בלבד. אין React/Vue/Angular.
 2. **אין build process** — עריכה ישירה בקבצים, push ל-GitHub Pages.
-3. **כל JS הוא global** — פונקציות מוגדרות ב-`window` ונקראות מה-HTML עם `onclick=`.
+3. **ES Modules** — הפרויקט משתמש ב-`import`/`export`. כל קובץ מגדיר את תלויותיו בראשו.
 4. **Tailwind מ-CDN** — לא מקומי, לא צריך build.
-5. **Service Worker מטמן קבצים** — אחרי שינוי, משתמשים צריכים לרענן כדי לקבל עדכון.
+5. **Service Worker מטמן קבצים** — אחרי שינוי, יש לעדכן את מספר הגרסה ב-`service-worker.js` כדי שמשתמשים יקבלו עדכון.
 6. **גיבוי/סנכרון** — אין סנכרון בין מכשירים. `exportAllData`/`importAllData` קיימות אך לא מחוברות ל-UI.
+
+---
+
+## `Object.assign(window, {...})` — למה זה קיים
+
+בקבצים שמייצרים HTML דינמי עם `onclick="functionName(id)"` בתוך template strings —
+הפונקציה חייבת להיות נגישה בסקופ הגלובלי (`window`), כי ה-onclick מתבצע בסקופ הגלובלי.
+
+מחפשים את זה בסוף כל קובץ דף (למשל `orders-list.js`, `catalog.js`, `suppliers.js`).
+
+**דוגמה:**
+```js
+// בתוך renderSuppliersList() — מייצר HTML עם onclick
+`<button onclick="handleWhatsApp('${supplier.id}')">...</button>`
+
+// בסוף הקובץ — חשיפה על window כדי שה-onclick ימצא את הפונקציה
+Object.assign(window, { handleWhatsApp, handleSMS, openEditModal, handleDelete });
+```
+
+---
+
+## זרימת "הפוך להזמנה" מהמחירון
+
+`catalog.js` → `convertSupplierToOrder(supplierId)`:
+1. שומר `{supplierId, items[]}` ב-`sessionStorage` תחת המפתח `templateOrder`
+2. מנווט ל-`new-order.html?fromTemplate=1`
+
+`orders.js` → `loadFromTemplate()` (מופעל ב-DOMContentLoaded אם URL מכיל `?fromTemplate=1`):
+1. קורא מ-sessionStorage
+2. ממלא ספק + שורות פריטים אוטומטית
