@@ -306,7 +306,14 @@ function viewOrder(orderId) {
                     class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold transition-all min-w-[100px]"
                 >
                     <i class="fas fa-check ml-2"></i>
-                    סמן כסופק
+                    סופק
+                </button>
+                <button
+                    onclick="updateOrderStatus('${order.id}', 'not_delivered'); closeViewModal();"
+                    class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold transition-all min-w-[100px]"
+                >
+                    <i class="fas fa-times ml-2"></i>
+                    לא סופק
                 </button>
                 <button
                     onclick="editDeliveryDetails('${order.id}')"
