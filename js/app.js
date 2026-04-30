@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupNavigation();
 
     // If we are on the dashboard page, render it
-    if (document.getElementById('stat-orders-month')) {
+    if (document.getElementById('recent-orders-list')) {
         renderDashboard();
     }
 });
