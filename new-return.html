@@ -35,7 +35,7 @@
             <img src="icons/icon-192x192.png" alt="Logo" class="w-8 h-8 object-contain">
             <span class="font-bold text-lg">מנהל ההזמנות</span>
         </div>
-        <button onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30" aria-label="מצב כהה/בהיר">
+        <button class="theme-toggle-btn w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30" aria-label="מצב כהה/בהיר">
             <i class="theme-icon fas fa-moon text-lg"></i>
         </button>
     </header>
@@ -77,8 +77,7 @@
             </a>
         </nav>
         <div class="mt-auto pt-6 border-t border-white/10 space-y-2">
-            <button onclick="toggleTheme()"
-                class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition-all"
+            <button class="theme-toggle-btn w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition-all"
                 aria-label="מצב כהה/בהיר">
                 <i class="theme-icon fas fa-moon w-6 text-center"></i>
                 <span class="font-medium theme-label">מצב כהה</span>
@@ -103,7 +102,7 @@
                         <label class="block text-sm font-semibold text-slate-700 mb-2">ספק *</label>
                         <select id="return-supplier-select"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-                            onchange="onReturnSupplierChange()">
+                            >
                             <option value="">-- בחר ספק --</option>
                         </select>
                         <p id="no-suppliers-msg" class="hidden text-sm text-amber-600 mt-2">
@@ -114,7 +113,7 @@
                         <label class="block text-sm font-semibold text-slate-700 mb-2">שיוך להזמנה (אופציונלי)</label>
                         <select id="return-order-select"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-                            onchange="onReturnOrderChange()">
+                            >
                             <option value="">-- בחר הזמנה --</option>
                         </select>
                     </div>
@@ -145,7 +144,7 @@
                 <div class="mb-6">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-bold text-slate-800">פריטים להחזרה</h3>
-                        <button onclick="addReturnItemRow()"
+                        <button id="add-return-item-btn"
                             class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all">
                             <i class="fas fa-plus"></i> הוסף פריט
                         </button>
@@ -187,15 +186,15 @@
 
                 <!-- Actions -->
                 <div class="flex gap-3 flex-wrap">
-                    <button onclick="saveReturnAction('draft')"
+                    <button id="save-return-draft-btn"
                         class="flex-1 min-w-[120px] py-3 border-2 border-slate-300 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
                         <i class="fas fa-save"></i> שמור טיוטה
                     </button>
-                    <button onclick="saveReturnAction('whatsapp')"
+                    <button id="save-return-whatsapp-btn"
                         class="flex-1 min-w-[120px] py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
                         <i class="fab fa-whatsapp"></i> שלח WhatsApp
                     </button>
-                    <button onclick="saveReturnAction('sms')"
+                    <button id="save-return-sms-btn"
                         class="flex-1 min-w-[120px] py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
                         <i class="fas fa-comment-sms"></i> שלח SMS
                     </button>

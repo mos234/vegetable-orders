@@ -15,6 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCategoryTabs();
     renderPriceLists();
     document.getElementById('catalog-search').addEventListener('input', debounce(renderPriceLists, 200));
+    document.getElementById('add-catalog-item-btn')?.addEventListener('click', () => openAddCatalogModal(''));
+    document.getElementById('manage-categories-btn')?.addEventListener('click', openManageCategoriesModal);
+    document.querySelectorAll('.close-catalog-modal-btn').forEach(btn => btn.addEventListener('click', closeCatalogModal));
+    document.getElementById('save-catalog-modal-btn')?.addEventListener('click', saveCatalogModal);
+    document.getElementById('close-manage-categories-btn')?.addEventListener('click', closeManageCategoriesModal);
+    document.getElementById('add-new-category-btn')?.addEventListener('click', addNewCategory);
+    document.getElementById('save-categories-btn')?.addEventListener('click', saveCategoriesAndClose);
 });
 
 // ─── Category Tabs ────────────────────────────────────────────────────────────

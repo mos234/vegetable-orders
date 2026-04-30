@@ -44,6 +44,11 @@
     document.addEventListener('DOMContentLoaded', function () {
         applyTheme(getPreferred());
 
+        // Wire up all theme toggle buttons
+        document.querySelectorAll('.theme-toggle-btn').forEach(function (btn) {
+            btn.addEventListener('click', window.toggleTheme);
+        });
+
         // Highlight active page in mobile bottom nav
         const page = window.location.pathname.split('/').pop() || 'index.html';
         document.querySelectorAll('.mobile-nav-item').forEach(function (item) {

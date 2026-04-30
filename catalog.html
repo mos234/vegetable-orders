@@ -47,7 +47,7 @@
             <img src="icons/icon-192x192.png" alt="Logo" class="w-8 h-8 object-contain">
             <span class="font-bold text-lg">מנהל ההזמנות</span>
         </div>
-        <button onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30" aria-label="מצב כהה/בהיר">
+        <button class="theme-toggle-btn w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30" aria-label="מצב כהה/בהיר">
             <i class="theme-icon fas fa-moon text-lg"></i>
         </button>
     </header>
@@ -89,8 +89,7 @@
             </a>
         </nav>
         <div class="mt-auto pt-6 border-t border-white/10 space-y-2">
-            <button onclick="toggleTheme()"
-                class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition-all"
+            <button class="theme-toggle-btn w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition-all"
                 aria-label="מצב כהה/בהיר">
                 <i class="theme-icon fas fa-moon w-6 text-center"></i>
                 <span class="font-medium theme-label">מצב כהה</span>
@@ -106,7 +105,7 @@
                 <h2 class="text-3xl font-bold text-slate-900">מחירונים ותבניות</h2>
                 <p class="text-slate-500 mt-1">הגדר פריטים ומחירים לפי ספק, והפוך אותם להזמנה בלחיצה</p>
             </div>
-            <button onclick="openAddCatalogModal('')"
+            <button id="add-catalog-item-btn"
                 class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-200">
                 <i class="fas fa-plus"></i> הוסף פריט
             </button>
@@ -122,7 +121,7 @@
         <!-- Category Tabs Header -->
         <div class="flex justify-between items-center mb-2">
             <h3 class="text-sm font-bold text-slate-500">סינון לפי קטגוריה:</h3>
-            <button onclick="openManageCategoriesModal()" class="text-xs text-emerald-600 hover:text-emerald-800 font-bold flex items-center gap-1">
+            <button id="manage-categories-btn" class="text-xs text-emerald-600 hover:text-emerald-800 font-bold flex items-center gap-1">
                 <i class="fas fa-cog"></i> ערוך קטגוריות
             </button>
         </div>
@@ -147,7 +146,7 @@
     <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
         <div class="flex justify-between items-center mb-5">
             <h3 class="text-xl font-bold" id="catalog-modal-title">הוספת פריט</h3>
-            <button onclick="closeCatalogModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100">
+            <button class="close-catalog-modal-btn text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100">
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
@@ -201,12 +200,11 @@
             </div>
         </div>
         <div class="flex gap-3 mt-6">
-            <button onclick="saveCatalogModal()"
+            <button id="save-catalog-modal-btn"
                 class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold transition-all">
                 שמור
             </button>
-            <button onclick="closeCatalogModal()"
-                class="px-6 py-3 rounded-xl border border-slate-300 text-slate-600 font-medium hover:bg-slate-50">
+            <button class="close-catalog-modal-btn px-6 py-3 rounded-xl border border-slate-300 text-slate-600 font-medium hover:bg-slate-50">
                 ביטול
             </button>
         </div>
@@ -218,7 +216,7 @@
     <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl max-h-[90vh] flex flex-col">
         <div class="flex justify-between items-center mb-5 shrink-0">
             <h3 class="text-xl font-bold">עריכת קטגוריות</h3>
-            <button onclick="closeManageCategoriesModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100">
+            <button id="close-manage-categories-btn" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100">
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
@@ -230,13 +228,13 @@
                     class="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
                 <input type="text" id="new-category-icon" placeholder="אייקון (fa-star)"
                     class="w-1/3 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" value="fa-tag">
-                <button onclick="addNewCategory()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700">
+                <button id="add-new-category-btn" class="bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
         </div>
         <div class="flex gap-3 mt-4 shrink-0">
-            <button onclick="saveCategoriesAndClose()"
+            <button id="save-categories-btn"
                 class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold transition-all">
                 שמור קטגוריות
             </button>

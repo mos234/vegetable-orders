@@ -5,6 +5,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     initOrdersListPage();
+    document.getElementById('close-view-modal-btn')?.addEventListener('click', closeViewModal);
 });
 
 /**

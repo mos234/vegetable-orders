@@ -5,6 +5,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     initMonthlyReportPage();
+    document.getElementById('print-btn')?.addEventListener('click', () => window.print());
 });
 
 /**

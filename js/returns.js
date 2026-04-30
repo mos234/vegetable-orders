@@ -25,6 +25,12 @@ let returnItemCounter = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
     initReturnPage();
+    document.getElementById('return-supplier-select')?.addEventListener('change', onReturnSupplierChange);
+    document.getElementById('return-order-select')?.addEventListener('change', onReturnOrderChange);
+    document.getElementById('add-return-item-btn')?.addEventListener('click', () => addReturnItemRow());
+    document.getElementById('save-return-draft-btn')?.addEventListener('click', () => saveReturnAction('draft'));
+    document.getElementById('save-return-whatsapp-btn')?.addEventListener('click', () => saveReturnAction('whatsapp'));
+    document.getElementById('save-return-sms-btn')?.addEventListener('click', () => saveReturnAction('sms'));
 });
 
 function initReturnPage() {

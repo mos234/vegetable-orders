@@ -18,6 +18,7 @@ const RETURN_REASON_LABELS = {
 
 document.addEventListener('DOMContentLoaded', () => {
     initReturnsListPage();
+    document.getElementById('close-return-modal-btn')?.addEventListener('click', closeReturnModal);
 });
 
 function initReturnsListPage() {

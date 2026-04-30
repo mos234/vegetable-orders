@@ -29,7 +29,7 @@
             <img src="icons/icon-192x192.png" alt="Logo" class="w-8 h-8 object-contain">
             <span class="font-bold text-lg">מנהל ההזמנות</span>
         </div>
-        <button onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30" aria-label="מצב כהה/בהיר">
+        <button class="theme-toggle-btn w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/30" aria-label="מצב כהה/בהיר">
             <i class="theme-icon fas fa-moon text-lg"></i>
         </button>
     </header>
@@ -71,8 +71,7 @@
             </a>
         </nav>
         <div class="mt-auto pt-6 border-t border-white/10 space-y-2">
-            <button onclick="toggleTheme()"
-                class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition-all"
+            <button class="theme-toggle-btn w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition-all"
                 aria-label="מצב כהה/בהיר">
                 <i class="theme-icon fas fa-moon w-6 text-center"></i>
                 <span class="font-medium theme-label">מצב כהה</span>
@@ -149,7 +148,7 @@
     <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center p-6 border-b">
             <h3 class="text-xl font-bold" id="view-return-number">פרטי החזרה</h3>
-            <button onclick="closeReturnModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100">
+            <button id="close-return-modal-btn" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100">
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>

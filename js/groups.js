@@ -100,4 +100,10 @@ function confirmDeleteGroup(id, name) {
 }
 
 // Init
-document.addEventListener('DOMContentLoaded', renderGroupsList);
+document.addEventListener('DOMContentLoaded', () => {
+    renderGroupsList();
+    document.getElementById('back-btn')?.addEventListener('click', () => { window.location.href = 'index.html'; });
+    document.querySelectorAll('.open-add-group-btn').forEach(btn => btn.addEventListener('click', openAddModal));
+    document.querySelectorAll('.close-group-modal-btn').forEach(btn => btn.addEventListener('click', closeModal));
+    document.getElementById('save-group-btn')?.addEventListener('click', saveGroupForm);
+});
