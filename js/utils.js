@@ -8,7 +8,7 @@
  * @param {string} message - The message to show
  * @param {string} type - 'success', 'error', 'info' (default: 'success')
  */
-function showToast(message, type = 'success', duration = 4000) {
+export function showToast(message, type = 'success', duration = 4000) {
     const existing = document.querySelector('.toast-notification');
     if (existing) existing.remove();
 
@@ -41,7 +41,7 @@ function showToast(message, type = 'success', duration = 4000) {
  * @param {string} dateStr - Date in YYYY-MM-DD format or ISO string
  * @returns {string} Formatted date
  */
-function formatDateHebrew(dateStr) {
+export function formatDateHebrew(dateStr) {
     if (!dateStr) return '-';
 
     let year, month, day;
@@ -62,7 +62,7 @@ function formatDateHebrew(dateStr) {
  * @param {number} num
  * @returns {string}
  */
-function arabicToHebrewNumeral(num) {
+export function arabicToHebrewNumeral(num) {
     const ones = ['', 'א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט'];
     if (num <= 0 || num > 30) return String(num);
     if (num < 10)  return ones[num] + "'";
@@ -81,7 +81,7 @@ function arabicToHebrewNumeral(num) {
  * @param {string} dateStr - Date in YYYY-MM-DD format
  * @returns {string} Full Hebrew date string
  */
-function formatDateHebrewFull(dateStr) {
+export function formatDateHebrewFull(dateStr) {
     if (!dateStr) return '';
     const [year, month, day] = dateStr.split('-').map(Number);
     const date = new Date(year, month - 1, day, 12, 0, 0);
@@ -110,7 +110,7 @@ function formatDateHebrewFull(dateStr) {
  * @param {string} text
  * @returns {string}
  */
-function escapeHtml(text) {
+export function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
@@ -123,7 +123,7 @@ function escapeHtml(text) {
  * @param {string} text
  * @returns {string}
  */
-function escapeAttr(text) {
+export function escapeAttr(text) {
     if (!text) return '';
     return text
         .replace(/&/g, '&amp;')
@@ -138,7 +138,7 @@ function escapeAttr(text) {
  * @param {Object} order - The order object
  * @returns {string} The formatted message
  */
-function buildOrderMessage(order) {
+export function buildOrderMessage(order) {
     const dateStr = formatDateHebrewFull(order.deliveryDate);
     let message = dateStr ? `${dateStr}\n` : '';
 
@@ -181,7 +181,7 @@ function buildOrderMessage(order) {
  * @param {number} wait - Wait time in ms
  * @returns {Function}
  */
-function debounce(func, wait) {
+export function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
         const later = () => {
@@ -198,7 +198,7 @@ function debounce(func, wait) {
  * @param {string} status - 'draft', 'sent', 'delivered', 'cancelled'
  * @returns {string} HTML string
  */
-function getStatusBadgeHtml(status) {
+export function getStatusBadgeHtml(status) {
     const badges = {
         draft: '<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">טיוטה</span>',
         sent: '<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">נשלח</span>',

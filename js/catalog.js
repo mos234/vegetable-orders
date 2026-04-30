@@ -2,6 +2,11 @@
  * Vegetable Orders Management - Price Lists & Templates Page
  */
 
+import { getPriceCatalog, saveCatalogItem, deleteCatalogItem, getCatalogCategories, saveCatalogCategories, getSuppliers } from './storage.js';
+import { showToast, escapeHtml, escapeAttr, debounce } from './utils.js';
+import './theme.js';
+import './sync.js';
+
 let editingCatalogItemId = null;
 let activeCategory = 'all';
 let CATALOG_CATEGORIES = [];
@@ -282,6 +287,7 @@ let tempCategories = [];
 
 function openManageCategoriesModal() {
     tempCategories = JSON.parse(JSON.stringify(CATALOG_CATEGORIES));
+    window.tempCategories = tempCategories;
     renderManageCategoriesList();
     document.getElementById('manage-categories-modal').classList.remove('hidden');
 }
@@ -298,7 +304,7 @@ function renderManageCategoriesList() {
             <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg gap-3">
                 <i class="fas ${c.icon} text-slate-400 shrink-0"></i>
                 <input type="text" value="${escapeAttr(c.label)}"
-                    onchange="tempCategories[${index}].label = this.value"
+                    onchange="window.tempCategories[${index}].label = this.value"
                     class="flex-1 px-2 py-1 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm font-bold">
                 <span class="text-xs text-slate-400 shrink-0">ברירת מחדל</span>
             </div>`;

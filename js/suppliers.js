@@ -3,6 +3,12 @@
  * Handles the suppliers management page functionality.
  */
 
+import { getSuppliers, saveSupplier, updateSupplier, deleteSupplier, getSupplierById } from './storage.js';
+import { showToast, escapeHtml } from './utils.js';
+import { openWhatsAppChat, openSMSChat } from './messaging.js';
+import './theme.js';
+import './sync.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     initSuppliersPage();
 });
@@ -240,3 +246,5 @@ function handleDelete(id) {
         showToast('הספק נמחק בהצלחה');
     }
 }
+
+Object.assign(window, { handleWhatsApp, handleSMS, openEditModal, handleDelete });

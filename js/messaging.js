@@ -2,6 +2,8 @@
  * Vegetable Orders Management - Messaging Layer
  * Handles WhatsApp and SMS integration for sending orders to suppliers.
  */
+import { showToast, escapeHtml, escapeAttr } from './utils.js';
+import { getSettings, getGroups } from './storage.js';
 
 /**
  * Opens an external URL in PWA standalone mode.
@@ -10,7 +12,7 @@
  * For https:// links falls back to window.open.
  * @param {string} url
  */
-function openExternalUrl(url) {
+export function openExternalUrl(url) {
     if (url.startsWith('http')) {
         window.open(url, '_blank');
     } else {
@@ -24,7 +26,7 @@ function openExternalUrl(url) {
  * @param {string} phone - The phone number
  * @returns {string} Formatted phone number
  */
-function formatPhoneNumber(phone) {
+export function formatPhoneNumber(phone) {
     let cleaned = phone.replace(/\D/g, '');
     if (cleaned.startsWith('0')) {
         cleaned = '972' + cleaned.substring(1);
@@ -40,7 +42,7 @@ function formatPhoneNumber(phone) {
  * @param {string} phone - The phone number
  * @returns {string} Formatted phone number for SMS
  */
-function formatPhoneForSMS(phone) {
+export function formatPhoneForSMS(phone) {
     let cleaned = phone.replace(/\D/g, '');
     if (cleaned.startsWith('972')) {
         cleaned = '0' + cleaned.substring(3);
@@ -55,7 +57,7 @@ function formatPhoneForSMS(phone) {
  * Sends an order message via WhatsApp.
  * @param {Object} order - The order object
  */
-function sendOrderToWhatsApp(order) {
+export function sendOrderToWhatsApp(order) {
     const phone = formatPhoneNumber(order.phone);
     let message = order.message;
 
@@ -79,7 +81,7 @@ function sendOrderToWhatsApp(order) {
  * Sends an order message via SMS.
  * @param {Object} order - The order object
  */
-function sendOrderToSMS(order) {
+export function sendOrderToSMS(order) {
     const phone = formatPhoneForSMS(order.phone);
     let message = order.message;
 
@@ -103,7 +105,7 @@ function sendOrderToSMS(order) {
  * Opens WhatsApp chat with a supplier (no pre-filled message).
  * @param {string} phone - The supplier's phone number
  */
-function openWhatsAppChat(phone) {
+export function openWhatsAppChat(phone) {
     window.location.href = `whatsapp://send?phone=${formatPhoneNumber(phone)}`;
 }
 
@@ -111,7 +113,7 @@ function openWhatsAppChat(phone) {
  * Opens SMS app with a supplier (no pre-filled message).
  * @param {string} phone - The supplier's phone number
  */
-function openSMSChat(phone) {
+export function openSMSChat(phone) {
     window.location.href = `sms:${formatPhoneForSMS(phone)}`;
 }
 
@@ -127,8 +129,8 @@ function openSMSChat(phone) {
  *
  * @param {string} message - The message to send
  */
-function sendToWhatsAppGroup(message) {
-    const settings = (typeof getSettings === 'function') ? getSettings() : {};
+export function sendToWhatsAppGroup(message) {
+    const settings = getSettings();
     const groupLink = settings.whatsappGroupLink || 'https://chat.whatsapp.com/EVklPHHvAGQ6r7lzVHmks6';
 
     const open = () => { window.location.href = groupLink; };
@@ -152,7 +154,7 @@ function sendToWhatsAppGroup(message) {
  * @param {string} message
  * @param {Function} onConfirm
  */
-function showCopyDialog(message, onConfirm) {
+export function showCopyDialog(message, onConfirm) {
     const ta = document.createElement('textarea');
     ta.value = message;
     ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
@@ -178,7 +180,7 @@ function showCopyDialog(message, onConfirm) {
  * @param {string} phone - The phone number
  * @param {string} message - The message to send
  */
-function sendWhatsAppMessage(phone, message) {
+export function sendWhatsAppMessage(phone, message) {
     window.location.href = `whatsapp://send?phone=${formatPhoneNumber(phone)}&text=${encodeURIComponent(message)}`;
 }
 
@@ -187,7 +189,7 @@ function sendWhatsAppMessage(phone, message) {
  * @param {string} phone - The phone number
  * @param {string} message - The message to send
  */
-function sendSMSMessage(phone, message) {
+export function sendSMSMessage(phone, message) {
     window.location.href = `sms:${formatPhoneForSMS(phone)}?body=${encodeURIComponent(message)}`;
 }
 
@@ -197,8 +199,8 @@ function sendSMSMessage(phone, message) {
  * @param {string} message - The pre-built order message
  * @param {Function} onComplete - Callback executed after group is selected and opened
  */
-function showGroupPicker(message, onComplete) {
-    const groups = (typeof getGroups === 'function') ? getGroups() : [];
+export function showGroupPicker(message, onComplete) {
+    const groups = getGroups();
 
     // Also check the old single-group setting for backward compat
     let legacyLink = '';
@@ -274,7 +276,7 @@ function showGroupPicker(message, onComplete) {
  * @param {string} message
  * @param {Function} onComplete
  */
-function _sendToSpecificGroup(link, message, onComplete) {
+export function _sendToSpecificGroup(link, message, onComplete) {
     document.getElementById('group-picker-overlay')?.remove();
 
     const doOpen = () => {
@@ -300,7 +302,7 @@ function _sendToSpecificGroup(link, message, onComplete) {
  * @param {string} emailAddress - Target email address
  * @param {string} message - Message body
  */
-function sendEmailMessage(supplierName, emailAddress, message) {
+export function sendEmailMessage(supplierName, emailAddress, message) {
     const subject = encodeURIComponent(`הזמנה חדשה מ-${supplierName}`);
     const encodedMessage = encodeURIComponent(message);
     window.location.href = `mailto:${emailAddress || ''}?subject=${subject}&body=${encodedMessage}`;

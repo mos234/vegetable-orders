@@ -3,6 +3,12 @@
  * Handles displaying and managing the orders list.
  */
 
+import { getSuppliers, getOrders, getOrderById, updateOrder, deleteOrder } from './storage.js';
+import { showToast, escapeHtml, formatDateHebrew, getStatusBadgeHtml, buildOrderMessage } from './utils.js';
+import { sendWhatsAppMessage, sendSMSMessage, showGroupPicker } from './messaging.js';
+import './theme.js';
+import './sync.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     initOrdersListPage();
     document.getElementById('close-view-modal-btn')?.addEventListener('click', closeViewModal);

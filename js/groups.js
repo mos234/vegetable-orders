@@ -2,6 +2,11 @@
  * WhatsApp Groups Management
  */
 
+import { getGroups, saveGroup, updateGroup, deleteGroup } from './storage.js';
+import { showToast, escapeHtml, escapeAttr } from './utils.js';
+import './theme.js';
+import './sync.js';
+
 let editingGroupId = null;
 
 function renderGroupsList() {
@@ -98,6 +103,8 @@ function confirmDeleteGroup(id, name) {
     showToast('הקבוצה נמחקה');
     renderGroupsList();
 }
+
+Object.assign(window, { openEditModal, confirmDeleteGroup });
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {

@@ -3,6 +3,12 @@
  * Handles displaying monthly expense reports.
  */
 
+import { getOrders } from './storage.js';
+import { showToast, escapeHtml, formatDateHebrew } from './utils.js';
+import { exportMonthlyReport } from './export.js';
+import './theme.js';
+import './sync.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     initMonthlyReportPage();
     document.getElementById('print-btn')?.addEventListener('click', () => window.print());

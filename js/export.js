@@ -9,7 +9,7 @@
  * @param {number} month - Month number (1-12)
  * @param {number} year - Year
  */
-function exportMonthlyReport(orders, month, year) {
+export function exportMonthlyReport(orders, month, year) {
     if (!orders || orders.length === 0) {
         alert('אין נתונים לייצוא');
         return;
@@ -231,7 +231,7 @@ function formatDateForExcel(dateStr) {
  * @param {Array} orders - Array of orders
  * @param {string} filename - Output filename
  */
-function exportOrdersToExcel(orders, filename = 'orders_export.xlsx') {
+export function exportOrdersToExcel(orders, filename = 'orders_export.xlsx') {
     if (!orders || orders.length === 0) {
         alert('אין נתונים לייצוא');
         return;
@@ -296,7 +296,7 @@ function exportOrdersToExcel(orders, filename = 'orders_export.xlsx') {
  * Exports suppliers list to Excel.
  * @param {Array} suppliers - Array of suppliers
  */
-function exportSuppliersToExcel(suppliers) {
+export function exportSuppliersToExcel(suppliers) {
     if (!suppliers || suppliers.length === 0) {
         alert('אין ספקים לייצוא');
         return;

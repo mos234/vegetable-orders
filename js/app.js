@@ -1,3 +1,8 @@
+import { getOrders } from './storage.js';
+import { showToast, escapeHtml, getStatusBadgeHtml } from './utils.js';
+import './theme.js';
+import './sync.js';
+
 // ===== Splash Screen =====
 (function initSplash() {
     const splash = document.getElementById('splash-screen');
@@ -49,9 +54,7 @@ if ('serviceWorker' in navigator) {
         if (event.data?.type === 'SYNC_PENDING_ORDER') {
             const order = event.data.order;
             // Order is already in localStorage (saved before queuing) — just notify user
-            if (typeof showToast === 'function') {
-                showToast(`הרשת חזרה — הזמנה לספק ${order.supplierName} ממתינה לשליחה`, 'info');
-            }
+            showToast(`הרשת חזרה — הזמנה לספק ${order.supplierName} ממתינה לשליחה`, 'info');
             console.log('[App] Pending order ready to send:', order.id);
         }
     });

@@ -2,6 +2,7 @@
  * Vegetable Orders Management - Storage Layer
  * Handles data persistence using LocalStorage.
  */
+import { showToast } from './utils.js';
 
 const STORAGE_KEYS = {
     SUPPLIERS: 'vegetable_suppliers',
@@ -11,12 +12,12 @@ const STORAGE_KEYS = {
     SETTINGS: 'vegetable_settings'
 };
 
-function getSettings() {
+export function getSettings() {
     const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
     return raw ? JSON.parse(raw) : {};
 }
 
-function saveSetting(key, value) {
+export function saveSetting(key, value) {
     const settings = getSettings();
     settings[key] = value;
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
@@ -25,7 +26,7 @@ function saveSetting(key, value) {
 /**
  * Initializes the storage with empty arrays if not present.
  */
-function initStorage() {
+export function initStorage() {
     if (!localStorage.getItem(STORAGE_KEYS.SUPPLIERS)) {
         localStorage.setItem(STORAGE_KEYS.SUPPLIERS, JSON.stringify([]));
     }
@@ -45,7 +46,7 @@ function initStorage() {
  * @param {string} key 
  * @returns {Array}
  */
-function getData(key) {
+export function getData(key) {
     const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : [];
 }
@@ -55,7 +56,7 @@ function getData(key) {
  * @param {string} key 
  * @param {Array} data 
  */
-function saveData(key, data) {
+export function saveData(key, data) {
     localStorage.setItem(key, JSON.stringify(data));
 }
 
@@ -65,7 +66,7 @@ function saveData(key, data) {
  * Gets all suppliers from storage.
  * @returns {Array} Array of supplier objects
  */
-function getSuppliers() {
+export function getSuppliers() {
     return getData(STORAGE_KEYS.SUPPLIERS);
 }
 
@@ -74,7 +75,7 @@ function getSuppliers() {
  * @param {Object} supplier - The supplier object { name, phone, notes }
  * @returns {Object} The saved supplier with generated ID
  */
-function saveSupplier(supplier) {
+export function saveSupplier(supplier) {
     const suppliers = getSuppliers();
     const newSupplier = {
         id: Date.now().toString(),
@@ -95,7 +96,7 @@ function saveSupplier(supplier) {
  * @param {Object} updatedData - The updated supplier data
  * @returns {Object|null} The updated supplier or null if not found
  */
-function updateSupplier(id, updatedData) {
+export function updateSupplier(id, updatedData) {
     const suppliers = getSuppliers();
     const index = suppliers.findIndex(s => s.id === id);
     if (index === -1) return null;
@@ -117,7 +118,7 @@ function updateSupplier(id, updatedData) {
  * @param {string} id - The supplier ID
  * @returns {boolean} True if deleted, false if not found
  */
-function deleteSupplier(id) {
+export function deleteSupplier(id) {
     const suppliers = getSuppliers();
     const filtered = suppliers.filter(s => s.id !== id);
     if (filtered.length === suppliers.length) return false;
@@ -130,7 +131,7 @@ function deleteSupplier(id) {
  * @param {string} id - The supplier ID
  * @returns {Object|null} The supplier or null if not found
  */
-function getSupplierById(id) {
+export function getSupplierById(id) {
     const suppliers = getSuppliers();
     return suppliers.find(s => s.id === id) || null;
 }
@@ -141,7 +142,7 @@ function getSupplierById(id) {
  * Gets all orders from storage.
  * @returns {Array} Array of order objects
  */
-function getOrders() {
+export function getOrders() {
     return getData(STORAGE_KEYS.ORDERS);
 }
 
@@ -150,7 +151,7 @@ function getOrders() {
  * @param {Object} order - The order object
  * @returns {Object} The saved order with generated ID
  */
-function saveOrder(order) {
+export function saveOrder(order) {
     const orders = getOrders();
     const orderNumber = generateOrderNumber();
     const newOrder = {
@@ -181,7 +182,7 @@ function saveOrder(order) {
  * @param {Object} updatedData - The updated order data
  * @returns {Object|null} The updated order or null if not found
  */
-function updateOrder(id, updatedData) {
+export function updateOrder(id, updatedData) {
     const orders = getOrders();
     const index = orders.findIndex(o => o.id === id);
     if (index === -1) return null;
@@ -200,7 +201,7 @@ function updateOrder(id, updatedData) {
  * @param {string} id - The order ID
  * @returns {boolean} True if deleted, false if not found
  */
-function deleteOrder(id) {
+export function deleteOrder(id) {
     const orders = getOrders();
     const filtered = orders.filter(o => o.id !== id);
     if (filtered.length === orders.length) return false;
@@ -213,7 +214,7 @@ function deleteOrder(id) {
  * @param {string} id - The order ID
  * @returns {Object|null} The order or null if not found
  */
-function getOrderById(id) {
+export function getOrderById(id) {
     const orders = getOrders();
     return orders.find(o => o.id === id) || null;
 }
@@ -222,7 +223,7 @@ function getOrderById(id) {
  * Generates a unique order number.
  * @returns {string} Order number in format #XXXX
  */
-function generateOrderNumber() {
+export function generateOrderNumber() {
     const orders = getOrders();
     const lastOrder = orders[orders.length - 1];
     let nextNumber = 1001;
@@ -242,7 +243,7 @@ function generateOrderNumber() {
  * @param {string} status - The status to filter by
  * @returns {Array} Filtered orders
  */
-function getOrdersByStatus(status) {
+export function getOrdersByStatus(status) {
     const orders = getOrders();
     return orders.filter(o => o.status === status);
 }
@@ -252,7 +253,7 @@ function getOrdersByStatus(status) {
  * @param {string} supplierId - The supplier ID
  * @returns {Array} Orders for the supplier
  */
-function getOrdersBySupplierId(supplierId) {
+export function getOrdersBySupplierId(supplierId) {
     const orders = getOrders();
     return orders.filter(o => o.supplierId === supplierId);
 }
@@ -263,7 +264,7 @@ function getOrdersBySupplierId(supplierId) {
  * Exports all application data to a JSON file.
  * Creates a downloadable backup file with suppliers and orders.
  */
-function exportAllData() {
+export function exportAllData() {
     try {
         const suppliers = getSuppliers();
         const orders = getOrders();
@@ -322,7 +323,7 @@ function exportAllData() {
  * Imports data from a JSON backup file.
  * @param {Event} event - The file input change event
  */
-function importAllData(event) {
+export function importAllData(event) {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -408,11 +409,11 @@ function importAllData(event) {
 
 // ==================== RETURNS FUNCTIONS ====================
 
-function getReturns() {
+export function getReturns() {
     return getData(STORAGE_KEYS.RETURNS);
 }
 
-function saveReturn(returnObj) {
+export function saveReturn(returnObj) {
     const returns = getReturns();
     const newReturn = {
         id: Date.now().toString(),
@@ -435,7 +436,7 @@ function saveReturn(returnObj) {
     return newReturn;
 }
 
-function updateReturn(id, updatedData) {
+export function updateReturn(id, updatedData) {
     const returns = getReturns();
     const index = returns.findIndex(r => r.id === id);
     if (index === -1) return null;
@@ -444,7 +445,7 @@ function updateReturn(id, updatedData) {
     return returns[index];
 }
 
-function deleteReturn(id) {
+export function deleteReturn(id) {
     const returns = getReturns();
     const filtered = returns.filter(r => r.id !== id);
     if (filtered.length === returns.length) return false;
@@ -452,19 +453,19 @@ function deleteReturn(id) {
     return true;
 }
 
-function getReturnById(id) {
+export function getReturnById(id) {
     return getReturns().find(r => r.id === id) || null;
 }
 
-function getReturnsByStatus(status) {
+export function getReturnsByStatus(status) {
     return getReturns().filter(r => r.status === status);
 }
 
-function getReturnsBySupplierId(supplierId) {
+export function getReturnsBySupplierId(supplierId) {
     return getReturns().filter(r => r.supplierId === supplierId);
 }
 
-function generateReturnNumber() {
+export function generateReturnNumber() {
     const returns = getReturns();
     const last = returns[returns.length - 1];
     let next = 5001;
@@ -477,7 +478,7 @@ function generateReturnNumber() {
 
 // ==================== PRICE CATALOG FUNCTIONS ====================
 
-function getPriceCatalog() {
+export function getPriceCatalog() {
     const data = localStorage.getItem(STORAGE_KEYS.PRICE_CATALOG);
     if (!data) return [];
     try {
@@ -500,7 +501,7 @@ function getPriceCatalog() {
     } catch(e) { return []; }
 }
 
-function saveCatalogItem(item) {
+export function saveCatalogItem(item) {
     const catalog = getPriceCatalog();
     if (item.id) {
         const idx = catalog.findIndex(c => c.id === item.id);
@@ -523,12 +524,12 @@ function saveCatalogItem(item) {
     localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
 }
 
-function deleteCatalogItem(id) {
+export function deleteCatalogItem(id) {
     const catalog = getPriceCatalog().filter(c => c.id !== id);
     localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
 }
 
-function updatePriceCatalog(items) {
+export function updatePriceCatalog(items) {
     const catalog = getPriceCatalog();
     items.forEach(item => {
         if (!item.name || !(item.price > 0)) return;
@@ -539,7 +540,7 @@ function updatePriceCatalog(items) {
     localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));
 }
 
-function getCatalogItemsBySupplier(supplierId) {
+export function getCatalogItemsBySupplier(supplierId) {
     return getPriceCatalog().filter(c => c.supplierId === supplierId);
 }
 
@@ -549,7 +550,7 @@ function getCatalogItemsBySupplier(supplierId) {
  * Gets all WhatsApp groups.
  * @returns {Array} Array of group objects { id, name, link }
  */
-function getGroups() {
+export function getGroups() {
     return getData(STORAGE_KEYS.GROUPS || 'vegetable_groups');
 }
 
@@ -558,7 +559,7 @@ function getGroups() {
  * @param {Object} group - { name, link }
  * @returns {Object} Saved group with generated ID
  */
-function saveGroup(group) {
+export function saveGroup(group) {
     const groups = getGroups();
     const newGroup = {
         id: Date.now().toString(),
@@ -576,7 +577,7 @@ function saveGroup(group) {
  * @param {string} id
  * @param {Object} updatedData - { name, link }
  */
-function updateGroup(id, updatedData) {
+export function updateGroup(id, updatedData) {
     const groups = getGroups();
     const idx = groups.findIndex(g => g.id === id);
     if (idx === -1) return null;
@@ -589,7 +590,7 @@ function updateGroup(id, updatedData) {
  * Deletes a group by ID.
  * @param {string} id
  */
-function deleteGroup(id) {
+export function deleteGroup(id) {
     const groups = getGroups().filter(g => g.id !== id);
     localStorage.setItem('vegetable_groups', JSON.stringify(groups));
 }
@@ -599,7 +600,7 @@ initStorage();
 
 // ====== CATALOG CATEGORIES =======
 
-function getCatalogCategories() {
+export function getCatalogCategories() {
     const defaultCategories = [
         { key: 'all', label: 'הכל', icon: 'fa-tag' }
     ];
@@ -610,18 +611,7 @@ function getCatalogCategories() {
     return defaultCategories;
 }
 
-function saveCatalogCategories(cats) {
+export function saveCatalogCategories(cats) {
     localStorage.setItem('vegetable_catalog_categories', JSON.stringify(cats));
 }
 
-// Ensure exports match
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        saveOrder, getOrders, getOrderById, updateOrder, deleteOrder,
-        saveSupplier, getSuppliers, getSupplierById, deleteSupplier,
-        savePriceCatalog, getPriceCatalog, saveCatalogItem, deleteCatalogItem,
-        saveGroup, getGroups, updateGroup, deleteGroup,
-        saveReturn, getReturns, getReturnById, updateReturn, deleteReturn, getReturnHistory: null,
-        getSettings, saveSettings, getCatalogCategories, saveCatalogCategories
-    };
-}

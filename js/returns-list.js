@@ -2,6 +2,12 @@
  * Vegetable Orders Management - Returns List Page Logic
  */
 
+import { getSuppliers, getReturns, getReturnById, updateReturn, deleteReturn } from './storage.js';
+import { showToast, escapeHtml, formatDateHebrew, debounce } from './utils.js';
+import { sendWhatsAppMessage } from './messaging.js';
+import './theme.js';
+import './sync.js';
+
 const RETURN_STATUS_LABELS = {
     pending: { label: 'ממתינה', cls: 'bg-amber-100 text-amber-700' },
     approved: { label: 'אושרה', cls: 'bg-emerald-100 text-emerald-700' },

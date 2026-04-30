@@ -2,6 +2,8 @@
  * Vegetable Orders Management - Background Sync Layer
  * Handles saving orders when offline and prompting the user to send them when online.
  */
+import { showToast, buildOrderMessage } from './utils.js';
+import { sendWhatsAppMessage, sendSMSMessage, showGroupPicker, sendEmailMessage } from './messaging.js';
 
 async function openSyncDB() {
     return new Promise((resolve, reject) => {
@@ -21,7 +23,7 @@ async function openSyncDB() {
  * Queues an offline order in IndexedDB and registers background sync
  * @param {Object} order 
  */
-async function queueOfflineOrder(order) {
+export async function queueOfflineOrder(order) {
     try {
         const db = await openSyncDB();
         const tx = db.transaction('pending-orders', 'readwrite');

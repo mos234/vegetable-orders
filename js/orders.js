@@ -2,6 +2,12 @@
  * Vegetable Orders Management - Orders Page Logic
  */
 
+import { getSuppliers, getPriceCatalog, saveOrder, updateOrder, getSupplierById, getOrderById } from './storage.js';
+import { showToast, escapeHtml, escapeAttr, buildOrderMessage } from './utils.js';
+import { sendWhatsAppMessage, sendSMSMessage, showGroupPicker, sendEmailMessage } from './messaging.js';
+import { queueOfflineOrder } from './sync.js';
+import './theme.js';
+
 const COMMON_VEGETABLES = [
     'עגבניה','מלפפון','פלפל אדום','פלפל ירוק','פלפל צהוב','בצל','בצל ירוק','שום',
     'גזר','תפוח אדמה','בטטה','חציל','קישוא','כרוב','כרוב סגול','חסה','חסה רומית',
@@ -849,38 +855,6 @@ function resetOrderForm() {
 
     addNewItemRow();
     updateOrderSummary();
-}
-
-// ─── Offline / Background Sync ────────────────────────────────────────────────
-
-function openPendingOrdersDB() {
-    return new Promise((resolve, reject) => {
-        const req = indexedDB.open('vegetable-orders-db', 1);
-        req.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains('pending-orders')) {
-                db.createObjectStore('pending-orders', { keyPath: 'id' });
-            }
-        };
-        req.onsuccess = (e) => resolve(e.target.result);
-        req.onerror = (e) => reject(e.target.error);
-    });
-}
-
-async function queueOfflineOrder(order) {
-    try {
-        const db = await openPendingOrdersDB();
-        const tx = db.transaction('pending-orders', 'readwrite');
-        tx.objectStore('pending-orders').put(order);
-
-        // Register Background Sync so SW processes it when network returns
-        if ('serviceWorker' in navigator && 'SyncManager' in window) {
-            const reg = await navigator.serviceWorker.ready;
-            await reg.sync.register('sync-orders');
-        }
-    } catch (err) {
-        console.error('[Orders] Failed to queue offline order:', err);
-    }
 }
 
 // Expose globals needed by inline onclick handlers in dynamically created HTML

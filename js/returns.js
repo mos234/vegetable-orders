@@ -3,6 +3,12 @@
  * Handles creating and managing returns to suppliers.
  */
 
+import { getSuppliers, getOrdersBySupplierId, saveReturn, getOrderById } from './storage.js';
+import { showToast, escapeHtml, formatDateHebrew } from './utils.js';
+import { sendWhatsAppMessage, sendSMSMessage } from './messaging.js';
+import './theme.js';
+import './sync.js';
+
 const RETURN_UNIT_OPTIONS = [
     { value: 'none', label: 'ללא (רק מספר)' },
     { value: 'kg', label: 'ק"ג' },
