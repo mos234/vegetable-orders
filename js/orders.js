@@ -3,7 +3,7 @@
  */
 
 import { getSuppliers, getPriceCatalog, saveOrder, updateOrder, getSupplierById, getOrderById } from './storage.js';
-import { showToast, escapeHtml, escapeAttr, buildOrderMessage } from './utils.js';
+import { showToast, escapeHtml, escapeAttr, buildOrderMessage, arabicToHebrewNumeral } from './utils.js';
 import { sendWhatsAppMessage, sendSMSMessage, showGroupPicker, sendEmailMessage } from './messaging.js';
 import { queueOfflineOrder } from './sync.js';
 import './theme.js';
