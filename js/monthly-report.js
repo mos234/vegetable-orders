@@ -36,10 +36,7 @@ function setDefaultMonth() {
  * Sets up event listeners.
  */
 function setupEventListeners() {
-    document.getElementById('load-report-btn').addEventListener('click', loadReport);
     document.getElementById('download-excel-btn').addEventListener('click', downloadExcel);
-
-    // Also load on month/year change
     document.getElementById('month-select').addEventListener('change', loadReport);
     document.getElementById('year-select').addEventListener('change', loadReport);
 }
@@ -84,7 +81,8 @@ const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי',
  * @param {number} year
  */
 function updateSummaryStats(orders, month, year) {
-    const totalExpenses = orders.reduce((sum, o) => sum + (o.actualTotal != null ? o.actualTotal : (o.total || 0)), 0);
+    const billableOrders = orders.filter(o => o.status !== 'not_delivered');
+    const totalExpenses = billableOrders.reduce((sum, o) => sum + (o.actualTotal != null ? o.actualTotal : (o.total || 0)), 0);
     const totalOrders = orders.length;
 
     // Get unique suppliers
@@ -123,7 +121,6 @@ function renderSupplierBreakdown(orders) {
     const supplierTotals = {};
     orders.forEach(order => {
         const key = order.supplierId || 'unknown';
-        const orderTotal = order.actualTotal != null ? order.actualTotal : (order.total || 0);
         if (!supplierTotals[key]) {
             supplierTotals[key] = {
                 name: order.supplierName || 'ספק לא ידוע',
@@ -133,9 +130,14 @@ function renderSupplierBreakdown(orders) {
                 orders: []
             };
         }
+        supplierTotals[key].orders.push(order);
+
+        // not_delivered לא נחשב בסכומים
+        if (order.status === 'not_delivered') return;
+
+        const orderTotal = order.actualTotal != null ? order.actualTotal : (order.total || 0);
         supplierTotals[key].total += orderTotal;
         supplierTotals[key].count++;
-        supplierTotals[key].orders.push(order);
 
         // Process items within the order
         if (order.items && Array.isArray(order.items)) {
@@ -184,14 +186,15 @@ function renderSupplierBreakdown(orders) {
         const ordersSorted = [...supplier.orders].sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
         const ordersHtml = ordersSorted.map(o => {
             const oTotal = o.actualTotal != null ? o.actualTotal : (o.total || 0);
+            const isND = o.status === 'not_delivered';
             return `
-            <div class="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 text-sm">
+            <div class="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 text-sm ${isND ? 'opacity-50' : ''}">
                 <div>
                     <span class="font-medium text-slate-700">${escapeHtml(o.orderNumber || '-')}</span>
                     <span class="text-slate-400 text-xs mr-2">${formatDateHebrew(o.orderDate)}</span>
                     ${getStatusBadgeHtml(o.status)}
                 </div>
-                <span class="font-bold text-emerald-700">₪${oTotal.toFixed(2)}</span>
+                <span class="${isND ? 'line-through text-slate-400' : 'font-bold text-emerald-700'}">₪${oTotal.toFixed(2)}</span>
             </div>`;
         }).join('');
 
@@ -304,16 +307,18 @@ function renderOrdersTable(orders) {
     // Sort by date (newest first)
     const sorted = [...orders].sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
 
-    tbody.innerHTML = sorted.map(order => `
-        <tr class="hover:bg-slate-50">
+    tbody.innerHTML = sorted.map(order => {
+        const isND = order.status === 'not_delivered';
+        return `
+        <tr class="hover:bg-slate-50${isND ? ' opacity-50' : ''}">
             <td class="py-4 font-medium">${order.orderNumber || '-'}</td>
             <td class="py-4">${escapeHtml(order.supplierName || '-')}</td>
             <td class="py-4 text-slate-500">${formatDateHebrew(order.orderDate)}</td>
             <td class="py-4">${order.items ? order.items.length : 0} פריטים</td>
             <td class="py-4">${getStatusBadgeHtml(order.status)}</td>
-            <td class="py-4 text-left font-bold">₪${(order.total || 0).toFixed(2)}</td>
-        </tr>
-    `).join('');
+            <td class="py-4 text-left font-bold ${isND ? 'line-through text-slate-400' : ''}">₪${(order.total || 0).toFixed(2)}</td>
+        </tr>`;
+    }).join('');
 }
 
 
