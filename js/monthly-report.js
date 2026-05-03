@@ -68,9 +68,10 @@ function getOrdersForMonth(month, year) {
     const orders = getOrders();
 
     return orders.filter(order => {
-        if (!order.orderDate) return false;
-        const orderDate = new Date(order.orderDate);
-        return orderDate.getMonth() + 1 === month && orderDate.getFullYear() === year;
+        const dateStr = order.deliveryDate || order.orderDate;
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        return d.getMonth() + 1 === month && d.getFullYear() === year;
     });
 }
 
