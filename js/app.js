@@ -83,8 +83,8 @@ function renderDashboard() {
     const now = new Date();
     const todayString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-    // Filter orders for today
-    const ordersToday = orders.filter(o => o.deliveryDate === todayString || o.orderDate === todayString);
+    // Filter orders for today — only those due for delivery today
+    const ordersToday = orders.filter(o => o.deliveryDate === todayString);
 
     // 4. Render Today's Orders
     const recentOrdersList = document.getElementById('recent-orders-list');

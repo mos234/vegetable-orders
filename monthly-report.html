@@ -239,17 +239,6 @@
                 </div>
                 <div class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100">
                     <div class="flex items-center gap-4">
-                        <div class="bg-purple-100 text-purple-600 p-4 rounded-2xl">
-                            <i class="fas fa-calculator text-xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-slate-500 text-sm font-medium">ממוצע להזמנה</p>
-                            <h3 class="text-2xl font-bold" id="avg-order">₪0</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100">
-                    <div class="flex items-center gap-4">
                         <div class="bg-amber-100 text-amber-600 p-4 rounded-2xl">
                             <i class="fas fa-truck text-xl"></i>
                         </div>
@@ -262,34 +251,17 @@
             </div>
 
             <!-- Report Content -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Expenses by Supplier -->
-                <div class="glass-card rounded-3xl p-8 shadow-sm">
-                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
-                        <i class="fas fa-chart-pie text-emerald-600"></i>
-                        הוצאות לפי ספק
-                    </h3>
-                    <div id="supplier-breakdown" class="space-y-4">
-                        <!-- Supplier breakdown will be rendered here -->
-                        <div class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center">
-                            <i class="fas fa-chart-pie text-3xl text-slate-300 mb-3 block"></i>
-                            <p class="text-slate-400">אין נתונים לחודש זה</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Orders Timeline -->
-                <div class="glass-card rounded-3xl p-8 shadow-sm">
-                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
-                        <i class="fas fa-calendar-alt text-emerald-600"></i>
-                        הזמנות בחודש
-                    </h3>
-                    <div id="orders-timeline" class="space-y-3 max-h-96 overflow-y-auto">
-                        <!-- Orders timeline will be rendered here -->
-                        <div class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center">
-                            <i class="fas fa-calendar text-3xl text-slate-300 mb-3 block"></i>
-                            <p class="text-slate-400">אין הזמנות לחודש זה</p>
-                        </div>
+            <!-- Expenses by Supplier -->
+            <div class="glass-card rounded-3xl p-8 shadow-sm mb-8">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <i class="fas fa-chart-pie text-emerald-600"></i>
+                    הוצאות לפי ספק
+                </h3>
+                <div id="supplier-breakdown" class="space-y-4">
+                    <!-- Supplier breakdown will be rendered here -->
+                    <div class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center">
+                        <i class="fas fa-chart-pie text-3xl text-slate-300 mb-3 block"></i>
+                        <p class="text-slate-400">אין נתונים לחודש זה</p>
                     </div>
                 </div>
             </div>

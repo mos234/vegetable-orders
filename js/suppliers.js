@@ -34,6 +34,7 @@ function setupSupplierForm() {
 
         const name = document.getElementById('supplier-name').value.trim();
         const phone = document.getElementById('supplier-phone').value.trim();
+        const phone2 = document.getElementById('supplier-phone2').value.trim();
         const email = document.getElementById('supplier-email').value.trim();
         const notes = document.getElementById('supplier-notes').value.trim();
 
@@ -42,7 +43,7 @@ function setupSupplierForm() {
             return;
         }
 
-        const supplier = saveSupplier({ name, phone, email, notes });
+        const supplier = saveSupplier({ name, phone, phone2, email, notes });
         console.log('Supplier saved:', supplier);
 
         // Reset form
@@ -90,6 +91,7 @@ function setupEditModal() {
             const id = document.getElementById('edit-id').value;
             const name = document.getElementById('edit-name').value.trim();
             const phone = document.getElementById('edit-phone').value.trim();
+            const phone2 = document.getElementById('edit-phone2').value.trim();
             const email = document.getElementById('edit-email').value.trim();
             const notes = document.getElementById('edit-notes').value.trim();
 
@@ -98,7 +100,7 @@ function setupEditModal() {
                 return;
             }
 
-            const updated = updateSupplier(id, { name, phone, email, notes });
+            const updated = updateSupplier(id, { name, phone, phone2, email, notes });
             if (updated) {
                 closeEditModal();
                 renderSuppliersList();
@@ -119,6 +121,7 @@ function openEditModal(id) {
     document.getElementById('edit-id').value = supplier.id;
     document.getElementById('edit-name').value = supplier.name;
     document.getElementById('edit-phone').value = supplier.phone;
+    document.getElementById('edit-phone2').value = supplier.phone2 || '';
     document.getElementById('edit-email').value = supplier.email || '';
     document.getElementById('edit-notes').value = supplier.notes || '';
 
@@ -173,10 +176,18 @@ function renderSuppliersList() {
                     <button
                         onclick="handleWhatsApp('${supplier.id}')"
                         class="bg-green-500 hover:bg-green-600 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[48px] min-h-[48px] flex items-center justify-center shadow-md"
-                        title="שלח הודעת WhatsApp"
+                        title="שלח WhatsApp לטלפון ראשי"
                     >
                         <i class="fab fa-whatsapp text-xl"></i>
                     </button>
+                    ${supplier.phone2 ? `<!-- WhatsApp Button 2 -->
+                    <button
+                        onclick="handleWhatsApp2('${supplier.id}')"
+                        class="bg-green-600 hover:bg-green-700 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[48px] min-h-[48px] flex items-center justify-center shadow-md"
+                        title="שלח WhatsApp לטלפון נוסף (${supplier.phone2})"
+                    >
+                        <i class="fab fa-whatsapp text-xl"></i><span class="text-xs mr-0.5">2</span>
+                    </button>` : ''}
                     <!-- SMS Button -->
                     <button
                         onclick="handleSMS('${supplier.id}')"
@@ -219,6 +230,16 @@ function handleWhatsApp(id) {
 }
 
 /**
+ * Handles WhatsApp button click for second phone.
+ * @param {string} id - The supplier ID
+ */
+function handleWhatsApp2(id) {
+    const supplier = getSupplierById(id);
+    if (!supplier || !supplier.phone2) return;
+    openWhatsAppChat(supplier.phone2);
+}
+
+/**
  * Handles SMS button click.
  * @param {string} id - The supplier ID
  */
@@ -247,4 +268,4 @@ function handleDelete(id) {
     }
 }
 
-Object.assign(window, { handleWhatsApp, handleSMS, openEditModal, handleDelete });
+Object.assign(window, { handleWhatsApp, handleWhatsApp2, handleSMS, openEditModal, handleDelete });

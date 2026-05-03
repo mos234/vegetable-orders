@@ -69,20 +69,26 @@ vegetable-orders/
 ## מבנה הנתונים ב-LocalStorage
 
 ```
-vegetable_suppliers        → [{id, name, phone, email, notes, createdAt}]
+vegetable_suppliers        → [{id, name, phone, phone2, email, notes, createdAt}]
+                             phone2 — מספר טלפון נוסף (אופציונלי)
 
 vegetable_orders           → [{id, orderNumber, supplierId, supplierName,
                                supplierPhone, orderDate, deliveryDate,
-                               deliveryTime, mainHallName, items[], halls[],
-                               total, status, notes, createdAt}]
+                               deliveryTime, mainHallName,
+                               items: [{name, quantity, unit, unitValue, price,
+                                        total, receivedQty, actualPrice, actualTotal}],
+                               halls[], total, actualTotal,
+                               status, notes, createdAt}]
+                             receivedQty/actualPrice/actualTotal — מתמלאים בקבלת סחורה
 
 vegetable_returns          → [{id, returnNumber, orderId, orderNumber,
                                supplierId, supplierName, supplierPhone,
                                returnDate, reason, items[], total,
                                status, notes, createdAt}]
 
-vegetable_price_catalog    → ARRAY: [{id, name, price, category, notes,
-                               supplierId, unit}]
+vegetable_price_catalog    → ARRAY: [{id, name, price, unit, cartonWeight,
+                               category, notes, supplierId}]
+                             cartonWeight — ק"ג בקרטון (אופציונלי); מחיר לקרטון = price × cartonWeight
                              ⚠️ מבנה ישן היה OBJECT — יש מיגרציה אוטומטית ב-getPriceCatalog()
 
 vegetable_catalog_categories → [{key, label, icon}]
@@ -123,18 +129,21 @@ vegetable_groups           → [{id, name, link, createdAt}]
 
 ## catalog.js — מחירונים ותבניות
 
-**תצוגה:** כרטסיות קטגוריה → בתוך כל כרטסיה: בלוקים לפי ספק → כל בלוק: טבלת פריטים + שדות כמות זמניים + כפתור "הפוך להזמנה"
+**תצוגה:** כרטסיות קטגוריה → בתוך כל כרטסיה: טבלת פריטים שטוחה + שדות כמות זמניים → כפתור "צור הזמנה (N פריטים)" גלובלי
 
 **חשוב:**
 - כרטסיית "הכל" מציגה רק פריטים **ללא קטגוריה** (לא הכל!)
 - שדות כמות הם **זמניים בלבד** — לא נשמרים, מתאפסים בכל טעינה
-- `convertSupplierToOrder(supplierId)` — שומר ב-sessionStorage ומנווט ל-`new-order.html?fromTemplate=1`
+- הספק נבחר **בעת יצירת ההזמנה** (לא לפי שיוך המוצר)
+- פריט עם `cartonWeight` מציג: "₪X/ק"ג × Y ק"ג = ₪Z לקרטון"
 
 **פונקציות עיקריות:**
-- `renderPriceLists()` — רינדור כל הבלוקים
+- `renderPriceLists()` — רינדור כל הקטגוריות והפריטים
+- `updateBasketBtn()` — מציג/מסתיר כפתור "צור הזמנה" לפי כמויות שהוזנו
+- `openCreateOrderModal()` / `closeCreateOrderModal()` — modal בחירת ספק
+- `createOrderFromBasket()` — שומר ב-sessionStorage ומנווט ל-`new-order.html?fromTemplate=1`
 - `openAddCatalogModal(presetSupplierId)` / `openEditCatalogModal(id)` / `saveCatalogModal()`
 - `deleteCatalogItemConfirm(id)` — מוחק לפי id
-- `convertSupplierToOrder(supplierId)`
 - `openManageCategoriesModal()` / `saveCategoriesAndClose()`
 
 ---
@@ -151,6 +160,12 @@ vegetable_groups           → [{id, name, link, createdAt}]
 - `loadFromTemplate()` — מופעל כש-URL מכיל `?fromTemplate=1`
 - קורא מ-`sessionStorage.getItem('templateOrder')` את `{supplierId, items[]}`
 - ממלא אוטומטית ספק + שורות פריטים
+
+**עריכת טיוטה:**
+- `loadOrderForEdit(orderId)` — מופעל כש-URL מכיל `?editOrder=ID`
+- טוען הזמנה קיימת בסטטוס `draft` לטופס (ספק, תאריכים, פריטים, אולמות — הכל עריך)
+- מציג באנר "עריכת הזמנה [מספר]"
+- `saveOrderAction()` — כש-`editOrderId` מוגדר, קורא ל-`updateOrder()` עם `orderNumber` ו-`createdAt` מקוריים
 
 ---
 
@@ -192,12 +207,25 @@ Object.assign(window, { handleWhatsApp, handleSMS, openEditModal, handleDelete }
 
 ---
 
-## זרימת "הפוך להזמנה" מהמחירון
+## זרימות ניווט בין דפים
 
-`catalog.js` → `convertSupplierToOrder(supplierId)`:
-1. שומר `{supplierId, items[]}` ב-`sessionStorage` תחת המפתח `templateOrder`
-2. מנווט ל-`new-order.html?fromTemplate=1`
+### הזמנה מהמחירון (סל)
 
-`orders.js` → `loadFromTemplate()` (מופעל ב-DOMContentLoaded אם URL מכיל `?fromTemplate=1`):
-1. קורא מ-sessionStorage
+`catalog.js` → `createOrderFromBasket()`:
+1. קורא את כל ה-`input.catalog-qty-input` עם ערך > 0
+2. שומר `{supplierId, items[]}` ב-`sessionStorage.templateOrder`
+3. מנווט ל-`new-order.html?fromTemplate=1`
+
+`orders.js` → `loadFromTemplate()`:
+1. קורא מ-sessionStorage, מוחק מיד
 2. ממלא ספק + שורות פריטים אוטומטית
+
+### עריכת טיוטה
+
+`orders-list.js` → כפתור "ערוך" (מופיע רק כש-`order.status === 'draft'`):
+- מנווט ל-`new-order.html?editOrder=ORDER_ID`
+
+`orders.js` → `loadOrderForEdit(orderId)`:
+1. טוען הזמנה קיימת לטופס (כל השדות עריכים)
+2. מגדיר `editOrderId = orderId`
+3. בשמירה: `updateOrder()` במקום `saveOrder()`, שומר על `orderNumber` ו-`createdAt` מקוריים

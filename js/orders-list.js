@@ -128,6 +128,14 @@ function renderOrdersList() {
                 >
                     <i class="fas fa-plus"></i>
                 </button>
+                ${order.status === 'draft' ? `
+                <button
+                    onclick="window.location.href='new-order.html?editOrder=${order.id}'"
+                    class="bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-lg transition-all"
+                    title="ערוך הזמנה (טיוטה)"
+                >
+                    <i class="fas fa-edit"></i>
+                </button>` : ''}
                 <button
                     onclick="resendWhatsApp('${order.id}')"
                     class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition-all"

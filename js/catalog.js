@@ -27,6 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('close-manage-categories-btn')?.addEventListener('click', closeManageCategoriesModal);
     document.getElementById('add-new-category-btn')?.addEventListener('click', addNewCategory);
     document.getElementById('save-categories-btn')?.addEventListener('click', saveCategoriesAndClose);
+
+    // Update basket button whenever a qty input changes (event delegation)
+    document.getElementById('catalog-content')?.addEventListener('input', (e) => {
+        if (e.target.classList.contains('catalog-qty-input')) updateBasketBtn();
+    });
 });
 
 // ─── Category Tabs ────────────────────────────────────────────────────────────
@@ -105,11 +110,17 @@ function renderPriceLists() {
         const supplierName = supplier ? supplier.name : 'ללא ספק';
         const groupItems = groups[supplierId];
 
-        const rows = groupItems.map(item => `
+        const rows = groupItems.map(item => {
+            const pricePerCarton = item.cartonWeight ? (parseFloat(item.price) || 0) * item.cartonWeight : null;
+            const priceDisplay = item.cartonWeight
+                ? `<span class="font-bold text-emerald-700">₪${pricePerCarton.toFixed(2)}</span><br><span class="text-xs text-slate-400">₪${(parseFloat(item.price)||0).toFixed(2)}/ק"ג × ${item.cartonWeight}ק"ג</span>`
+                : `<span class="font-bold text-emerald-700">₪${(parseFloat(item.price) || 0).toFixed(2)}</span>`;
+            const unitDisplay = item.cartonWeight ? 'קרטון' : escapeHtml(unitLabel(item.unit));
+            return `
             <tr class="border-t border-slate-100 hover:bg-slate-50 transition-colors">
                 <td class="p-3 font-medium">${escapeHtml(item.name)}</td>
-                <td class="p-3 text-center font-bold text-emerald-700">₪${(parseFloat(item.price) || 0).toFixed(2)}</td>
-                <td class="p-3 text-center text-slate-500">${escapeHtml(unitLabel(item.unit))}</td>
+                <td class="p-3 text-center">${priceDisplay}</td>
+                <td class="p-3 text-center text-slate-500">${unitDisplay}</td>
                 <td class="p-3 text-center">
                     <input type="number" min="0" step="0.5" inputmode="decimal"
                         class="catalog-qty-input w-20 px-2 py-1 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 text-center text-sm"
@@ -129,8 +140,8 @@ function renderPriceLists() {
                         </button>
                     </div>
                 </td>
-            </tr>
-        `).join('');
+            </tr>`;
+        }).join('');
 
         return `
         <div class="glass-card rounded-3xl shadow-sm overflow-hidden mb-6">
@@ -150,7 +161,7 @@ function renderPriceLists() {
                     <thead class="bg-slate-50/50">
                         <tr class="text-slate-500 text-xs">
                             <th class="p-3 text-right font-semibold">שם הפריט</th>
-                            <th class="p-3 text-center font-semibold">מחיר ₪</th>
+                            <th class="p-3 text-center font-semibold">מחיר</th>
                             <th class="p-3 text-center font-semibold">יחידה</th>
                             <th class="p-3 text-center font-semibold">כמות להזמנה</th>
                             <th class="p-3 text-right font-semibold">הערות</th>
@@ -192,7 +203,11 @@ function convertSupplierToOrder(supplierId) {
         const itemSupplierId = catalogItem.supplierId || '';
         const targetSupplierId = supplierId || '';
         if (itemSupplierId !== targetSupplierId) return;
-        items.push({ name: catalogItem.name, qty, unit: catalogItem.unit || 'kg', price: catalogItem.price });
+        const price = catalogItem.cartonWeight
+            ? (parseFloat(catalogItem.price) || 0) * catalogItem.cartonWeight
+            : catalogItem.price;
+        const unit = catalogItem.cartonWeight ? 'carton' : (catalogItem.unit || 'kg');
+        items.push({ name: catalogItem.name, qty, unit, price });
     });
 
     if (items.length === 0) {
@@ -200,6 +215,72 @@ function convertSupplierToOrder(supplierId) {
         return;
     }
 
+    sessionStorage.setItem('templateOrder', JSON.stringify({ supplierId, items }));
+    window.location.href = 'new-order.html?fromTemplate=1';
+}
+
+// ─── Order Basket ─────────────────────────────────────────────────────────────
+
+function updateBasketBtn() {
+    const inputs = document.querySelectorAll('.catalog-qty-input');
+    let count = 0;
+    inputs.forEach(input => { if (parseFloat(input.value) > 0) count++; });
+    const btn = document.getElementById('order-basket-btn');
+    const countEl = document.getElementById('basket-count');
+    if (!btn) return;
+    if (count > 0) {
+        btn.classList.remove('hidden');
+        if (countEl) countEl.textContent = count;
+    } else {
+        btn.classList.add('hidden');
+    }
+}
+
+function openCreateOrderModal() {
+    const inputs = document.querySelectorAll('.catalog-qty-input');
+    let count = 0;
+    inputs.forEach(input => { if (parseFloat(input.value) > 0) count++; });
+    if (count === 0) { alert('נא להזין כמות לפחות לפריט אחד'); return; }
+
+    // Populate supplier dropdown
+    const select = document.getElementById('order-supplier-select');
+    const suppliers = getSuppliers();
+    select.innerHTML = `<option value="">-- בחר ספק --</option>` +
+        suppliers.map(s => `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)}</option>`).join('');
+
+    // Update summary text
+    const summaryEl = document.getElementById('basket-items-summary');
+    if (summaryEl) summaryEl.textContent = `${count} פריטים נבחרו`;
+
+    document.getElementById('create-order-modal').classList.remove('hidden');
+}
+
+function closeCreateOrderModal() {
+    document.getElementById('create-order-modal').classList.add('hidden');
+}
+
+function createOrderFromBasket() {
+    const supplierId = document.getElementById('order-supplier-select').value;
+    if (!supplierId) { alert('נא לבחור ספק'); return; }
+
+    const qtyInputs = document.querySelectorAll('.catalog-qty-input');
+    const catalog = getPriceCatalog();
+    const items = [];
+
+    qtyInputs.forEach(input => {
+        const qty = parseFloat(input.value);
+        if (!qty || qty <= 0) return;
+        const itemId = input.dataset.itemId;
+        const catalogItem = catalog.find(c => c.id === itemId);
+        if (!catalogItem) return;
+        const price = catalogItem.cartonWeight
+            ? (parseFloat(catalogItem.price) || 0) * catalogItem.cartonWeight
+            : catalogItem.price;
+        const unit = catalogItem.cartonWeight ? 'carton' : (catalogItem.unit || 'kg');
+        items.push({ name: catalogItem.name, qty, unit, price });
+    });
+
+    if (!items.length) { alert('נא להזין כמות לפחות לפריט אחד'); return; }
     sessionStorage.setItem('templateOrder', JSON.stringify({ supplierId, items }));
     window.location.href = 'new-order.html?fromTemplate=1';
 }
@@ -213,6 +294,7 @@ function openAddCatalogModal(presetSupplierId) {
     document.getElementById('catalog-name').removeAttribute('readonly');
     document.getElementById('catalog-price').value = '';
     document.getElementById('catalog-unit').value = 'kg';
+    document.getElementById('catalog-carton-weight').value = '';
     document.getElementById('catalog-notes').value = '';
     populateCategoryDropdowns();
     document.getElementById('catalog-category').value = '';
@@ -229,9 +311,10 @@ function openEditCatalogModal(id) {
     editingCatalogItemId = id;
     document.getElementById('catalog-modal-title').textContent = 'עריכת פריט';
     document.getElementById('catalog-name').value = item.name;
-    document.getElementById('catalog-name').setAttribute('readonly', true);
+    document.getElementById('catalog-name').removeAttribute('readonly');
     document.getElementById('catalog-price').value = item.price || '';
     document.getElementById('catalog-unit').value = item.unit || 'kg';
+    document.getElementById('catalog-carton-weight').value = item.cartonWeight || '';
     document.getElementById('catalog-notes').value = item.notes || '';
     populateCategoryDropdowns();
     document.getElementById('catalog-category').value = item.category || '';
@@ -256,6 +339,8 @@ function saveCatalogModal() {
     const name = document.getElementById('catalog-name').value.trim();
     const price = parseFloat(document.getElementById('catalog-price').value);
     const unit = document.getElementById('catalog-unit').value;
+    const cartonWeightRaw = parseFloat(document.getElementById('catalog-carton-weight').value);
+    const cartonWeight = isNaN(cartonWeightRaw) || cartonWeightRaw <= 0 ? null : cartonWeightRaw;
     const notes = document.getElementById('catalog-notes').value.trim();
     const category = document.getElementById('catalog-category').value;
     const supplierId = document.getElementById('catalog-supplier').value;
@@ -263,7 +348,7 @@ function saveCatalogModal() {
     if (!name) { alert('נא להזין שם פריט'); return; }
     if (isNaN(price) || price < 0) { alert('נא להזין מחיר תקין'); return; }
 
-    const item = { name, price, unit, notes, category, supplierId };
+    const item = { name, price, unit, cartonWeight, notes, category, supplierId };
     if (editingCatalogItemId) item.id = editingCatalogItemId;
 
     saveCatalogItem(item);
@@ -310,11 +395,12 @@ function renderManageCategoriesList() {
             </div>`;
         }
         return `
-        <div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
-            <div class="flex items-center gap-2 text-slate-700">
-                <i class="fas ${c.icon}"></i> ${c.label}
-            </div>
-            <button onclick="removeTempCategory(${index})" class="text-red-500 hover:text-red-700 p-1">
+        <div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm gap-3">
+            <i class="fas ${c.icon} text-slate-400 shrink-0"></i>
+            <input type="text" value="${escapeAttr(c.label)}"
+                onchange="window.tempCategories[${index}].label = this.value"
+                class="flex-1 px-2 py-1 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 text-sm">
+            <button onclick="removeTempCategory(${index})" class="text-red-500 hover:text-red-700 p-1 shrink-0">
                 <i class="fas fa-trash"></i>
             </button>
         </div>`;
@@ -367,5 +453,6 @@ Object.assign(window, {
     saveCatalogModal, deleteCatalogItemConfirm,
     setActiveCategory, convertSupplierToOrder,
     openManageCategoriesModal, closeManageCategoriesModal,
-    addNewCategory, removeTempCategory, saveCategoriesAndClose
+    addNewCategory, removeTempCategory, saveCategoriesAndClose,
+    openCreateOrderModal, closeCreateOrderModal, createOrderFromBasket
 });

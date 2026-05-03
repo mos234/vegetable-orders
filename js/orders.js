@@ -36,6 +36,9 @@ let hallIdCounter = 0;
 let addToOrderId = null;
 let addToOrderOriginalItemCount = 0;
 
+// When editing a draft order
+let editOrderId = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     initOrderPage();
 });
@@ -48,8 +51,11 @@ function initOrderPage() {
 
     const params = new URLSearchParams(window.location.search);
     const addToId = params.get('addTo');
+    const editId  = params.get('editOrder');
     if (addToId) {
         loadOrderForAddition(addToId);
+    } else if (editId) {
+        loadOrderForEdit(editId);
     } else if (params.get('fromTemplate')) {
         loadFromTemplate();
     } else {
@@ -137,6 +143,85 @@ function loadOrderForAddition(orderId) {
 
     addToOrderOriginalItemCount = orderItems.length;
     addNewItemRow();
+}
+
+function loadOrderForEdit(orderId) {
+    const order = getOrderById(orderId);
+    if (!order) { addNewItemRow(); return; }
+
+    editOrderId = orderId;
+
+    // Show banner
+    const banner = document.createElement('div');
+    banner.className = 'bg-indigo-50 border border-indigo-300 rounded-2xl px-4 py-3 mb-4 text-indigo-800 text-sm font-medium flex items-center gap-2';
+    banner.innerHTML = `<i class="fas fa-edit"></i> עריכת הזמנה ${order.orderNumber || ''} — ${escapeHtml(order.supplierName || '')}`;
+    const mainEl = document.querySelector('main') || document.body;
+    mainEl.prepend(banner);
+
+    // Pre-fill supplier
+    const supplierSelect = document.getElementById('supplier-select');
+    if (supplierSelect && order.supplierId) supplierSelect.value = order.supplierId;
+
+    // Pre-fill header fields
+    const orderDateInput    = document.getElementById('order-date');
+    const deliveryDateInput = document.getElementById('delivery-date');
+    const deliveryTimeInput = document.getElementById('delivery-time');
+    const mainHallNameInput = document.getElementById('main-hall-name');
+    const notesInput        = document.getElementById('order-notes');
+    if (orderDateInput    && order.orderDate)    orderDateInput.value    = order.orderDate;
+    if (deliveryDateInput && order.deliveryDate) deliveryDateInput.value = order.deliveryDate;
+    if (deliveryTimeInput && order.deliveryTime) deliveryTimeInput.value = order.deliveryTime;
+    if (mainHallNameInput && order.mainHallName) mainHallNameInput.value = order.mainHallName;
+    if (notesInput        && order.notes)        notesInput.value        = order.notes;
+
+    // Load main items as editable rows
+    document.getElementById('empty-items-state')?.classList.add('hidden');
+    (order.items || []).forEach(item => {
+        addNewItemRow();
+        const id = itemIdCounter;
+        const unit = item.unitValue || 'kg';
+        const nameInput  = document.getElementById(`item-name-${id}`);
+        const qtyInput   = document.getElementById(`item-qty-${id}`);
+        const unitSelect = document.getElementById(`item-unit-${id}`);
+        const priceInput = document.getElementById(`item-price-${id}`);
+        if (nameInput)  { nameInput.value  = item.name;         updateItemData(id, 'name',  item.name); }
+        if (qtyInput)   { qtyInput.value   = item.quantity;     updateItemData(id, 'qty',   item.quantity); }
+        if (unitSelect) { unitSelect.value = unit;              updateItemData(id, 'unit',  unit); }
+        if (priceInput) { priceInput.value = item.price || '';  updateItemData(id, 'price', item.price || 0); }
+        calculateItemTotal(id);
+    });
+
+    // Load halls
+    (order.halls || []).forEach(hall => {
+        addHall();
+        const hallId = hallIdCounter;
+        const hallNameInput = document.getElementById(`hall-name-${hallId}`);
+        if (hallNameInput) { hallNameInput.value = hall.name; updateHallName(hallId, hall.name); }
+        const hallObj = halls.find(h => h.id === hallId);
+        if (!hallObj) return;
+        // Remove the default empty row added by addHall()
+        const tbody = document.getElementById(`hall-items-table-${hallId}`);
+        if (tbody) tbody.innerHTML = '';
+        hallObj.items = [];
+        hallObj.itemCounter = 0;
+        (hall.items || []).forEach(item => {
+            addHallItem(hallId);
+            const itemId = hallObj.itemCounter;
+            const prefix = `hall-${hallId}-`;
+            const unit = item.unitValue || 'kg';
+            const nameInput  = document.getElementById(`${prefix}item-name-${itemId}`);
+            const qtyInput   = document.getElementById(`${prefix}item-qty-${itemId}`);
+            const unitSelect = document.getElementById(`${prefix}item-unit-${itemId}`);
+            const priceInput = document.getElementById(`${prefix}item-price-${itemId}`);
+            if (nameInput)  { nameInput.value  = item.name;         updateHallItemData(hallId, itemId, 'name',  item.name); }
+            if (qtyInput)   { qtyInput.value   = item.quantity;     updateHallItemData(hallId, itemId, 'qty',   item.quantity); }
+            if (unitSelect) { unitSelect.value = unit;              updateHallItemData(hallId, itemId, 'unit',  unit); }
+            if (priceInput) { priceInput.value = item.price || '';  updateHallItemData(hallId, itemId, 'price', item.price || 0); }
+            calculateHallItemTotal(hallId, itemId);
+        });
+    });
+
+    history.replaceState(null, '', 'new-order.html');
 }
 
 function setupDateDefaults() {
@@ -791,7 +876,18 @@ function saveOrderAction(action) {
         status: action === 'draft' ? 'draft' : 'sent'
     };
 
-    const savedOrder = saveOrder(order);
+    let savedOrder;
+    if (editOrderId) {
+        const existingOrder = getOrderById(editOrderId);
+        updateOrder(editOrderId, {
+            ...order,
+            orderNumber: existingOrder?.orderNumber,
+            createdAt:   existingOrder?.createdAt
+        });
+        savedOrder = { ...order, id: editOrderId, orderNumber: existingOrder?.orderNumber };
+    } else {
+        savedOrder = saveOrder(order);
+    }
     const isOffline = !navigator.onLine;
 
     // When offline and the intent was to send — queue for Background Sync

@@ -88,10 +88,10 @@ function createSummarySheet(orders, month, year) {
     ];
 
     const totalOrders = orders.length;
-    const totalAmount = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+    const totalAmount = orders.reduce((sum, o) => sum + (o.actualTotal != null ? o.actualTotal : (o.total || 0)), 0);
     const avgOrder = totalOrders > 0 ? totalAmount / totalOrders : 0;
 
-    // Group by supplier
+    // Group by supplier — use actualTotal when available
     const supplierTotals = {};
     orders.forEach(order => {
         const name = order.supplierName || 'ספק לא ידוע';
@@ -99,7 +99,7 @@ function createSummarySheet(orders, month, year) {
             supplierTotals[name] = { count: 0, total: 0 };
         }
         supplierTotals[name].count++;
-        supplierTotals[name].total += order.total || 0;
+        supplierTotals[name].total += (order.actualTotal != null ? order.actualTotal : (order.total || 0));
     });
 
     // Build summary data
@@ -163,28 +163,32 @@ function createDetailSheet(orders) {
         const status = statusText[order.status] || 'טיוטה';
 
         if (order.items && order.items.length > 0) {
-            // Add each item as a row
+            // Add each item as a row — use actual received values if available
             order.items.forEach((item, index) => {
+                const qty   = item.receivedQty  != null ? item.receivedQty  : (item.quantity || 0);
+                const price = item.actualPrice  != null ? item.actualPrice  : (item.price    || 0);
+                const total = item.actualTotal  != null ? item.actualTotal  : (item.total    || 0);
                 data.push([
-                    index === 0 ? orderNumber : '', // Only show order number on first row
+                    index === 0 ? orderNumber : '',
                     index === 0 ? supplier : '',
                     index === 0 ? orderDate : '',
                     index === 0 ? deliveryDate : '',
                     item.name || '-',
-                    item.quantity || 0,
+                    qty,
                     item.unit || '-',
-                    item.price || 0,
-                    item.total || 0,
+                    price,
+                    total,
                     index === 0 ? status : ''
                 ]);
             });
 
-            // Add order total row
+            // Use actualTotal if available for order total row
+            const orderTotal = order.actualTotal != null ? order.actualTotal : (order.total || 0);
             data.push([
                 '', '', '', '',
                 'סה"כ הזמנה:',
                 '', '', '',
-                order.total || 0,
+                orderTotal,
                 ''
             ]);
 
@@ -207,8 +211,8 @@ function createDetailSheet(orders) {
         }
     });
 
-    // Add grand total
-    const grandTotal = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+    // Add grand total — use actualTotal when available
+    const grandTotal = orders.reduce((sum, o) => sum + (o.actualTotal != null ? o.actualTotal : (o.total || 0)), 0);
     data.push(['', '', '', '', '', '', '', '', '', '']);
     data.push(['', '', '', '', 'סה"כ כללי:', '', '', '', grandTotal, '']);
 
