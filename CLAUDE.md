@@ -86,10 +86,12 @@ vegetable_returns          → [{id, returnNumber, orderId, orderNumber,
                                returnDate, reason, items[], total,
                                status, notes, createdAt}]
 
-vegetable_price_catalog    → ARRAY: [{id, name, price, unit, cartonWeight,
-                               category, notes, supplierId}]
-                             cartonWeight — ק"ג בקרטון (אופציונלי); מחיר לקרטון = price × cartonWeight
+vegetable_price_catalog    → ARRAY: [{id, name, price, unit, packageName,
+                               packageSize, category, notes, supplierId}]
+                             packageName — שם האריזה (קרטון, שק, שקית...) — אופציונלי
+                             packageSize — כמה יחידות בסיס יש באריזה; מחיר לאריזה = price × packageSize
                              ⚠️ מבנה ישן היה OBJECT — יש מיגרציה אוטומטית ב-getPriceCatalog()
+                             ⚠️ שדה cartonWeight ישן → ממוגרט אוטומטית ל-packageName='קרטון' + packageSize
 
 vegetable_catalog_categories → [{key, label, icon}]
                                ברירת מחדל: רק [{key:'all', label:'הכל', icon:'fa-tag'}]

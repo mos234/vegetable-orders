@@ -497,7 +497,14 @@ export function getPriceCatalog() {
             localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(arr));
             return arr;
         }
-        return parsed;
+        // Migration: cartonWeight → packageName/packageSize
+        return parsed.map(item => {
+            if (item.cartonWeight && !item.packageName) {
+                const { cartonWeight, ...rest } = item;
+                return { ...rest, packageName: 'קרטון', packageSize: cartonWeight };
+            }
+            return item;
+        });
     } catch(e) { return []; }
 }
 
@@ -518,7 +525,9 @@ export function saveCatalogItem(item) {
             category: item.category || '',
             notes: item.notes || '',
             supplierId: item.supplierId || '',
-            unit: item.unit || 'kg'
+            unit: item.unit || 'kg',
+            packageName: item.packageName || null,
+            packageSize: item.packageSize || null
         });
     }
     localStorage.setItem(STORAGE_KEYS.PRICE_CATALOG, JSON.stringify(catalog));

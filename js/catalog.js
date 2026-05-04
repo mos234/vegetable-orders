@@ -111,11 +111,12 @@ function renderPriceLists() {
         const groupItems = groups[supplierId];
 
         const rows = groupItems.map(item => {
-            const pricePerCarton = item.cartonWeight ? (parseFloat(item.price) || 0) * item.cartonWeight : null;
-            const priceDisplay = item.cartonWeight
-                ? `<span class="font-bold text-emerald-700">₪${pricePerCarton.toFixed(2)}</span><br><span class="text-xs text-slate-400">₪${(parseFloat(item.price)||0).toFixed(2)}/ק"ג × ${item.cartonWeight}ק"ג</span>`
-                : `<span class="font-bold text-emerald-700">₪${(parseFloat(item.price) || 0).toFixed(2)}</span>`;
-            const unitDisplay = item.cartonWeight ? 'קרטון' : escapeHtml(unitLabel(item.unit));
+            const basePrice = parseFloat(item.price) || 0;
+            const pkgPrice = item.packageSize ? basePrice * item.packageSize : null;
+            const priceDisplay = pkgPrice !== null
+                ? `<span class="font-bold text-emerald-700">₪${pkgPrice.toFixed(2)}</span><br><span class="text-xs text-slate-400">₪${basePrice.toFixed(2)}/${unitLabel(item.unit)} × ${item.packageSize}</span>`
+                : `<span class="font-bold text-emerald-700">₪${basePrice.toFixed(2)}</span>`;
+            const unitDisplay = item.packageName ? escapeHtml(item.packageName) : escapeHtml(unitLabel(item.unit));
             return `
             <tr class="border-t border-slate-100 hover:bg-slate-50 transition-colors">
                 <td class="p-3 font-medium">${escapeHtml(item.name)}</td>
@@ -203,10 +204,10 @@ function convertSupplierToOrder(supplierId) {
         const itemSupplierId = catalogItem.supplierId || '';
         const targetSupplierId = supplierId || '';
         if (itemSupplierId !== targetSupplierId) return;
-        const price = catalogItem.cartonWeight
-            ? (parseFloat(catalogItem.price) || 0) * catalogItem.cartonWeight
+        const price = catalogItem.packageSize
+            ? (parseFloat(catalogItem.price) || 0) * catalogItem.packageSize
             : catalogItem.price;
-        const unit = catalogItem.cartonWeight ? 'carton' : (catalogItem.unit || 'kg');
+        const unit = catalogItem.packageName || (catalogItem.unit || 'kg');
         items.push({ name: catalogItem.name, qty, unit, price });
     });
 
@@ -273,10 +274,10 @@ function createOrderFromBasket() {
         const itemId = input.dataset.itemId;
         const catalogItem = catalog.find(c => c.id === itemId);
         if (!catalogItem) return;
-        const price = catalogItem.cartonWeight
-            ? (parseFloat(catalogItem.price) || 0) * catalogItem.cartonWeight
+        const price = catalogItem.packageSize
+            ? (parseFloat(catalogItem.price) || 0) * catalogItem.packageSize
             : catalogItem.price;
-        const unit = catalogItem.cartonWeight ? 'carton' : (catalogItem.unit || 'kg');
+        const unit = catalogItem.packageName || (catalogItem.unit || 'kg');
         items.push({ name: catalogItem.name, qty, unit, price });
     });
 
@@ -294,7 +295,8 @@ function openAddCatalogModal(presetSupplierId) {
     document.getElementById('catalog-name').removeAttribute('readonly');
     document.getElementById('catalog-price').value = '';
     document.getElementById('catalog-unit').value = 'kg';
-    document.getElementById('catalog-carton-weight').value = '';
+    document.getElementById('catalog-package-name').value = '';
+    document.getElementById('catalog-package-size').value = '';
     document.getElementById('catalog-notes').value = '';
     populateCategoryDropdowns();
     document.getElementById('catalog-category').value = '';
@@ -314,7 +316,8 @@ function openEditCatalogModal(id) {
     document.getElementById('catalog-name').removeAttribute('readonly');
     document.getElementById('catalog-price').value = item.price || '';
     document.getElementById('catalog-unit').value = item.unit || 'kg';
-    document.getElementById('catalog-carton-weight').value = item.cartonWeight || '';
+    document.getElementById('catalog-package-name').value = item.packageName || '';
+    document.getElementById('catalog-package-size').value = item.packageSize || '';
     document.getElementById('catalog-notes').value = item.notes || '';
     populateCategoryDropdowns();
     document.getElementById('catalog-category').value = item.category || '';
@@ -339,8 +342,9 @@ function saveCatalogModal() {
     const name = document.getElementById('catalog-name').value.trim();
     const price = parseFloat(document.getElementById('catalog-price').value);
     const unit = document.getElementById('catalog-unit').value;
-    const cartonWeightRaw = parseFloat(document.getElementById('catalog-carton-weight').value);
-    const cartonWeight = isNaN(cartonWeightRaw) || cartonWeightRaw <= 0 ? null : cartonWeightRaw;
+    const packageName = document.getElementById('catalog-package-name').value.trim() || null;
+    const packageSizeRaw = parseFloat(document.getElementById('catalog-package-size').value);
+    const packageSize = isNaN(packageSizeRaw) || packageSizeRaw <= 0 ? null : packageSizeRaw;
     const notes = document.getElementById('catalog-notes').value.trim();
     const category = document.getElementById('catalog-category').value;
     const supplierId = document.getElementById('catalog-supplier').value;
@@ -348,7 +352,7 @@ function saveCatalogModal() {
     if (!name) { alert('נא להזין שם פריט'); return; }
     if (isNaN(price) || price < 0) { alert('נא להזין מחיר תקין'); return; }
 
-    const item = { name, price, unit, cartonWeight, notes, category, supplierId };
+    const item = { name, price, unit, packageName, packageSize, notes, category, supplierId };
     if (editingCatalogItemId) item.id = editingCatalogItemId;
 
     saveCatalogItem(item);

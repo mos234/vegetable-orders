@@ -474,7 +474,10 @@ function getCatalogPrice(name) {
     const entry = (supplierId ? catalog.find(c => c.name === name && c.supplierId === supplierId) : null)
         || catalog.find(c => c.name === name);
     if (!entry) return null;
-    return entry.price > 0 ? entry.price : null;
+    const price = entry.packageSize
+        ? (parseFloat(entry.price) || 0) * entry.packageSize
+        : entry.price;
+    return price > 0 ? price : null;
 }
 
 function selectMainAutocomplete(itemId, value) {
