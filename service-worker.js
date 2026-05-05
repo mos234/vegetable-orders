@@ -3,7 +3,7 @@
  * Full offline support, Background Sync, and complete cache coverage.
  */
 
-const CACHE_NAME = 'vegetable-orders-v23';
+const CACHE_NAME = 'vegetable-orders-v24';
 
 const CACHE_URLS = [
     './',
