@@ -453,11 +453,69 @@ function editDeliveryDetails(orderId) {
     if (!order) return;
 
     const rows = (order.items || []).map((item, i) => {
-        const recvQty    = item.receivedQty != null ? item.receivedQty : item.quantity;
-        const actualPrice = item.actualPrice  != null ? item.actualPrice  : (item.price || 0);
-        const rowTotal   = recvQty * actualPrice;
-        return `
-        <tr class="border-t border-slate-200" id="delivery-row-${i}" data-ordered-qty="${item.quantity || 0}">
+        const packageSize  = parseFloat(item.packageSize) || 0;
+        // Derive pricePerUnit: stored field, or divide carton price by packageSize, or fallback to price
+        const pricePerUnit = item.pricePerUnit > 0 ? item.pricePerUnit
+            : (packageSize > 0 ? (item.price || 0) / packageSize : (item.price || 0));
+
+        if (packageSize > 0) {
+            // Carton item — show cartons + weight adjustment
+            const recvCartons = item.receivedQty  != null ? item.receivedQty  : item.quantity;
+            const weightAdj   = item.weightAdjustment != null ? item.weightAdjustment : 0;
+            const actualPPU   = item.actualPrice != null ? item.actualPrice : pricePerUnit;
+            const netWeight   = recvCartons * packageSize + weightAdj;
+            const rowTotal    = netWeight * actualPPU;
+            return `
+        <tr class="border-t border-slate-200" id="delivery-row-${i}"
+            data-package-size="${packageSize}" data-price-per-unit="${pricePerUnit}">
+            <td class="p-2 font-medium text-sm">${escapeHtml(item.name)}</td>
+            <td class="p-2 text-center text-slate-400 text-xs">${item.quantity} ${item.unit}</td>
+            <td class="p-2 text-center">
+                <div class="flex flex-col items-center gap-1">
+                    <div class="flex items-center gap-1">
+                        <input type="number" min="0" step="1" inputmode="decimal"
+                            id="recv-qty-${i}"
+                            value="${recvCartons}"
+                            oninput="recalcDeliveryRow(${i})"
+                            class="w-16 text-center border-2 border-orange-300 rounded-lg px-1 py-1 text-sm font-bold focus:outline-none focus:border-orange-500 bg-orange-50">
+                        <span class="text-xs text-slate-500">${escapeHtml(item.unit)}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <input type="number" step="0.1" inputmode="decimal"
+                            id="weight-adj-${i}"
+                            value="${weightAdj}"
+                            oninput="recalcDeliveryRow(${i})"
+                            class="w-16 text-center border-2 border-purple-300 rounded-lg px-1 py-1 text-xs font-bold focus:outline-none focus:border-purple-500 bg-purple-50"
+                            placeholder="±ק&quot;ג">
+                        <span class="text-xs text-slate-400">±ק"ג</span>
+                    </div>
+                </div>
+            </td>
+            <td class="p-2 text-center">
+                <div class="flex flex-col items-center gap-0.5">
+                    <div class="flex items-center gap-0.5">
+                        <span class="text-slate-400 text-xs">₪</span>
+                        <input type="number" min="0" step="0.01" inputmode="decimal"
+                            id="actual-price-${i}"
+                            value="${actualPPU.toFixed(2)}"
+                            oninput="recalcDeliveryRow(${i})"
+                            class="w-16 text-center border-2 border-amber-300 rounded-lg px-1 py-1 text-sm font-bold focus:outline-none focus:border-amber-500 bg-amber-50">
+                    </div>
+                    <span class="text-xs text-slate-400">לק"ג</span>
+                </div>
+            </td>
+            <td class="p-2 text-center font-bold text-emerald-700 text-sm" id="delivery-total-${i}">
+                ₪${rowTotal.toFixed(2)}
+                <div class="text-xs text-slate-400 font-normal">${netWeight.toFixed(1)} ק"ג</div>
+            </td>
+        </tr>`;
+        } else {
+            // Regular item — original behavior
+            const recvQty    = item.receivedQty != null ? item.receivedQty : item.quantity;
+            const actualPrice = item.actualPrice != null ? item.actualPrice : (item.price || 0);
+            const rowTotal   = recvQty * actualPrice;
+            return `
+        <tr class="border-t border-slate-200" id="delivery-row-${i}" data-package-size="0">
             <td class="p-2 font-medium text-sm">${escapeHtml(item.name)}</td>
             <td class="p-2 text-center text-slate-400 text-xs">${item.quantity} ${item.unit}</td>
             <td class="p-2 text-center">
@@ -480,13 +538,10 @@ function editDeliveryDetails(orderId) {
             </td>
             <td class="p-2 text-center font-bold text-emerald-700 text-sm" id="delivery-total-${i}">₪${rowTotal.toFixed(2)}</td>
         </tr>`;
+        }
     }).join('');
 
-    const grandTotal = (order.items || []).reduce((sum, item) => {
-        const qty   = item.receivedQty  != null ? item.receivedQty  : (item.quantity || 0);
-        const price = item.actualPrice  != null ? item.actualPrice  : (item.price   || 0);
-        return sum + qty * price;
-    }, 0);
+    const grandTotal = calcDeliveryGrandTotal(order.items || []);
 
     const content = document.getElementById('view-order-content');
     content.innerHTML = `
@@ -499,7 +554,7 @@ function editDeliveryDetails(orderId) {
                             <th class="p-2 text-right font-medium">פריט</th>
                             <th class="p-2 text-center font-medium text-slate-400">הוזמן</th>
                             <th class="p-2 text-center font-medium text-orange-600">קיבלתי</th>
-                            <th class="p-2 text-center font-medium text-amber-600">מחיר בפועל ₪</th>
+                            <th class="p-2 text-center font-medium text-amber-600">מחיר ₪</th>
                             <th class="p-2 text-center font-medium">סה"כ</th>
                         </tr>
                     </thead>
@@ -523,23 +578,63 @@ function editDeliveryDetails(orderId) {
         </div>`;
 }
 
-function recalcDeliveryRow(rowIndex) {
-    const qtyInput   = document.getElementById(`recv-qty-${rowIndex}`);
-    const priceInput = document.getElementById(`actual-price-${rowIndex}`);
-    const totalEl    = document.getElementById(`delivery-total-${rowIndex}`);
-    if (!qtyInput || !priceInput || !totalEl) return;
+function calcDeliveryGrandTotal(items) {
+    return (items || []).reduce((sum, item) => {
+        const packageSize  = parseFloat(item.packageSize) || 0;
+        const pricePerUnit = item.pricePerUnit > 0 ? item.pricePerUnit
+            : (packageSize > 0 ? (item.price || 0) / packageSize : (item.price || 0));
+        if (packageSize > 0) {
+            const cartons   = item.receivedQty != null ? item.receivedQty : (item.quantity || 0);
+            const adj       = item.weightAdjustment || 0;
+            const ppu       = item.actualPrice != null ? item.actualPrice : pricePerUnit;
+            return sum + (cartons * packageSize + adj) * ppu;
+        } else {
+            const qty   = item.receivedQty != null ? item.receivedQty  : (item.quantity || 0);
+            const price = item.actualPrice != null ? item.actualPrice : (item.price || 0);
+            return sum + qty * price;
+        }
+    }, 0);
+}
 
-    const qty   = parseFloat(qtyInput.value)   || 0;
-    const price = parseFloat(priceInput.value)  || 0;
-    totalEl.textContent = '₪' + (qty * price).toFixed(2);
+function recalcDeliveryRow(rowIndex) {
+    const row      = document.getElementById(`delivery-row-${rowIndex}`);
+    const totalEl  = document.getElementById(`delivery-total-${rowIndex}`);
+    const qtyInput = document.getElementById(`recv-qty-${rowIndex}`);
+    const priceInput = document.getElementById(`actual-price-${rowIndex}`);
+    if (!row || !totalEl || !qtyInput || !priceInput) return;
+
+    const packageSize = parseFloat(row.dataset.packageSize) || 0;
+    let rowTotal = 0;
+
+    if (packageSize > 0) {
+        const adjInput  = document.getElementById(`weight-adj-${rowIndex}`);
+        const cartons   = parseFloat(qtyInput.value) || 0;
+        const adj       = parseFloat(adjInput?.value) || 0;
+        const ppu       = parseFloat(priceInput.value) || 0;
+        const netWeight = cartons * packageSize + adj;
+        rowTotal = netWeight * ppu;
+        totalEl.innerHTML = `₪${rowTotal.toFixed(2)}<div class="text-xs text-slate-400 font-normal">${netWeight.toFixed(1)} ק"ג</div>`;
+    } else {
+        const qty   = parseFloat(qtyInput.value)   || 0;
+        const price = parseFloat(priceInput.value)  || 0;
+        rowTotal = qty * price;
+        totalEl.textContent = '₪' + rowTotal.toFixed(2);
+    }
 
     // Recalc grand total
     let grand = 0;
     let i = 0;
-    while (document.getElementById(`recv-qty-${i}`)) {
-        const q = parseFloat(document.getElementById(`recv-qty-${i}`).value)   || 0;
-        const p = parseFloat(document.getElementById(`actual-price-${i}`).value) || 0;
-        grand += q * p;
+    while (document.getElementById(`delivery-row-${i}`)) {
+        const r  = document.getElementById(`delivery-row-${i}`);
+        const ps = parseFloat(r?.dataset.packageSize) || 0;
+        const q  = parseFloat(document.getElementById(`recv-qty-${i}`)?.value) || 0;
+        const p  = parseFloat(document.getElementById(`actual-price-${i}`)?.value) || 0;
+        if (ps > 0) {
+            const a = parseFloat(document.getElementById(`weight-adj-${i}`)?.value) || 0;
+            grand += (q * ps + a) * p;
+        } else {
+            grand += q * p;
+        }
         i++;
     }
     const grandEl = document.getElementById('delivery-grand-total');
@@ -553,10 +648,22 @@ function saveDeliveryDetails(orderId) {
     const updatedItems = (order.items || []).map((item, i) => {
         const qtyInput   = document.getElementById(`recv-qty-${i}`);
         const priceInput = document.getElementById(`actual-price-${i}`);
-        const receivedQty  = qtyInput   ? (parseFloat(qtyInput.value)   || 0) : (item.receivedQty  ?? item.quantity);
-        const actualPrice  = priceInput ? (parseFloat(priceInput.value)  || 0) : (item.actualPrice  ?? item.price);
-        const actualTotal  = receivedQty * actualPrice;
-        return { ...item, receivedQty, actualPrice, actualTotal };
+        const adjInput   = document.getElementById(`weight-adj-${i}`);
+        const packageSize = parseFloat(item.packageSize) || 0;
+
+        const receivedQty = qtyInput ? (parseFloat(qtyInput.value) || 0) : (item.receivedQty ?? item.quantity);
+        const actualPrice = priceInput ? (parseFloat(priceInput.value) || 0) : (item.actualPrice ?? item.price);
+
+        let actualTotal, weightAdjustment;
+        if (packageSize > 0) {
+            weightAdjustment = adjInput ? (parseFloat(adjInput.value) || 0) : (item.weightAdjustment || 0);
+            actualTotal = (receivedQty * packageSize + weightAdjustment) * actualPrice;
+        } else {
+            weightAdjustment = 0;
+            actualTotal = receivedQty * actualPrice;
+        }
+
+        return { ...item, receivedQty, actualPrice, actualTotal, weightAdjustment };
     });
 
     const newActualTotal = updatedItems.reduce((sum, it) => sum + (it.actualTotal || 0), 0);

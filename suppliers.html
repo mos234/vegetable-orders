@@ -223,13 +223,19 @@
 
             <!-- Suppliers List -->
             <div class="glass-card rounded-3xl p-8 shadow-sm">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-bold flex items-center gap-2">
                         <i class="fas fa-address-book text-emerald-600"></i>
                         רשימת ספקים
                     </h3>
                     <span id="suppliers-count"
                         class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-bold">0 ספקים</span>
+                </div>
+                <div class="relative mb-5">
+                    <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    <input type="search" id="suppliers-search"
+                        placeholder="חיפוש ספק לפי שם, טלפון או הערות..."
+                        class="w-full pr-9 pl-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:bg-white transition-all">
                 </div>
 
                 <!-- Empty State -->

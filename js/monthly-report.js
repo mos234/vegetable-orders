@@ -9,6 +9,8 @@ import { exportMonthlyReport } from './export.js';
 import './theme.js';
 import './sync.js';
 
+let excludedSupplierIds = new Set();
+
 document.addEventListener('DOMContentLoaded', () => {
     initMonthlyReportPage();
     document.getElementById('print-btn')?.addEventListener('click', () => window.print());
@@ -37,8 +39,8 @@ function setDefaultMonth() {
  */
 function setupEventListeners() {
     document.getElementById('download-excel-btn').addEventListener('click', downloadExcel);
-    document.getElementById('month-select').addEventListener('change', loadReport);
-    document.getElementById('year-select').addEventListener('change', loadReport);
+    document.getElementById('month-select').addEventListener('change', () => { excludedSupplierIds = new Set(); loadReport(); });
+    document.getElementById('year-select').addEventListener('change',  () => { excludedSupplierIds = new Set(); loadReport(); });
 }
 
 /**
@@ -48,12 +50,85 @@ function loadReport() {
     const month = parseInt(document.getElementById('month-select').value);
     const year = parseInt(document.getElementById('year-select').value);
 
-    const orders = getOrdersForMonth(month, year);
+    const allOrders = getOrdersForMonth(month, year);
+
+    renderSupplierFilter(allOrders);
+
+    const orders = allOrders.filter(o => !excludedSupplierIds.has(o.supplierId));
 
     updateSummaryStats(orders, month, year);
     renderSupplierBreakdown(orders);
     renderOrdersTable(orders);
 }
+
+function renderSupplierFilter(allOrders) {
+    const wrapper = document.getElementById('supplier-filter-wrapper');
+    if (!wrapper) return;
+
+    // Build unique supplier list from orders
+    const suppliersMap = {};
+    allOrders.forEach(o => {
+        if (o.supplierId) suppliersMap[o.supplierId] = o.supplierName || 'ספק לא ידוע';
+    });
+    const suppliers = Object.entries(suppliersMap); // [[id, name], ...]
+
+    if (suppliers.length <= 1) {
+        wrapper.classList.add('hidden');
+        return;
+    }
+    wrapper.classList.remove('hidden');
+
+    const container = document.getElementById('supplier-filter-checkboxes');
+    if (!container) return;
+
+    container.innerHTML = suppliers.map(([id, name]) => {
+        const checked = !excludedSupplierIds.has(id);
+        return `<label class="flex items-center gap-1.5 cursor-pointer select-none
+            px-3 py-1.5 rounded-xl border text-sm font-medium transition-all
+            ${checked ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-100 border-slate-200 text-slate-400 line-through'}">
+            <input type="checkbox" class="supplier-filter-cb accent-emerald-600"
+                data-supplier-id="${escapeHtml(id)}" ${checked ? 'checked' : ''}
+                onchange="toggleSupplierExclusion('${escapeHtml(id)}')">
+            ${escapeHtml(name)}
+        </label>`;
+    }).join('');
+
+    updateSupplierFilterBadge();
+}
+
+function updateSupplierFilterBadge() {
+    const badge = document.getElementById('supplier-filter-badge');
+    if (!badge) return;
+    const count = excludedSupplierIds.size;
+    if (count > 0) {
+        badge.textContent = `${count} מוסתר`;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+Object.assign(window, {
+    toggleSupplierFilter() {
+        const body = document.getElementById('supplier-filter-body');
+        const chevron = document.getElementById('supplier-filter-chevron');
+        if (!body) return;
+        const isHidden = body.classList.toggle('hidden');
+        if (chevron) chevron.style.transform = isHidden ? '' : 'rotate(180deg)';
+    },
+    toggleSupplierExclusion(supplierId) {
+        if (excludedSupplierIds.has(supplierId)) {
+            excludedSupplierIds.delete(supplierId);
+        } else {
+            excludedSupplierIds.add(supplierId);
+        }
+        loadReport();
+    },
+    resetSupplierFilter() {
+        excludedSupplierIds = new Set();
+        loadReport();
+    }
+});
 
 /**
  * Gets orders for a specific month.

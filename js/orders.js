@@ -90,6 +90,8 @@ function loadFromTemplate() {
         if (qtyInput)   { qtyInput.value   = item.qty;   updateItemData(id, 'qty',   item.qty); }
         if (unitSelect) { unitSelect.value = item.unit || 'kg'; updateItemData(id, 'unit', item.unit || 'kg'); }
         if (priceInput) { priceInput.value = item.price; updateItemData(id, 'price', item.price); }
+        updateItemData(id, 'packageSize',  item.packageSize  || 0);
+        updateItemData(id, 'pricePerUnit', item.pricePerUnit || 0);
         calculateItemTotal(id);
     });
 
@@ -188,6 +190,8 @@ function loadOrderForEdit(orderId) {
         if (qtyInput)   { qtyInput.value   = item.quantity;     updateItemData(id, 'qty',   item.quantity); }
         if (unitSelect) { unitSelect.value = unit;              updateItemData(id, 'unit',  unit); }
         if (priceInput) { priceInput.value = item.price || '';  updateItemData(id, 'price', item.price || 0); }
+        updateItemData(id, 'packageSize',  item.packageSize  || 0);
+        updateItemData(id, 'pricePerUnit', item.pricePerUnit || 0);
         calculateItemTotal(id);
     });
 
@@ -217,6 +221,8 @@ function loadOrderForEdit(orderId) {
             if (qtyInput)   { qtyInput.value   = item.quantity;     updateHallItemData(hallId, itemId, 'qty',   item.quantity); }
             if (unitSelect) { unitSelect.value = unit;              updateHallItemData(hallId, itemId, 'unit',  unit); }
             if (priceInput) { priceInput.value = item.price || '';  updateHallItemData(hallId, itemId, 'price', item.price || 0); }
+            updateHallItemData(hallId, itemId, 'packageSize',  item.packageSize  || 0);
+            updateHallItemData(hallId, itemId, 'pricePerUnit', item.pricePerUnit || 0);
             calculateHallItemTotal(hallId, itemId);
         });
     });
@@ -388,10 +394,12 @@ function setupItemRowListeners(itemId) {
     });
     nameInput.addEventListener('blur', () => {
         setTimeout(() => hideAutocomplete(`autocomplete-${itemId}`), 200);
-        const price = getCatalogPrice(nameInput.value.trim());
-        if (price !== null) {
+        const entry = getCatalogEntry(nameInput.value.trim());
+        if (entry?.price !== null && entry?.price != null) {
             const priceInput = document.getElementById(`item-price-${itemId}`);
-            if (priceInput) { priceInput.value = price; updateItemData(itemId, 'price', price); calculateItemTotal(itemId); }
+            if (priceInput) { priceInput.value = entry.price; updateItemData(itemId, 'price', entry.price); calculateItemTotal(itemId); }
+            updateItemData(itemId, 'packageSize',  entry.packageSize);
+            updateItemData(itemId, 'pricePerUnit', entry.pricePerUnit);
         }
     });
     nameInput.addEventListener('keydown', e =>
@@ -468,16 +476,19 @@ function handleAutocompleteKeydown(e, acId, onSelect) {
 }
 
 function getCatalogPrice(name) {
-    const catalog = getPriceCatalog(); // array
+    return getCatalogEntry(name)?.price ?? null;
+}
+
+function getCatalogEntry(name) {
+    const catalog = getPriceCatalog();
     const supplierId = getSelectedSupplierId();
-    // Prefer match for selected supplier; fallback to any item with that name
     const entry = (supplierId ? catalog.find(c => c.name === name && c.supplierId === supplierId) : null)
         || catalog.find(c => c.name === name);
     if (!entry) return null;
-    const price = entry.packageSize
-        ? (parseFloat(entry.price) || 0) * entry.packageSize
-        : entry.price;
-    return price > 0 ? price : null;
+    const packageSize  = parseFloat(entry.packageSize) || 0;
+    const pricePerUnit = parseFloat(entry.price) || 0;
+    const price = packageSize ? pricePerUnit * packageSize : pricePerUnit;
+    return { price: price > 0 ? price : null, packageSize, pricePerUnit };
 }
 
 function selectMainAutocomplete(itemId, value) {
@@ -486,11 +497,13 @@ function selectMainAutocomplete(itemId, value) {
     updateItemData(itemId, 'name', value);
     hideAutocomplete(`autocomplete-${itemId}`);
 
-    const price = getCatalogPrice(value);
-    if (price !== null) {
+    const entry = getCatalogEntry(value);
+    if (entry?.price !== null && entry?.price != null) {
         const priceInput = document.getElementById(`item-price-${itemId}`);
-        if (priceInput) priceInput.value = price;
-        updateItemData(itemId, 'price', price);
+        if (priceInput) priceInput.value = entry.price;
+        updateItemData(itemId, 'price', entry.price);
+        updateItemData(itemId, 'packageSize',  entry.packageSize);
+        updateItemData(itemId, 'pricePerUnit', entry.pricePerUnit);
         calculateItemTotal(itemId);
     }
 
@@ -631,10 +644,12 @@ function setupHallItemRowListeners(hallId, itemId) {
     });
     nameInput.addEventListener('blur', () => {
         setTimeout(() => hideAutocomplete(acId), 200);
-        const price = getCatalogPrice(nameInput.value.trim());
-        if (price !== null) {
+        const entry = getCatalogEntry(nameInput.value.trim());
+        if (entry?.price !== null && entry?.price != null) {
             const priceInput = document.getElementById(`hall-${hallId}-item-price-${itemId}`);
-            if (priceInput) { priceInput.value = price; updateHallItemData(hallId, itemId, 'price', price); calculateHallItemTotal(hallId, itemId); }
+            if (priceInput) { priceInput.value = entry.price; updateHallItemData(hallId, itemId, 'price', entry.price); calculateHallItemTotal(hallId, itemId); }
+            updateHallItemData(hallId, itemId, 'packageSize',  entry.packageSize);
+            updateHallItemData(hallId, itemId, 'pricePerUnit', entry.pricePerUnit);
         }
     });
     nameInput.addEventListener('keydown', e =>
@@ -657,11 +672,13 @@ function selectHallAutocomplete(hallId, itemId, value) {
     updateHallItemData(hallId, itemId, 'name', value);
     hideAutocomplete(`hall-${hallId}-autocomplete-${itemId}`);
 
-    const price = getCatalogPrice(value);
-    if (price !== null) {
+    const entry = getCatalogEntry(value);
+    if (entry?.price !== null && entry?.price != null) {
         const priceInput = document.getElementById(`hall-${hallId}-item-price-${itemId}`);
-        if (priceInput) priceInput.value = price;
-        updateHallItemData(hallId, itemId, 'price', price);
+        if (priceInput) priceInput.value = entry.price;
+        updateHallItemData(hallId, itemId, 'price', entry.price);
+        updateHallItemData(hallId, itemId, 'packageSize',  entry.packageSize);
+        updateHallItemData(hallId, itemId, 'pricePerUnit', entry.pricePerUnit);
         calculateHallItemTotal(hallId, itemId);
     }
 
@@ -858,7 +875,9 @@ function saveOrderAction(action) {
             unit: UNIT_OPTIONS.find(u => u.value === i.unit)?.label || i.unit,
             unitValue: i.unit,
             price: i.price,
-            total: i.total
+            total: i.total,
+            packageSize:  i.packageSize  || 0,
+            pricePerUnit: i.pricePerUnit || 0
         })),
         halls: halls
             .filter(h => h.items.some(i => i.name && i.qty > 0))
@@ -870,7 +889,9 @@ function saveOrderAction(action) {
                     unit: UNIT_OPTIONS.find(u => u.value === i.unit)?.label || i.unit,
                     unitValue: i.unit,
                     price: i.price,
-                    total: i.total
+                    total: i.total,
+                    packageSize:  i.packageSize  || 0,
+                    pricePerUnit: i.pricePerUnit || 0
                 }))
             })),
         notes: document.getElementById('order-notes').value.trim(),

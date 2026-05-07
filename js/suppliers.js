@@ -19,7 +19,18 @@ document.addEventListener('DOMContentLoaded', () => {
 function initSuppliersPage() {
     setupSupplierForm();
     setupEditModal();
+    setupSearch();
     renderSuppliersList();
+}
+
+function setupSearch() {
+    const searchInput = document.getElementById('suppliers-search');
+    if (!searchInput) return;
+    let debounceTimer;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(renderSuppliersList, 300);
+    });
 }
 
 /**
@@ -143,19 +154,28 @@ function closeEditModal() {
  * Renders the suppliers list.
  */
 function renderSuppliersList() {
-    const suppliers = getSuppliers();
+    const allSuppliers = getSuppliers();
+    const q = (document.getElementById('suppliers-search')?.value || '').trim().toLowerCase();
+    const suppliers = q
+        ? allSuppliers.filter(s =>
+            s.name.toLowerCase().includes(q) ||
+            (s.phone  || '').includes(q) ||
+            (s.phone2 || '').includes(q) ||
+            (s.notes  || '').toLowerCase().includes(q))
+        : allSuppliers;
+
     const listContainer = document.getElementById('suppliers-list');
     const emptyState = document.getElementById('empty-state');
     const tableContainer = document.getElementById('suppliers-table-container');
     const countElement = document.getElementById('suppliers-count');
 
-    // Update count
     if (countElement) {
-        countElement.textContent = `${suppliers.length} ספקים`;
+        countElement.textContent = q
+            ? `${suppliers.length} מתוך ${allSuppliers.length} ספקים`
+            : `${allSuppliers.length} ספקים`;
     }
 
-    // Show/hide empty state
-    if (suppliers.length === 0) {
+    if (allSuppliers.length === 0) {
         emptyState.classList.remove('hidden');
         tableContainer.classList.add('hidden');
         return;
@@ -163,6 +183,11 @@ function renderSuppliersList() {
 
     emptyState.classList.add('hidden');
     tableContainer.classList.remove('hidden');
+
+    if (suppliers.length === 0) {
+        listContainer.innerHTML = `<tr><td colspan="2" class="py-8 text-center text-slate-400">לא נמצאו ספקים התואמים את החיפוש</td></tr>`;
+        return;
+    }
 
     // Render suppliers
     listContainer.innerHTML = suppliers.map(supplier => `
