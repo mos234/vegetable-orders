@@ -178,11 +178,21 @@
                 </div>
             </header>
 
-            <!-- Month Selector -->
+            <!-- Period Selector -->
             <div class="glass-card rounded-2xl p-4 shadow-sm mb-6">
-                <div class="flex flex-col sm:flex-row gap-4 items-center">
-                    <label class="font-semibold text-slate-700">בחר חודש:</label>
-                    <div class="flex gap-2">
+                <div class="flex flex-col sm:flex-row gap-4 items-center flex-wrap">
+                    <!-- Mode toggle -->
+                    <div class="flex gap-1 bg-slate-100 rounded-xl p-1">
+                        <button id="mode-monthly" onclick="setReportMode('monthly')"
+                            class="px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white text-emerald-700 shadow-sm">
+                            חודשי
+                        </button>
+                        <button id="mode-annual" onclick="setReportMode('annual')"
+                            class="px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-500">
+                            שנתי
+                        </button>
+                    </div>
+                    <div class="flex gap-2 items-center">
                         <select id="month-select"
                             class="px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
                             <option value="1">ינואר</option>
@@ -205,12 +215,21 @@
                             <option value="2024">2024</option>
                         </select>
                     </div>
-
+                    <!-- Supplier search -->
+                    <div class="flex-1 min-w-[200px] relative">
+                        <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        <input type="search" id="report-supplier-search"
+                            placeholder="חפש ספק..."
+                            class="w-full pr-9 pl-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-sm">
+                    </div>
+                    <button id="clear-supplier-search" onclick="clearReportSearch()" class="hidden text-sm text-slate-400 hover:text-slate-600 underline whitespace-nowrap">
+                        הצג הכל
+                    </button>
                 </div>
             </div>
 
-            <!-- Summary Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Summary Stats (shown only when supplier selected) -->
+            <div id="report-stats-section" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100">
                     <div class="flex items-center gap-4">
                         <div class="bg-emerald-100 text-emerald-600 p-4 rounded-2xl">
@@ -246,40 +265,20 @@
                 </div>
             </div>
 
-            <!-- Supplier Filter -->
-            <div id="supplier-filter-wrapper" class="hidden glass-card rounded-3xl p-5 shadow-sm mb-4">
-                <button onclick="toggleSupplierFilter()" class="w-full flex items-center justify-between gap-2 text-sm font-bold text-slate-700">
-                    <span class="flex items-center gap-2">
-                        <i class="fas fa-filter text-emerald-600"></i>
-                        סינון ספקים
-                        <span id="supplier-filter-badge" class="hidden bg-orange-500 text-white text-xs rounded-full px-2 py-0.5"></span>
-                    </span>
-                    <i class="fas fa-chevron-down text-slate-400 transition-transform duration-300" id="supplier-filter-chevron"></i>
-                </button>
-                <div id="supplier-filter-body" class="hidden mt-3 pt-3 border-t border-slate-100">
-                    <div id="supplier-filter-checkboxes" class="flex flex-wrap gap-2"></div>
-                    <button onclick="resetSupplierFilter()" class="mt-3 text-xs text-slate-400 hover:text-slate-600 underline">אפס סינון</button>
-                </div>
+            <!-- Default: prompt to search -->
+            <div id="report-search-prompt" class="glass-card rounded-3xl p-12 shadow-sm text-center mb-8">
+                <i class="fas fa-search text-4xl text-slate-300 mb-4 block"></i>
+                <p class="text-slate-500 text-lg font-medium">חפש שם ספק לצפייה בנתונים</p>
+                <p class="text-slate-400 text-sm mt-1">הקלד שם ספק בשדה החיפוש למעלה</p>
             </div>
 
-            <!-- Report Content -->
-            <!-- Expenses by Supplier -->
-            <div class="glass-card rounded-3xl p-8 shadow-sm mb-8">
-                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
-                    <i class="fas fa-chart-pie text-emerald-600"></i>
-                    הוצאות לפי ספק
-                </h3>
-                <div id="supplier-breakdown" class="space-y-4">
-                    <!-- Supplier breakdown will be rendered here -->
-                    <div class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center">
-                        <i class="fas fa-chart-pie text-3xl text-slate-300 mb-3 block"></i>
-                        <p class="text-slate-400">אין נתונים לחודש זה</p>
-                    </div>
-                </div>
+            <!-- Supplier breakdown (shown when supplier found) -->
+            <div id="supplier-breakdown-section" class="hidden mb-8">
+                <div id="supplier-breakdown" class="space-y-4"></div>
             </div>
 
-            <!-- Detailed Table -->
-            <div class="glass-card rounded-3xl p-8 shadow-sm mt-8">
+            <!-- Detailed Orders (shown when supplier found) -->
+            <div id="orders-detail-section" class="hidden glass-card rounded-3xl p-8 shadow-sm">
                 <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
                     <i class="fas fa-table text-emerald-600"></i>
                     פירוט הזמנות
@@ -297,14 +296,12 @@
                             </tr>
                         </thead>
                         <tbody id="orders-table-body" class="divide-y divide-slate-50">
-                            <!-- Orders will be rendered here -->
                         </tbody>
                     </table>
                 </div>
-                <div id="no-orders-message"
-                    class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center mt-4">
+                <div id="no-orders-message" class="hidden bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center mt-4">
                     <i class="fas fa-inbox text-3xl text-slate-300 mb-3 block"></i>
-                    <p class="text-slate-400">אין הזמנות לחודש הנבחר</p>
+                    <p class="text-slate-400">אין הזמנות לפרק הזמן הנבחר</p>
                 </div>
             </div>
         </main>

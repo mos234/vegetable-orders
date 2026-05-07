@@ -156,92 +156,86 @@ function closeEditModal() {
 function renderSuppliersList() {
     const allSuppliers = getSuppliers();
     const q = (document.getElementById('suppliers-search')?.value || '').trim().toLowerCase();
-    const suppliers = q
-        ? allSuppliers.filter(s =>
-            s.name.toLowerCase().includes(q) ||
-            (s.phone  || '').includes(q) ||
-            (s.phone2 || '').includes(q) ||
-            (s.notes  || '').toLowerCase().includes(q))
-        : allSuppliers;
 
-    const listContainer = document.getElementById('suppliers-list');
-    const emptyState = document.getElementById('empty-state');
+    const emptyState     = document.getElementById('empty-state');
+    const searchHint     = document.getElementById('search-hint-state');
+    const noResults      = document.getElementById('no-results-state');
     const tableContainer = document.getElementById('suppliers-table-container');
-    const countElement = document.getElementById('suppliers-count');
+    const listContainer  = document.getElementById('suppliers-list');
+    const countElement   = document.getElementById('suppliers-count');
 
-    if (countElement) {
-        countElement.textContent = q
-            ? `${suppliers.length} מתוך ${allSuppliers.length} ספקים`
-            : `${allSuppliers.length} ספקים`;
-    }
+    // Hide all panels first
+    [emptyState, searchHint, noResults, tableContainer].forEach(el => el?.classList.add('hidden'));
 
     if (allSuppliers.length === 0) {
-        emptyState.classList.remove('hidden');
-        tableContainer.classList.add('hidden');
+        emptyState?.classList.remove('hidden');
+        if (countElement) countElement.textContent = '0 ספקים';
         return;
     }
 
-    emptyState.classList.add('hidden');
-    tableContainer.classList.remove('hidden');
+    if (countElement) countElement.textContent = `${allSuppliers.length} ספקים`;
+
+    if (!q) {
+        searchHint?.classList.remove('hidden');
+        return;
+    }
+
+    const suppliers = allSuppliers.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        (s.phone  || '').includes(q) ||
+        (s.phone2 || '').includes(q) ||
+        (s.notes  || '').toLowerCase().includes(q));
 
     if (suppliers.length === 0) {
-        listContainer.innerHTML = `<tr><td colspan="2" class="py-8 text-center text-slate-400">לא נמצאו ספקים התואמים את החיפוש</td></tr>`;
+        noResults?.classList.remove('hidden');
         return;
     }
 
-    // Render suppliers
+    tableContainer?.classList.remove('hidden');
+
+    // Render suppliers as cards (not table rows) to show full details
     listContainer.innerHTML = suppliers.map(supplier => `
-        <tr class="hover:bg-slate-50 transition-colors">
-            <td class="py-4">
-                <div class="font-semibold text-slate-900">${escapeHtml(supplier.name)}</div>
+        <tr class="border-b border-slate-100 last:border-0">
+            <td class="py-4 px-1">
+                <div class="font-semibold text-slate-900 text-base mb-0.5">${escapeHtml(supplier.name)}</div>
+                ${supplier.phone  ? `<div class="text-sm text-slate-500"><i class="fas fa-phone text-xs ml-1 text-slate-300"></i>${escapeHtml(supplier.phone)}</div>` : ''}
+                ${supplier.phone2 ? `<div class="text-sm text-slate-500"><i class="fas fa-phone text-xs ml-1 text-slate-300"></i>${escapeHtml(supplier.phone2)} <span class="text-xs text-slate-400">(נוסף)</span></div>` : ''}
+                ${supplier.email  ? `<div class="text-sm text-slate-500"><i class="fas fa-envelope text-xs ml-1 text-slate-300"></i>${escapeHtml(supplier.email)}</div>` : ''}
+                ${supplier.notes  ? `<div class="text-xs text-slate-400 mt-1 italic">${escapeHtml(supplier.notes)}</div>` : ''}
             </td>
-            <td class="py-4">
-                <div class="flex items-center justify-center gap-2 flex-wrap">
-                    <!-- WhatsApp Button -->
-                    <button
-                        onclick="handleWhatsApp('${supplier.id}')"
-                        class="bg-green-500 hover:bg-green-600 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[48px] min-h-[48px] flex items-center justify-center shadow-md"
-                        title="שלח WhatsApp לטלפון ראשי"
-                    >
-                        <i class="fab fa-whatsapp text-xl"></i>
+            <td class="py-4 align-top">
+                <div class="flex items-center justify-end gap-2 flex-wrap">
+                    <button onclick="handleWhatsApp('${supplier.id}')"
+                        class="bg-green-500 hover:bg-green-600 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center shadow-sm"
+                        title="WhatsApp">
+                        <i class="fab fa-whatsapp text-lg"></i>
                     </button>
-                    ${supplier.phone2 ? `<!-- WhatsApp Button 2 -->
-                    <button
-                        onclick="handleWhatsApp2('${supplier.id}')"
-                        class="bg-green-600 hover:bg-green-700 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[48px] min-h-[48px] flex items-center justify-center shadow-md"
-                        title="שלח WhatsApp לטלפון נוסף (${supplier.phone2})"
-                    >
-                        <i class="fab fa-whatsapp text-xl"></i><span class="text-xs mr-0.5">2</span>
+                    ${supplier.phone2 ? `<button onclick="handleWhatsApp2('${supplier.id}')"
+                        class="bg-green-600 hover:bg-green-700 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center shadow-sm"
+                        title="WhatsApp (${supplier.phone2})">
+                        <i class="fab fa-whatsapp text-lg"></i><span class="text-xs mr-0.5">2</span>
                     </button>` : ''}
-                    <!-- SMS Button -->
-                    <button
-                        onclick="handleSMS('${supplier.id}')"
-                        class="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[48px] min-h-[48px] flex items-center justify-center shadow-md"
-                        title="שלח SMS"
-                    >
-                        <i class="fas fa-comment-sms text-xl"></i>
+                    <button onclick="handleSMS('${supplier.id}')"
+                        class="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center shadow-sm"
+                        title="SMS">
+                        <i class="fas fa-comment-sms text-lg"></i>
                     </button>
-                    <!-- Edit Button -->
-                    <button
-                        onclick="openEditModal('${supplier.id}')"
-                        class="bg-amber-500 hover:bg-amber-600 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[48px] min-h-[48px] flex items-center justify-center shadow-md"
-                        title="ערוך ספק"
-                    >
-                        <i class="fas fa-edit text-lg"></i>
+                    <button onclick="openEditModal('${supplier.id}')"
+                        class="bg-amber-500 hover:bg-amber-600 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center shadow-sm"
+                        title="ערוך">
+                        <i class="fas fa-edit text-base"></i>
                     </button>
-                    <!-- Delete Button -->
-                    <button
-                        onclick="handleDelete('${supplier.id}')"
-                        class="bg-red-500 hover:bg-red-600 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[48px] min-h-[48px] flex items-center justify-center shadow-md"
-                        title="מחק ספק"
-                    >
-                        <i class="fas fa-trash text-lg"></i>
+                    <button onclick="handleDelete('${supplier.id}')"
+                        class="bg-red-500 hover:bg-red-600 text-white p-3 rounded-xl transition-all active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center shadow-sm"
+                        title="מחק">
+                        <i class="fas fa-trash text-base"></i>
                     </button>
                 </div>
             </td>
         </tr>
     `).join('');
 }
+
 
 /**
  * Handles WhatsApp button click.

@@ -3,7 +3,7 @@
  * Handles displaying and managing the orders list.
  */
 
-import { getSuppliers, getOrders, getOrderById, updateOrder, deleteOrder } from './storage.js';
+import { getSuppliers, getOrders, getOrderById, updateOrder, deleteOrder, getPriceCatalog } from './storage.js';
 import { showToast, escapeHtml, formatDateHebrew, getStatusBadgeHtml, buildOrderMessage } from './utils.js';
 import { sendWhatsAppMessage, sendSMSMessage, showGroupPicker } from './messaging.js';
 import './theme.js';
@@ -24,31 +24,20 @@ function initOrdersListPage() {
     updateStats();
 }
 
-/**
- * Populates the supplier filter dropdown.
- */
 function populateSupplierFilter() {
-    const select = document.getElementById('filter-supplier');
-    const suppliers = getSuppliers();
-
-    suppliers.forEach(supplier => {
-        const option = document.createElement('option');
-        option.value = supplier.id;
-        option.textContent = supplier.name;
-        select.appendChild(option);
-    });
+    // No longer needed — supplier filter is now a text input
 }
 
 /**
  * Sets up filter event listeners.
  */
 function setupFilters() {
-    const statusFilter = document.getElementById('filter-status');
+    const statusFilter   = document.getElementById('filter-status');
     const supplierFilter = document.getElementById('filter-supplier');
-    const searchInput = document.getElementById('search-orders');
+    const searchInput    = document.getElementById('search-orders');
 
     statusFilter.addEventListener('change', renderOrdersList);
-    supplierFilter.addEventListener('change', renderOrdersList);
+    supplierFilter.addEventListener('input', debounce(renderOrdersList, 300));
     searchInput.addEventListener('input', debounce(renderOrdersList, 300));
 }
 
@@ -176,16 +165,16 @@ function renderOrdersList() {
 function getFilteredOrders() {
     let orders = getOrders();
 
-    const statusFilter = document.getElementById('filter-status').value;
-    const supplierFilter = document.getElementById('filter-supplier').value;
-    const searchTerm = document.getElementById('search-orders').value.trim().toLowerCase();
+    const statusFilter   = document.getElementById('filter-status').value;
+    const supplierFilter = (document.getElementById('filter-supplier')?.value || '').trim().toLowerCase();
+    const searchTerm     = document.getElementById('search-orders').value.trim().toLowerCase();
 
     if (statusFilter) {
         orders = orders.filter(o => o.status === statusFilter);
     }
 
     if (supplierFilter) {
-        orders = orders.filter(o => o.supplierId === supplierFilter);
+        orders = orders.filter(o => (o.supplierName || '').toLowerCase().includes(supplierFilter));
     }
 
     if (searchTerm) {
@@ -448,12 +437,20 @@ function deleteOrderConfirm(orderId) {
     showToast('ההזמנה נמחקה');
 }
 
+function resolveItemPackageSize(item) {
+    if (parseFloat(item.packageSize) > 0) return parseFloat(item.packageSize);
+    // Fallback: look up current catalog by item name
+    const catalog = getPriceCatalog();
+    const entry = catalog.find(c => c.name === item.name);
+    return parseFloat(entry?.packageSize) || 0;
+}
+
 function editDeliveryDetails(orderId) {
     const order = getOrderById(orderId);
     if (!order) return;
 
     const rows = (order.items || []).map((item, i) => {
-        const packageSize  = parseFloat(item.packageSize) || 0;
+        const packageSize  = resolveItemPackageSize(item);
         // Derive pricePerUnit: stored field, or divide carton price by packageSize, or fallback to price
         const pricePerUnit = item.pricePerUnit > 0 ? item.pricePerUnit
             : (packageSize > 0 ? (item.price || 0) / packageSize : (item.price || 0));
@@ -649,7 +646,7 @@ function saveDeliveryDetails(orderId) {
         const qtyInput   = document.getElementById(`recv-qty-${i}`);
         const priceInput = document.getElementById(`actual-price-${i}`);
         const adjInput   = document.getElementById(`weight-adj-${i}`);
-        const packageSize = parseFloat(item.packageSize) || 0;
+        const packageSize = resolveItemPackageSize(item);
 
         const receivedQty = qtyInput ? (parseFloat(qtyInput.value) || 0) : (item.receivedQty ?? item.quantity);
         const actualPrice = priceInput ? (parseFloat(priceInput.value) || 0) : (item.actualPrice ?? item.price);

@@ -238,24 +238,29 @@
                         class="w-full pr-9 pl-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:bg-white transition-all">
                 </div>
 
-                <!-- Empty State -->
-                <div id="empty-state"
-                    class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
+                <!-- No suppliers at all -->
+                <div id="empty-state" class="hidden bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
                     <i class="fas fa-users text-4xl text-slate-300 mb-4 block"></i>
                     <p class="text-slate-400 text-lg">אין ספקים עדיין</p>
                     <p class="text-slate-400 text-sm mt-1">הוסף ספק חדש באמצעות הטופס למעלה</p>
                 </div>
 
+                <!-- Search hint (default state) -->
+                <div id="search-hint-state" class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
+                    <i class="fas fa-search text-4xl text-slate-300 mb-4 block"></i>
+                    <p class="text-slate-400 text-lg">הקלד שם ספק לחיפוש</p>
+                </div>
+
+                <!-- No results -->
+                <div id="no-results-state" class="hidden bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center">
+                    <i class="fas fa-user-slash text-3xl text-slate-300 mb-3 block"></i>
+                    <p class="text-slate-400">לא נמצאו ספקים התואמים לחיפוש</p>
+                </div>
+
                 <!-- Suppliers Table -->
                 <div id="suppliers-table-container" class="hidden overflow-x-auto">
                     <table class="w-full text-right">
-                        <thead>
-                            <tr class="text-slate-400 text-sm border-b border-slate-100">
-                                <th class="pb-4 font-medium">שם הספק</th>
-                                <th class="pb-4 font-medium text-center">פעולות</th>
-                            </tr>
-                        </thead>
-                        <tbody id="suppliers-list" class="divide-y divide-slate-50">
+                        <tbody id="suppliers-list" class="divide-y divide-slate-100">
                             <!-- Suppliers will be rendered here -->
                         </tbody>
                     </table>
