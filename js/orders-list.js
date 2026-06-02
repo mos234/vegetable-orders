@@ -4,7 +4,7 @@
  */
 
 import { getSuppliers, getOrders, getOrderById, updateOrder, deleteOrder, getPriceCatalog } from './storage.js';
-import { showToast, escapeHtml, formatDateHebrew, getStatusBadgeHtml, buildOrderMessage } from './utils.js';
+import { showToast, escapeHtml, escapeAttr, formatDateHebrew, getStatusBadgeHtml, buildOrderMessage } from './utils.js';
 import { sendWhatsAppMessage, sendSMSMessage, showGroupPicker } from './messaging.js';
 import './theme.js';
 import './sync.js';
@@ -25,7 +25,7 @@ function initOrdersListPage() {
 }
 
 function populateSupplierFilter() {
-    // No longer needed — supplier filter is now a text input
+    // No longer needed — supplier filter is now autocomplete
 }
 
 /**
@@ -33,46 +33,91 @@ function populateSupplierFilter() {
  */
 function setupFilters() {
     const statusFilter   = document.getElementById('filter-status');
-    const supplierFilter = document.getElementById('filter-supplier');
-    const searchInput    = document.getElementById('search-orders');
+    const supplierInput  = document.getElementById('filter-supplier');
+    const clearBtn       = document.getElementById('clear-supplier-btn');
+    const suggestions    = document.getElementById('supplier-suggestions');
+    const clearFolderBtn = document.getElementById('clear-folder-btn');
 
     statusFilter.addEventListener('change', renderOrdersList);
-    supplierFilter.addEventListener('input', debounce(renderOrdersList, 300));
-    searchInput.addEventListener('input', debounce(renderOrdersList, 300));
+
+    supplierInput.addEventListener('input', () => {
+        const q = supplierInput.value.trim();
+        clearBtn?.classList.toggle('hidden', !q);
+        showSupplierSuggestions(q);
+        renderOrdersList();
+    });
+
+    supplierInput.addEventListener('focus', () => {
+        const q = supplierInput.value.trim();
+        if (q) showSupplierSuggestions(q);
+    });
+
+    supplierInput.addEventListener('blur', () => {
+        setTimeout(hideSuggestions, 200);
+    });
+
+    clearBtn?.addEventListener('click', clearSupplierFilter);
+    clearFolderBtn?.addEventListener('click', clearSupplierFilter);
+
+    suggestions?.addEventListener('mousedown', e => {
+        const btn = e.target.closest('[data-supplier]');
+        if (btn) selectSupplierFilter(btn.dataset.supplier);
+    });
 }
 
-/**
- * Renders the orders list with current filters.
- */
-function renderOrdersList() {
-    const orders = getFilteredOrders();
-    const ordersGrid = document.getElementById('orders-grid');
-    const emptyState = document.getElementById('empty-state');
+function showSupplierSuggestions(query) {
+    const suggestions = document.getElementById('supplier-suggestions');
+    if (!suggestions) return;
+    if (!query) { suggestions.classList.add('hidden'); return; }
 
-    if (orders.length === 0) {
-        emptyState.classList.remove('hidden');
-        ordersGrid.innerHTML = '';
-        return;
-    }
+    const suppliers = getSuppliers();
+    const q = query.toLowerCase();
+    const matches = suppliers.filter(s => s.name.toLowerCase().includes(q));
+    if (matches.length === 0) { suggestions.classList.add('hidden'); return; }
 
-    emptyState.classList.add('hidden');
+    suggestions.innerHTML = matches.map(s => `
+        <button class="w-full text-right px-4 py-2.5 hover:bg-emerald-50 text-slate-700 flex items-center gap-2 transition-colors text-sm"
+            data-supplier="${escapeAttr(s.name)}">
+            <i class="fas fa-truck text-emerald-500 text-xs flex-shrink-0"></i>
+            <span>${escapeHtml(s.name)}</span>
+        </button>
+    `).join('');
+    suggestions.classList.remove('hidden');
+}
 
-    // Sort by date (newest first)
-    orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+function hideSuggestions() {
+    document.getElementById('supplier-suggestions')?.classList.add('hidden');
+}
 
-    ordersGrid.innerHTML = orders.map(order => `
-        <div class="bg-white border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-all">
-            <!-- Header -->
+function selectSupplierFilter(name) {
+    const input = document.getElementById('filter-supplier');
+    if (input) input.value = name;
+    document.getElementById('clear-supplier-btn')?.classList.remove('hidden');
+    hideSuggestions();
+    renderOrdersList();
+}
+
+function clearSupplierFilter() {
+    const input = document.getElementById('filter-supplier');
+    if (input) input.value = '';
+    document.getElementById('clear-supplier-btn')?.classList.add('hidden');
+    const fh = document.getElementById('supplier-folder-header');
+    if (fh) { fh.classList.add('hidden'); fh.classList.remove('flex'); }
+    hideSuggestions();
+    renderOrdersList();
+}
+
+function renderOrderCard(order) {
+    const draftBorder = order.status === 'draft' ? ' border-amber-200' : '';
+    return `
+        <div class="bg-white border border-slate-100${draftBorder} rounded-2xl p-5 hover:shadow-md transition-all">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <span class="text-lg font-bold text-slate-900">${order.orderNumber || '#---'}</span>
-                    <p class="text-sm text-slate-500">${order.supplierName || 'ספק לא ידוע'}</p>
-                    ${order.hall ? `<p class="text-xs text-emerald-600 font-medium mt-0.5"><i class="fas fa-door-open ml-1"></i>${order.hall}</p>` : ''}
+                    <span class="text-lg font-bold text-slate-900">${escapeHtml(order.supplierName || 'ספק לא ידוע')}</span>
+                    ${order.mainHallName ? `<p class="text-xs text-emerald-600 font-medium mt-0.5"><i class="fas fa-door-open ml-1"></i>${escapeHtml(order.mainHallName)}</p>` : ''}
                 </div>
                 ${getStatusBadgeHtml(order.status)}
             </div>
-
-            <!-- Details -->
             <div class="space-y-2 mb-4 text-sm">
                 <div class="flex justify-between">
                     <span class="text-slate-500">תאריך הזמנה:</span>
@@ -87,8 +132,6 @@ function renderOrdersList() {
                     <span class="font-medium">${order.items ? order.items.length : 0}</span>
                 </div>
             </div>
-
-            <!-- Total -->
             <div class="bg-emerald-50 rounded-xl p-3 mb-4 text-center">
                 ${order.actualTotal != null ? `
                     <p class="text-xs text-slate-400 line-through">הוזמן: ₪${(order.total || 0).toFixed(2)}</p>
@@ -99,63 +142,117 @@ function renderOrdersList() {
                     <p class="text-2xl font-bold text-emerald-700">₪${(order.total || 0).toFixed(2)}</p>
                 `}
             </div>
-
-            <!-- Actions -->
             <div class="flex gap-2">
-                <button
-                    onclick="viewOrder('${order.id}')"
+                <button onclick="viewOrder('${order.id}')"
                     class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-1"
-                    title="צפה בהזמנה"
-                >
+                    title="צפה בהזמנה">
                     <i class="fas fa-eye"></i>
                     <span class="hidden sm:inline">צפה</span>
                 </button>
-                <button
-                    onclick="window.location.href='new-order.html?addTo=${order.id}'"
+                <button onclick="window.location.href='new-order.html?addTo=${order.id}'"
                     class="bg-amber-500 hover:bg-amber-600 text-white p-2 rounded-lg transition-all"
-                    title="הוסף פריטים להזמנה"
-                >
+                    title="הוסף פריטים להזמנה">
                     <i class="fas fa-plus"></i>
                 </button>
                 ${order.status === 'draft' ? `
-                <button
-                    onclick="window.location.href='new-order.html?editOrder=${order.id}'"
+                <button onclick="window.location.href='new-order.html?editOrder=${order.id}'"
                     class="bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-lg transition-all"
-                    title="ערוך הזמנה (טיוטה)"
-                >
+                    title="ערוך טיוטה">
                     <i class="fas fa-edit"></i>
                 </button>` : ''}
-                <button
-                    onclick="resendWhatsApp('${order.id}')"
+                <button onclick="resendWhatsApp('${order.id}')"
                     class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition-all"
-                    title="שלח ב-WhatsApp לספק"
-                >
+                    title="שלח ב-WhatsApp לספק">
                     <i class="fab fa-whatsapp"></i>
                 </button>
-                <button
-                    onclick="resendWhatsAppGroup('${order.id}')"
+                <button onclick="resendWhatsAppGroup('${order.id}')"
                     class="bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-lg transition-all"
-                    title="שלח לקבוצת WhatsApp"
-                >
+                    title="שלח לקבוצת WhatsApp">
                     <i class="fab fa-whatsapp"></i><i class="fas fa-users text-xs mr-0.5"></i>
                 </button>
-                <button
-                    onclick="resendSMS('${order.id}')"
+                <button onclick="resendSMS('${order.id}')"
                     class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition-all"
-                    title="שלח ב-SMS"
-                >
+                    title="שלח ב-SMS">
                     <i class="fas fa-comment-sms"></i>
                 </button>
-                <button
-                    onclick="deleteOrderConfirm('${order.id}')"
+                <button onclick="deleteOrderConfirm('${order.id}')"
                     class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition-all"
-                    title="מחק הזמנה"
-                >
+                    title="מחק הזמנה">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
         </div>
-    `).join('');
+    `;
+}
+
+/**
+ * Renders the orders list with current filters.
+ */
+function renderOrdersList() {
+    const orders = getFilteredOrders();
+    const ordersGrid = document.getElementById('orders-grid');
+    const emptyState = document.getElementById('empty-state');
+    const supplierFilter = (document.getElementById('filter-supplier')?.value || '').trim();
+    const statusFilter   = document.getElementById('filter-status')?.value || '';
+    const folderHeader   = document.getElementById('supplier-folder-header');
+
+    // Supplier folder header
+    if (supplierFilter && folderHeader) {
+        folderHeader.classList.remove('hidden');
+        folderHeader.classList.add('flex');
+        const nameEl  = document.getElementById('folder-supplier-name');
+        const countEl = document.getElementById('folder-orders-count');
+        if (nameEl)  nameEl.textContent  = supplierFilter;
+        if (countEl) countEl.textContent = `${orders.length} הזמנות`;
+    } else if (folderHeader) {
+        folderHeader.classList.add('hidden');
+        folderHeader.classList.remove('flex');
+    }
+
+    if (orders.length === 0) {
+        emptyState.classList.remove('hidden');
+        ordersGrid.innerHTML = '';
+        return;
+    }
+
+    emptyState.classList.add('hidden');
+    orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // When showing all statuses, group drafts at the top
+    if (!statusFilter) {
+        const drafts = orders.filter(o => o.status === 'draft');
+        const others  = orders.filter(o => o.status !== 'draft');
+        let html = '';
+        if (drafts.length > 0) {
+            html += `
+                <div class="col-span-full">
+                    <div class="flex items-center gap-2 text-amber-700 mb-3">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="font-bold text-sm">טיוטות (${drafts.length})</span>
+                        <div class="flex-1 h-px bg-amber-200"></div>
+                    </div>
+                </div>
+                ${drafts.map(o => renderOrderCard(o)).join('')}
+            `;
+        }
+        if (others.length > 0) {
+            if (drafts.length > 0) {
+                html += `
+                    <div class="col-span-full">
+                        <div class="flex items-center gap-2 text-slate-500 mt-2 mb-3">
+                            <i class="fas fa-list-ul"></i>
+                            <span class="font-bold text-sm">הזמנות</span>
+                            <div class="flex-1 h-px bg-slate-200"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            html += others.map(o => renderOrderCard(o)).join('');
+        }
+        ordersGrid.innerHTML = html;
+    } else {
+        ordersGrid.innerHTML = orders.map(o => renderOrderCard(o)).join('');
+    }
 }
 
 /**
@@ -167,7 +264,6 @@ function getFilteredOrders() {
 
     const statusFilter   = document.getElementById('filter-status').value;
     const supplierFilter = (document.getElementById('filter-supplier')?.value || '').trim().toLowerCase();
-    const searchTerm     = document.getElementById('search-orders').value.trim().toLowerCase();
 
     if (statusFilter) {
         orders = orders.filter(o => o.status === statusFilter);
@@ -175,14 +271,6 @@ function getFilteredOrders() {
 
     if (supplierFilter) {
         orders = orders.filter(o => (o.supplierName || '').toLowerCase().includes(supplierFilter));
-    }
-
-    if (searchTerm) {
-        orders = orders.filter(o =>
-            (o.orderNumber && o.orderNumber.toLowerCase().includes(searchTerm)) ||
-            (o.supplierName && o.supplierName.toLowerCase().includes(searchTerm)) ||
-            (o.notes && o.notes.toLowerCase().includes(searchTerm))
-        );
     }
 
     return orders;
@@ -209,7 +297,8 @@ function viewOrder(orderId) {
     const order = getOrderById(orderId);
     if (!order) return;
 
-    document.getElementById('view-order-number').textContent = order.orderNumber;
+    const titleEl = document.getElementById('view-modal-title');
+    if (titleEl) titleEl.textContent = `הזמנה — ${order.supplierName || ''}`;
 
     const content = document.getElementById('view-order-content');
     content.innerHTML = `
@@ -428,7 +517,7 @@ function deleteOrderConfirm(orderId) {
     const order = getOrderById(orderId);
     if (!order) return;
 
-    const confirmed = confirm(`האם אתה בטוח שברצונך למחוק את הזמנה ${order.orderNumber}?`);
+    const confirmed = confirm(`האם אתה בטוח שברצונך למחוק הזמנה של ${order.supplierName || 'ספק לא ידוע'}?`);
     if (!confirmed) return;
 
     deleteOrder(orderId);
@@ -672,5 +761,6 @@ function saveDeliveryDetails(orderId) {
 Object.assign(window, {
     viewOrder, closeViewModal, updateOrderStatus,
     resendWhatsApp, resendWhatsAppGroup, resendSMS, deleteOrderConfirm,
-    editDeliveryDetails, recalcDeliveryRow, saveDeliveryDetails
+    editDeliveryDetails, recalcDeliveryRow, saveDeliveryDetails,
+    clearSupplierFilter
 });

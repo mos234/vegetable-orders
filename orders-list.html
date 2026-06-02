@@ -159,17 +159,20 @@
                             <option value="cancelled">בוטל</option>
                         </select>
                     </div>
-                    <!-- Supplier Filter -->
+                    <!-- Supplier Filter with Autocomplete -->
                     <div class="flex-1 relative">
-                        <i class="fas fa-truck absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        <i class="fas fa-truck absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10"></i>
                         <input type="text" id="filter-supplier" placeholder="חיפוש לפי שם ספק..."
-                            class="w-full pr-11 pl-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
-                    </div>
-                    <!-- Search -->
-                    <div class="flex-1 relative">
-                        <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="search-orders" placeholder="חיפוש הזמנה..."
-                            class="w-full pr-12 pl-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            class="w-full pr-11 pl-8 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                            autocomplete="off">
+                        <button id="clear-supplier-btn"
+                            class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden p-1 rounded"
+                            title="נקה">
+                            <i class="fas fa-times text-sm"></i>
+                        </button>
+                        <div id="supplier-suggestions"
+                            class="absolute top-full right-0 left-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-30 hidden max-h-48 overflow-y-auto">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -192,6 +195,18 @@
                     <p class="text-2xl font-bold text-emerald-700" id="stat-delivered">0</p>
                     <p class="text-sm text-emerald-600">סופקו</p>
                 </div>
+            </div>
+
+            <!-- Supplier Folder Header -->
+            <div id="supplier-folder-header" class="hidden items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-2xl px-5 py-3 mb-4">
+                <i class="fas fa-folder-open text-emerald-600 text-xl"></i>
+                <div class="flex-1">
+                    <p class="font-bold text-emerald-800" id="folder-supplier-name"></p>
+                    <p class="text-sm text-emerald-600" id="folder-orders-count"></p>
+                </div>
+                <button id="clear-folder-btn" class="text-emerald-600 hover:text-emerald-800 p-2 rounded-lg hover:bg-emerald-100 transition-colors" title="נקה סינון">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
             <!-- Orders List -->
@@ -221,8 +236,7 @@
     <div id="view-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold">פרטי הזמנה <span id="view-order-number" class="text-emerald-600"></span>
-                </h3>
+                <h3 class="text-xl font-bold" id="view-modal-title">פרטי הזמנה</h3>
                 <button id="close-view-modal-btn" onclick="closeViewModal()" class="text-slate-400 hover:text-slate-600 text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
