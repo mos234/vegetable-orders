@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>סריקת חשבונית | מנהל ההזמנות</title>
+
+    <meta name="description" content="סריקת חשבוניות וחילוץ פריטים מתמונות ו-PDF">
+    <meta name="theme-color" content="#059669">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>(function () { var t = localStorage.getItem('veg-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); if (t === 'dark') document.documentElement.classList.add('dark'); })();</script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Assistant', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        secondary: '#059669',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Scan page specific styles */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 1rem;
+            border: none;
+            cursor: pointer;
+            min-height: 48px;
+            transition: all 200ms cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.28),
+                inset 0 1px 0 rgba(255, 255, 255, 0.10);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(5, 150, 105, 0.35);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(120, 120, 128, 0.08);
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border-radius: 0.75rem;
+            border: 0.5px solid rgba(0, 0, 0, 0.06);
+            cursor: pointer;
+            min-height: 40px;
+            transition: all 150ms ease;
+        }
+
+        html.dark .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(120, 120, 128, 0.14);
+        }
+
+        /* Upload zone */
+        .upload-zone {
+            border: 2px dashed rgba(16, 185, 129, 0.35);
+            border-radius: 1.5rem;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            transition: all 250ms ease;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.04);
+        }
+
+        html.dark .upload-zone {
+            border-color: rgba(52, 211, 153, 0.25);
+        }
+
+        html.dark .upload-zone:hover {
+            border-color: rgba(52, 211, 153, 0.5);
+            background: rgba(52, 211, 153, 0.05);
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(16, 185, 129, 0.2);
+            border-top-color: #10b981;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error text */
+        .error-text {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        html.dark .error-text {
+            color: #f87171;
+        }
+
+        /* Confidence badges */
+        .confidence-legend {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        html.dark .confidence-legend {
+            color: #94a3b8;
+        }
+
+        /* AI badge */
+        #ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .ai-badge-on {
+            background: rgba(16, 185, 129, 0.12);
+            color: #059669;
+        }
+
+        .ai-badge-off {
+            background: rgba(245, 158, 11, 0.12);
+            color: #d97706;
+        }
+
+        html.dark .ai-badge-on {
+            background: rgba(52, 211, 153, 0.15);
+            color: #6ee7b7;
+        }
+
+        html.dark .ai-badge-off {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fcd34d;
+        }
+
+        /* Items table */
+        #items-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        #items-table thead th {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-align: right;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        html.dark #items-table thead th {
+            color: #94a3b8;
+            border-bottom-color: rgba(255, 255, 255, 0.06);
+        }
+
+        #items-table tbody td {
+            padding: 0.5rem;
+            vertical-align: middle;
+        }
+
+        #items-table tbody input {
+            width: 100%;
+            padding: 0.4rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Delete row button */
+        .delete-row-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 0.5rem;
+            transition: background 150ms ease;
+            min-height: 36px;
+            min-width: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-row-btn:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        /* Raw text */
+        #raw-text {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: rgba(120, 120, 128, 0.05);
+            border-radius: 0.75rem;
+            direction: rtl;
+        }
+
+        html.dark #raw-text {
+            background: rgba(255, 255, 255, 0.04);
+            color: #94a3b8;
+        }
+
+        /* Settings panel */
+        #settings summary {
+            cursor: pointer;
+            font-weight: 600;
+            padding: 0.5rem 0;
+            color: #475569;
+            list-style: none;
+        }
+
+        #settings summary::-webkit-details-marker { display: none; }
+
+        #settings summary::before {
+            content: "⚙️ ";
+        }
+
+        html.dark #settings summary {
+            color: #94a3b8;
+        }
+
+        /* Status indicator */
+        #api-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-slate-800">
+    <main class="flex-grow p-4 md:p-8 max-w-2xl mx-auto">
+
+        <!-- 1. Navigation -->
+        <nav class="mb-6">
+            <a href="index.html"
+                class="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-semibold text-sm transition-colors">
+                <i class="fas fa-arrow-right"></i>
+                חזרה לדף הראשי
+            </a>
+        </nav>
+
+        <!-- Page Title -->
+        <header class="mb-8">
+            <h1 class="text-2xl font-bold text-slate-900">
+                <i class="fas fa-camera-retro text-emerald-600 ml-2"></i>סריקת חשבונית
+            </h1>
+            <p class="text-slate-500 text-sm mt-1">העלה תמונה או PDF של חשבונית לחילוץ אוטומטי של פריטים</p>
+        </header>
+
+        <!-- 2. Settings -->
+        <section class="glass-card rounded-2xl p-4 mb-6">
+            <details id="settings">
+                <summary>הגדרות שרת סריקה</summary>
+                <div class="mt-4 space-y-3">
+                    <div>
+                        <label for="api-url" class="block text-xs font-medium text-slate-500 mb-1">כתובת שרת</label>
+                        <input type="text" id="api-url" placeholder="http://localhost:5000"
+                            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button id="save-api" class="btn-secondary">
+                            <i class="fas fa-save"></i> שמור
+                        </button>
+                        <button id="test-api" class="btn-secondary">
+                            <i class="fas fa-plug"></i> בדוק חיבור
+                        </button>
+                        <span id="api-status"></span>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <!-- 3. Upload -->
+        <section id="upload" class="mb-6">
+            <input type="file" id="file-input" accept="image/*,application/pdf" capture="environment" hidden>
+            <label for="file-input" class="upload-zone block">
+                <div class="flex flex-col items-center gap-3">
+                    <div class="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center">
+                        <i class="fas fa-cloud-arrow-up text-2xl text-emerald-600"></i>
+                    </div>
+                    <span class="btn-primary">
+                        <i class="fas fa-camera"></i>
+                        בחר קובץ או צלם
+                    </span>
+                    <p class="text-xs text-slate-400 mt-1">JPG, PNG, GIF, BMP, PDF — עד 10MB</p>
+                </div>
+            </label>
+        </section>
+
+        <!-- 4. Loading -->
+        <section id="loading" hidden class="glass-card rounded-2xl p-8 text-center mb-6">
+            <div class="spinner"></div>
+            <p id="loading-msg" class="text-slate-600 font-medium">מעבד את הקובץ...</p>
+        </section>
+
+        <!-- 5. Error -->
+        <section id="error-section" hidden class="glass-card rounded-2xl p-6 text-center mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-triangle-exclamation text-xl text-red-500"></i>
+            </div>
+            <p id="error-msg" class="error-text mb-4"></p>
+            <button id="retry-btn" class="btn-primary">
+                🔄 נסה שוב
+            </button>
+        </section>
+
+        <!-- 6. Results -->
+        <section id="results" hidden class="space-y-4">
+
+            <!-- AI Badge + Confidence Legend -->
+            <div class="glass-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+                <div id="ai-badge"></div>
+                <div class="confidence-legend">
+                    <span>🟢 גבוה</span>
+                    <span>🟡 בינוני</span>
+                    <span>🔴 נמוך</span>
+                </div>
+            </div>
+
+            <!-- Meta Fields -->
+            <div class="glass-card rounded-2xl p-5 space-y-4">
+                <div>
+                    <label for="supplier-name" class="block text-xs font-medium text-slate-500 mb-1">שם ספק</label>
+                    <input type="text" id="supplier-name" placeholder="שם הספק"
+                        class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="doc-date" class="block text-xs font-medium text-slate-500 mb-1">תאריך מסמך</label>
+                        <input type="date" id="doc-date"
+                            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+                    </div>
+                    <div>
+                        <label for="doc-total" class="block text-xs font-medium text-slate-500 mb-1">סה"כ</label>
+                        <input type="number" id="doc-total" step="0.01" readonly
+                            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="glass-card rounded-2xl p-4 overflow-x-auto">
+                <table id="items-table">
+                    <thead>
+                        <tr>
+                            <th>פריט</th>
+                            <th>כמות</th>
+                            <th>יחידה</th>
+                            <th>מחיר</th>
+                            <th>ביטחון</th>
+                            <th>×</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="mt-3 flex gap-2">
+                    <button id="add-row" class="btn-secondary">
+                        <i class="fas fa-plus"></i> הוסף שורה
+                    </button>
+                </div>
+            </div>
+
+            <!-- Import Button -->
+            <button id="import-btn" class="btn-primary w-full text-lg py-3">
+                <i class="fas fa-file-import"></i>
+                ייבא להזמנה
+            </button>
+
+            <!-- Raw Text -->
+            <div class="glass-card rounded-2xl p-4">
+                <details>
+                    <summary class="cursor-pointer text-sm font-medium text-slate-500">
+                        <i class="fas fa-code ml-1"></i>טקסט גולמי
+                    </summary>
+                    <pre id="raw-text" class="mt-3"></pre>
+                </details>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="js/scan.js" type="module"></script>
+</body>
+
+</html>
