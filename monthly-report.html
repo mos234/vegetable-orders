@@ -165,6 +165,11 @@
                     <p class="text-slate-500 mt-1">סיכום הוצאות והזמנות לפי חודש</p>
                 </div>
                 <div class="flex gap-3">
+                    <button id="invoice-report-btn"
+                        class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-indigo-200 active:scale-95">
+                        <i class="fas fa-file-invoice"></i>
+                        דו"ח כחשבונית
+                    </button>
                     <button id="print-btn"
                         class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all active:scale-95">
                         <i class="fas fa-print"></i>
@@ -302,6 +307,49 @@
                 <div id="no-orders-message" class="hidden bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center mt-4">
                     <i class="fas fa-inbox text-3xl text-slate-300 mb-3 block"></i>
                     <p class="text-slate-400">אין הזמנות לפרק הזמן הנבחר</p>
+                </div>
+            </div>
+
+            <!-- Invoice-style report (all order line-items, corrections shown inline) -->
+            <div id="invoice-report-section" class="hidden glass-card rounded-3xl p-8 shadow-sm mt-8">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h3 class="text-xl font-bold flex items-center gap-2">
+                            <i class="fas fa-file-invoice text-indigo-600"></i>
+                            דו"ח פריטים כחשבונית
+                        </h3>
+                        <p id="invoice-report-subtitle" class="text-slate-500 text-sm mt-1"></p>
+                    </div>
+                    <p class="text-xs text-slate-400">
+                        <i class="fas fa-arrow-left text-amber-500 ml-1"></i>
+                        מקור ← תיקון (כמות/מחיר שהתקבלו בפועל)
+                    </p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right">
+                        <thead>
+                            <tr class="text-slate-400 text-sm border-b border-slate-200">
+                                <th class="py-2 px-2 font-medium">#</th>
+                                <th class="py-2 px-2 font-medium">פריט</th>
+                                <th class="py-2 px-2 font-medium">מס' הזמנה</th>
+                                <th class="py-2 px-2 font-medium">תאריך</th>
+                                <th class="py-2 px-2 font-medium text-center">כמות</th>
+                                <th class="py-2 px-2 font-medium text-center">מחיר</th>
+                                <th class="py-2 px-2 font-medium text-left">סה"כ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoice-report-body" class="divide-y divide-slate-50"></tbody>
+                    </table>
+                </div>
+                <div class="flex flex-col items-end gap-1 mt-6 border-t border-slate-200 pt-4 text-sm">
+                    <div id="invoice-report-diff-row" class="hidden gap-2 text-slate-500">
+                        <span>סה"כ הוזמן:</span>
+                        <span id="invoice-report-total-ordered" class="font-medium"></span>
+                    </div>
+                    <div class="flex gap-2 text-lg">
+                        <span class="font-bold">סה"כ לתשלום (בפועל):</span>
+                        <span id="invoice-report-total-actual" class="font-bold text-emerald-700"></span>
+                    </div>
                 </div>
             </div>
         </main>

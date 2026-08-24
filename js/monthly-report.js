@@ -6,6 +6,7 @@ import './sync.js';
 
 const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 let reportMode = 'monthly'; // 'monthly' | 'annual'
+let currentFilteredOrders = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     initMonthlyReportPage();
@@ -18,6 +19,14 @@ function initMonthlyReportPage() {
     document.getElementById('year-select').value  = now.getFullYear();
 
     document.getElementById('download-excel-btn').addEventListener('click', downloadExcel);
+    document.getElementById('invoice-report-btn').addEventListener('click', () => {
+        if (currentFilteredOrders.length === 0) {
+            alert('אין נתונים להצגה — חפש ספק עם הזמנות בתקופה הנבחרת');
+            return;
+        }
+        renderInvoiceReport(currentFilteredOrders);
+        document.getElementById('invoice-report-section')?.scrollIntoView({ behavior: 'smooth' });
+    });
     document.getElementById('month-select').addEventListener('change', resetAndSearch);
     document.getElementById('year-select').addEventListener('change',  resetAndSearch);
 
@@ -45,6 +54,8 @@ function showPrompt() {
     document.getElementById('supplier-breakdown-section')?.classList.add('hidden');
     document.getElementById('orders-detail-section')?.classList.add('hidden');
     document.getElementById('clear-supplier-search')?.classList.add('hidden');
+    document.getElementById('invoice-report-section')?.classList.add('hidden');
+    currentFilteredOrders = [];
 }
 
 function applySearch() {
@@ -56,6 +67,8 @@ function applySearch() {
 
     document.getElementById('report-search-prompt')?.classList.add('hidden');
     document.getElementById('clear-supplier-search')?.classList.remove('hidden');
+    document.getElementById('invoice-report-section')?.classList.add('hidden');
+    currentFilteredOrders = orders;
 
     if (orders.length === 0) {
         document.getElementById('report-stats-section')?.classList.add('hidden');
@@ -243,6 +256,78 @@ function renderOrdersTable(orders) {
             <td class="py-4 text-left font-bold ${isND ? 'line-through text-slate-400' : ''}">₪${total.toFixed(2)}</td>
         </tr>`;
     }).join('');
+}
+
+function renderInvoiceReport(orders) {
+    const section = document.getElementById('invoice-report-section');
+    const tbody   = document.getElementById('invoice-report-body');
+    if (!section || !tbody) return;
+
+    const billable = orders.filter(o => o.status !== 'not_delivered');
+
+    const rows = [];
+    billable.forEach(order => {
+        const allItems = [
+            ...(order.items || []),
+            ...((order.halls || []).flatMap(h => h.items || []))
+        ];
+        allItems.forEach(item => rows.push({ item, order }));
+    });
+
+    rows.sort((a, b) => new Date(a.order.orderDate) - new Date(b.order.orderDate));
+
+    let totalOrdered = 0;
+    let totalActual  = 0;
+
+    tbody.innerHTML = rows.map((r, idx) => {
+        const { item, order } = r;
+        const qty   = item.quantity || 0;
+        const price = item.price || 0;
+        const total = item.total != null ? item.total : qty * price;
+
+        const hasQtyCorrection   = item.receivedQty  != null && item.receivedQty  !== qty;
+        const hasPriceCorrection = item.actualPrice  != null && item.actualPrice  !== price;
+        const hasCorrection      = hasQtyCorrection || hasPriceCorrection;
+
+        const actualQty   = item.receivedQty  != null ? item.receivedQty  : qty;
+        const actualPrice = item.actualPrice  != null ? item.actualPrice  : price;
+        const actualTotal = item.actualTotal  != null ? item.actualTotal  : total;
+
+        totalOrdered += total;
+        totalActual  += actualTotal;
+
+        const correctionCell = (originalVal, actualVal, hasThisCorrection) => hasThisCorrection
+            ? `<span class="line-through text-slate-400">${originalVal}</span>
+               <i class="fas fa-arrow-left text-xs text-amber-500 mx-1"></i>
+               <span class="font-bold text-emerald-700">${actualVal}</span>`
+            : `${originalVal}`;
+
+        return `
+        <tr class="border-b border-slate-100${hasCorrection ? ' bg-amber-50/50' : ''}">
+            <td class="py-2 px-2 text-slate-400">${idx + 1}</td>
+            <td class="py-2 px-2 font-medium">${escapeHtml(item.name || '')}</td>
+            <td class="py-2 px-2 text-slate-500">${escapeHtml(order.orderNumber || '-')}</td>
+            <td class="py-2 px-2 text-slate-500">${formatDateHebrew(order.orderDate)}</td>
+            <td class="py-2 px-2 text-center">${correctionCell(qty, actualQty, hasQtyCorrection)}</td>
+            <td class="py-2 px-2 text-center">${correctionCell(`₪${price.toFixed(2)}`, `₪${actualPrice.toFixed(2)}`, hasPriceCorrection)}</td>
+            <td class="py-2 px-2 text-left font-bold">${correctionCell(`₪${total.toFixed(2)}`, `₪${actualTotal.toFixed(2)}`, hasCorrection)}</td>
+        </tr>`;
+    }).join('');
+
+    const supplierNames = [...new Set(billable.map(o => o.supplierName).filter(Boolean))];
+    const month = MONTH_NAMES[parseInt(document.getElementById('month-select').value) - 1];
+    const year  = document.getElementById('year-select').value;
+    const periodLabel = reportMode === 'annual' ? `שנת ${year}` : `${month} ${year}`;
+    const subtitle = document.getElementById('invoice-report-subtitle');
+    if (subtitle) subtitle.textContent = `${supplierNames.join(', ') || 'ספק לא ידוע'} — ${periodLabel}`;
+
+    document.getElementById('invoice-report-total-ordered').textContent = `₪${totalOrdered.toFixed(2)}`;
+    document.getElementById('invoice-report-total-actual').textContent  = `₪${totalActual.toFixed(2)}`;
+    const diffRow = document.getElementById('invoice-report-diff-row');
+    if (diffRow) diffRow.classList.toggle('hidden', Math.abs(totalOrdered - totalActual) < 0.005);
+    diffRow?.classList.toggle('flex', Math.abs(totalOrdered - totalActual) >= 0.005);
+
+    section.classList.remove('hidden');
 }
 
 function downloadExcel() {
