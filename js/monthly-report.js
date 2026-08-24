@@ -27,6 +27,13 @@ function initMonthlyReportPage() {
         renderInvoiceReport(currentFilteredOrders);
         document.getElementById('invoice-report-section')?.scrollIntoView({ behavior: 'smooth' });
     });
+    document.getElementById('invoice-report-print-btn')?.addEventListener('click', () => {
+        document.body.classList.add('printing-invoice-only');
+        window.print();
+    });
+    window.addEventListener('afterprint', () => {
+        document.body.classList.remove('printing-invoice-only');
+    });
     document.getElementById('month-select').addEventListener('change', resetAndSearch);
     document.getElementById('year-select').addEventListener('change',  resetAndSearch);
 

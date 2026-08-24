@@ -61,6 +61,11 @@
             body {
                 background-color: white !important;
             }
+
+            /* When printing just the invoice report, hide every other card on the page */
+            body.printing-invoice-only .glass-card:not(#invoice-report-section) {
+                display: none !important;
+            }
         }
     </style>
     <link rel="stylesheet" href="css/styles.css">
@@ -320,10 +325,17 @@
                         </h3>
                         <p id="invoice-report-subtitle" class="text-slate-500 text-sm mt-1"></p>
                     </div>
-                    <p class="text-xs text-slate-400">
-                        <i class="fas fa-arrow-left text-amber-500 ml-1"></i>
-                        מקור ← תיקון (כמות/מחיר שהתקבלו בפועל)
-                    </p>
+                    <div class="flex items-center gap-4">
+                        <p class="text-xs text-slate-400 no-print">
+                            <i class="fas fa-arrow-left text-amber-500 ml-1"></i>
+                            מקור ← תיקון (כמות/מחיר שהתקבלו בפועל)
+                        </p>
+                        <button id="invoice-report-print-btn"
+                            class="no-print bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all active:scale-95 text-sm whitespace-nowrap">
+                            <i class="fas fa-file-pdf"></i>
+                            הדפס / שמור כ-PDF
+                        </button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right">
