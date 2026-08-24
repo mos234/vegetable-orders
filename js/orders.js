@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initOrderPage() {
     setupDateDefaults();
     populateSupplierDropdown();
+    setupSupplierPicker();
     setupAddItemButton();
     setupActionButtons();
 
@@ -60,8 +61,102 @@ function initOrderPage() {
         loadFromTemplate();
     } else {
         addNewItemRow();
+        document.getElementById('supplier-search-input')?.focus();
     }
     updateOrderSummary();
+}
+
+// ─── Supplier picker ───────────────────────────────────────────────────────────
+
+const SUPPLIER_ALPHABET = ['א','ב','ג','ד','ה','ו','ז','ח','ט','י','כ','ל','מ','נ','ס','ע','פ','צ','ק','ר','ש','ת'];
+let allSuppliersList = [];
+let selectedSupplierLetter = '';
+
+function setupSupplierPicker() {
+    renderSupplierAlphabetBar();
+    renderSupplierResults();
+
+    const searchInput = document.getElementById('supplier-search-input');
+    searchInput?.addEventListener('input', () => {
+        if (searchInput.value.trim()) {
+            selectedSupplierLetter = '';
+            renderSupplierAlphabetBar();
+        }
+        renderSupplierResults();
+    });
+
+    document.getElementById('supplier-alphabet-bar')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-letter]');
+        if (!btn) return;
+        selectedSupplierLetter = selectedSupplierLetter === btn.dataset.letter ? '' : btn.dataset.letter;
+        if (searchInput) searchInput.value = '';
+        renderSupplierAlphabetBar();
+        renderSupplierResults();
+    });
+
+    document.getElementById('change-supplier-btn')?.addEventListener('click', () => {
+        document.getElementById('supplier-chip-display')?.classList.add('hidden');
+        document.getElementById('supplier-search-area')?.classList.remove('hidden');
+        if (searchInput) { searchInput.value = ''; searchInput.focus(); }
+        renderSupplierResults();
+    });
+}
+
+function renderSupplierAlphabetBar() {
+    const bar = document.getElementById('supplier-alphabet-bar');
+    if (!bar) return;
+    bar.innerHTML = SUPPLIER_ALPHABET.map(letter => `
+        <button type="button" data-letter="${letter}"
+            class="w-8 h-8 rounded-lg text-sm font-bold transition-all ${selectedSupplierLetter === letter
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}">
+            ${letter}
+        </button>
+    `).join('');
+}
+
+function renderSupplierResults() {
+    const list = document.getElementById('supplier-results-list');
+    if (!list) return;
+    const q = (document.getElementById('supplier-search-input')?.value || '').trim().toLowerCase();
+
+    let results = allSuppliersList;
+    if (q) {
+        results = results.filter(s => s.name.toLowerCase().includes(q) || (s.phone || '').includes(q));
+    } else if (selectedSupplierLetter) {
+        results = results.filter(s => s.name.trim().startsWith(selectedSupplierLetter));
+    }
+
+    if (results.length === 0) {
+        list.innerHTML = `<p class="text-slate-400 text-sm text-center py-4">לא נמצאו ספקים</p>`;
+        return;
+    }
+
+    list.innerHTML = results.map(s => `
+        <button type="button" data-supplier-id="${escapeAttr(s.id)}"
+            class="w-full text-right px-3 py-3 hover:bg-emerald-50 transition-all flex items-center justify-between">
+            <span class="font-semibold text-slate-800">${escapeHtml(s.name)}</span>
+            <span class="text-slate-400 text-sm">${escapeHtml(s.phone || '')}</span>
+        </button>
+    `).join('');
+
+    list.querySelectorAll('[data-supplier-id]').forEach(btn => {
+        btn.addEventListener('click', () => selectSupplier(btn.dataset.supplierId));
+    });
+}
+
+function selectSupplier(id) {
+    const select = document.getElementById('supplier-select');
+    if (select) select.value = id;
+
+    const supplier = allSuppliersList.find(s => s.id === id);
+    const chipName = document.getElementById('supplier-chip-name');
+    if (chipName && supplier) chipName.textContent = `${supplier.name} (${supplier.phone})`;
+
+    document.getElementById('supplier-search-area')?.classList.add('hidden');
+    const chip = document.getElementById('supplier-chip-display');
+    if (chip) { chip.classList.remove('hidden'); chip.classList.add('flex'); }
+    document.getElementById('order-body')?.classList.remove('hidden');
 }
 
 function loadFromTemplate() {
@@ -73,10 +168,7 @@ function loadFromTemplate() {
     try { template = JSON.parse(raw); } catch(e) { addNewItemRow(); return; }
 
     // Pre-select supplier
-    if (template.supplierId) {
-        const select = document.getElementById('supplier-select');
-        if (select) select.value = template.supplierId;
-    }
+    if (template.supplierId) selectSupplier(template.supplierId);
 
     // Add a row per item
     (template.items || []).forEach(item => {
@@ -113,10 +205,7 @@ function loadOrderForAddition(orderId) {
     form.prepend(banner);
 
     // Pre-fill supplier
-    const supplierSelect = document.getElementById('supplier-select');
-    if (supplierSelect && order.supplierId) {
-        supplierSelect.value = order.supplierId;
-    }
+    if (order.supplierId) selectSupplier(order.supplierId);
 
     // Pre-fill dates
     const orderDateInput = document.getElementById('order-date');
@@ -161,8 +250,7 @@ function loadOrderForEdit(orderId) {
     mainEl.prepend(banner);
 
     // Pre-fill supplier
-    const supplierSelect = document.getElementById('supplier-select');
-    if (supplierSelect && order.supplierId) supplierSelect.value = order.supplierId;
+    if (order.supplierId) selectSupplier(order.supplierId);
 
     // Pre-fill header fields
     const orderDateInput    = document.getElementById('order-date');
@@ -250,9 +338,11 @@ function formatDateForInput(date) {
 function populateSupplierDropdown() {
     const select = document.getElementById('supplier-select');
     const noSuppliersMsg = document.getElementById('no-suppliers-msg');
-    const suppliers = getSuppliers();
+    const suppliers = getSuppliers().slice().sort((a, b) => (a.name || '').localeCompare(b.name || '', 'he'));
+    allSuppliersList = suppliers;
     if (suppliers.length === 0) {
         noSuppliersMsg.classList.remove('hidden');
+        document.getElementById('supplier-search-input')?.setAttribute('disabled', 'true');
         return;
     }
     noSuppliersMsg.classList.add('hidden');
@@ -846,7 +936,7 @@ function saveOrderAction(action) {
     const supplierId = supplierSelect.value;
     if (!supplierId) {
         alert('נא לבחור ספק');
-        supplierSelect.focus();
+        document.getElementById('supplier-search-input')?.focus();
         return;
     }
 
@@ -959,6 +1049,15 @@ function saveOrderAction(action) {
 
 function resetOrderForm() {
     document.getElementById('supplier-select').value = '';
+    document.getElementById('supplier-chip-display')?.classList.add('hidden');
+    document.getElementById('supplier-chip-display')?.classList.remove('flex');
+    document.getElementById('supplier-search-area')?.classList.remove('hidden');
+    document.getElementById('order-body')?.classList.add('hidden');
+    const supplierSearchInput = document.getElementById('supplier-search-input');
+    if (supplierSearchInput) supplierSearchInput.value = '';
+    selectedSupplierLetter = '';
+    renderSupplierAlphabetBar();
+    renderSupplierResults();
     document.getElementById('order-notes').value = '';
     if (document.getElementById('delivery-time')) document.getElementById('delivery-time').value = '';
     if (document.getElementById('main-hall-name')) document.getElementById('main-hall-name').value = '';

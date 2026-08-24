@@ -152,7 +152,14 @@ vegetable_groups           → [{id, name, link, createdAt}]
 
 ## orders.js — הזמנה חדשה
 
-**Autocomplete חכם:**
+**בחירת ספק (שער לטופס):**
+- `#supplier-select` הוא `<select>` מוסתר (`hidden`) שמחזיק את הבחירה בפועל — כל שאר הקוד (`getSelectedSupplierId()`, `saveOrderAction()` וכו') ממשיך לקרוא ממנו כרגיל.
+- ה-UI בפועל הוא `#supplier-search-area` (שדה חיפוש + שורת אותיות א-ת + רשימת תוצאות לחיצות) שמוצג במקום ה-select.
+- `selectSupplier(id)` — פונקציית המפתח: מעדכנת את ה-select המוסתר, מציגה "צ'יפ" עם שם הספק הנבחר (`#supplier-chip-display`), ומגלה את `#order-body` (שמכיל את כל שאר הטופס — תאריכים, פריטים, אולמות, סיכום, כפתורים).
+- `#order-body` **מוסתר כברירת מחדל** בהזמנה חדשה — המשתמש חייב לבחור ספק לפני שרואה את שאר הטופס. ב-`loadOrderForEdit`/`loadOrderForAddition`/`loadFromTemplate` נקרא `selectSupplier()` אוטומטית כדי לגלות את הטופס מיד.
+- כפתור "החלף ספק" (`#change-supplier-btn`) מחזיר לתצוגת החיפוש בלי להסתיר את `#order-body` (כדי לא לאבד נתונים שכבר הוזנו).
+
+**Autocomplete חכם (לפריטים):**
 - מסנן לפי הספק הנבחר ב-dropdown
 - אם לספק אין פריטים במחירון → fallback לרשימה הכללית
 - `getSelectedSupplierId()` — מחזיר supplierId מה-dropdown

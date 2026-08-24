@@ -231,24 +231,21 @@
                     <span id="suppliers-count"
                         class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-bold">0 ספקים</span>
                 </div>
-                <div class="relative mb-5">
+                <div class="relative mb-3">
                     <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                     <input type="search" id="suppliers-search"
                         placeholder="חיפוש ספק לפי שם, טלפון או הערות..."
                         class="w-full pr-9 pl-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:bg-white transition-all">
                 </div>
 
+                <!-- Alphabet quick-jump bar -->
+                <div id="alphabet-bar" class="flex flex-wrap gap-1 mb-5"></div>
+
                 <!-- No suppliers at all -->
                 <div id="empty-state" class="hidden bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
                     <i class="fas fa-users text-4xl text-slate-300 mb-4 block"></i>
                     <p class="text-slate-400 text-lg">אין ספקים עדיין</p>
                     <p class="text-slate-400 text-sm mt-1">הוסף ספק חדש באמצעות הטופס למעלה</p>
-                </div>
-
-                <!-- Search hint (default state) -->
-                <div id="search-hint-state" class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center">
-                    <i class="fas fa-search text-4xl text-slate-300 mb-4 block"></i>
-                    <p class="text-slate-400 text-lg">הקלד שם ספק לחיפוש</p>
                 </div>
 
                 <!-- No results -->

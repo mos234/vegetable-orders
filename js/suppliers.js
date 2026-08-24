@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initSuppliersPage();
 });
 
+const HEBREW_ALPHABET = ['א','ב','ג','ד','ה','ו','ז','ח','ט','י','כ','ל','מ','נ','ס','ע','פ','צ','ק','ר','ש','ת'];
+
+let selectedLetter = '';
+
 /**
  * Initializes the suppliers page.
  */
@@ -20,6 +24,7 @@ function initSuppliersPage() {
     setupSupplierForm();
     setupEditModal();
     setupSearch();
+    setupAlphabetBar();
     renderSuppliersList();
 }
 
@@ -28,9 +33,42 @@ function setupSearch() {
     if (!searchInput) return;
     let debounceTimer;
     searchInput.addEventListener('input', () => {
+        if (searchInput.value.trim()) {
+            selectedLetter = '';
+            renderAlphabetBar();
+        }
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(renderSuppliersList, 300);
     });
+}
+
+function setupAlphabetBar() {
+    const bar = document.getElementById('alphabet-bar');
+    if (!bar) return;
+    renderAlphabetBar();
+    bar.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-letter]');
+        if (!btn) return;
+        const letter = btn.dataset.letter;
+        selectedLetter = selectedLetter === letter ? '' : letter;
+        const searchInput = document.getElementById('suppliers-search');
+        if (searchInput) searchInput.value = '';
+        renderAlphabetBar();
+        renderSuppliersList();
+    });
+}
+
+function renderAlphabetBar() {
+    const bar = document.getElementById('alphabet-bar');
+    if (!bar) return;
+    bar.innerHTML = HEBREW_ALPHABET.map(letter => `
+        <button type="button" data-letter="${letter}"
+            class="w-8 h-8 rounded-lg text-sm font-bold transition-all ${selectedLetter === letter
+                ? 'bg-emerald-600 text-white'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}">
+            ${letter}
+        </button>
+    `).join('');
 }
 
 /**
@@ -154,18 +192,17 @@ function closeEditModal() {
  * Renders the suppliers list.
  */
 function renderSuppliersList() {
-    const allSuppliers = getSuppliers();
+    const allSuppliers = getSuppliers().slice().sort((a, b) => (a.name || '').localeCompare(b.name || '', 'he'));
     const q = (document.getElementById('suppliers-search')?.value || '').trim().toLowerCase();
 
     const emptyState     = document.getElementById('empty-state');
-    const searchHint     = document.getElementById('search-hint-state');
     const noResults      = document.getElementById('no-results-state');
     const tableContainer = document.getElementById('suppliers-table-container');
     const listContainer  = document.getElementById('suppliers-list');
     const countElement   = document.getElementById('suppliers-count');
 
     // Hide all panels first
-    [emptyState, searchHint, noResults, tableContainer].forEach(el => el?.classList.add('hidden'));
+    [emptyState, noResults, tableContainer].forEach(el => el?.classList.add('hidden'));
 
     if (allSuppliers.length === 0) {
         emptyState?.classList.remove('hidden');
@@ -175,16 +212,16 @@ function renderSuppliersList() {
 
     if (countElement) countElement.textContent = `${allSuppliers.length} ספקים`;
 
-    if (!q) {
-        searchHint?.classList.remove('hidden');
-        return;
+    let suppliers = allSuppliers;
+    if (q) {
+        suppliers = suppliers.filter(s =>
+            s.name.toLowerCase().includes(q) ||
+            (s.phone  || '').includes(q) ||
+            (s.phone2 || '').includes(q) ||
+            (s.notes  || '').toLowerCase().includes(q));
+    } else if (selectedLetter) {
+        suppliers = suppliers.filter(s => s.name.trim().startsWith(selectedLetter));
     }
-
-    const suppliers = allSuppliers.filter(s =>
-        s.name.toLowerCase().includes(q) ||
-        (s.phone  || '').includes(q) ||
-        (s.phone2 || '').includes(q) ||
-        (s.notes  || '').toLowerCase().includes(q));
 
     if (suppliers.length === 0) {
         noResults?.classList.remove('hidden');
