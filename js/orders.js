@@ -212,6 +212,8 @@ function loadOrderForAddition(orderId) {
     const deliveryDateInput = document.getElementById('delivery-date');
     if (orderDateInput && order.orderDate) orderDateInput.value = order.orderDate;
     if (deliveryDateInput && order.deliveryDate) deliveryDateInput.value = order.deliveryDate;
+    const mainHallNameInput = document.getElementById('main-hall-name');
+    if (mainHallNameInput && order.mainHallName) mainHallNameInput.value = order.mainHallName;
 
     // Load existing items (read-only visual) + one new empty row
     const tbody = document.getElementById('items-table-body');
@@ -224,8 +226,8 @@ function loadOrderForAddition(orderId) {
         row.id = `item-row-${id}`;
         row.className = 'opacity-50';
         row.innerHTML = `
-            <td class="p-2 text-sm text-slate-600" colspan="4">
-                <i class="fas fa-lock text-xs ml-1"></i>${item.name} — ${item.quantity} ${item.unit}
+            <td class="p-2 text-sm text-slate-600" colspan="6">
+                <i class="fas fa-lock text-xs ml-1"></i>${escapeHtml(item.name)} — ${item.quantity} ${item.unit}
             </td>`;
         tbody.appendChild(row);
         // Push placeholder so summary counts are correct
@@ -234,6 +236,50 @@ function loadOrderForAddition(orderId) {
 
     addToOrderOriginalItemCount = orderItems.length;
     addNewItemRow();
+
+    // Load existing halls too — each with its own locked items + one addable row,
+    // so items can be added to any hall (not only the main one)
+    (order.halls || []).forEach(hall => {
+        addHall();
+        const hallId = hallIdCounter;
+        const hallObj = halls.find(h => h.id === hallId);
+        if (!hallObj) return;
+
+        const hallNameInput = document.getElementById(`hall-name-${hallId}`);
+        if (hallNameInput) { hallNameInput.value = hall.name; updateHallName(hallId, hall.name); }
+
+        // addHall() already added one blank row — clear it, we'll rebuild
+        const hallTbody = document.getElementById(`hall-items-table-${hallId}`);
+        if (hallTbody) hallTbody.innerHTML = '';
+        hallObj.items = [];
+        hallObj.itemCounter = 0;
+
+        (hall.items || []).forEach(item => {
+            const itemId = ++hallObj.itemCounter;
+            const prefix = `hall-${hallId}-`;
+            const row = document.createElement('tr');
+            row.id = `${prefix}item-row-${itemId}`;
+            row.className = 'opacity-50';
+            row.innerHTML = `
+                <td class="p-2 text-sm text-slate-600" colspan="6">
+                    <i class="fas fa-lock text-xs ml-1"></i>${escapeHtml(item.name)} — ${item.quantity} ${item.unit}
+                </td>`;
+            hallTbody?.appendChild(row);
+            hallObj.items.push({ id: itemId, name: item.name, qty: item.quantity, unit: 'kg', price: item.price || 0, total: item.total || 0 });
+        });
+
+        hallObj.lockedCount = hallObj.items.length;
+        addHallItem(hallId);
+
+        // Removing/duplicating-over this hall would silently wipe already-placed items —
+        // disable those two actions for halls loaded from the existing order.
+        document.getElementById(`hall-${hallId}`)?.querySelectorAll('button').forEach(btn => {
+            const onclick = btn.getAttribute('onclick') || '';
+            if (onclick.includes('removeHall(') || onclick.includes('duplicateToHall(')) {
+                btn.classList.add('hidden');
+            }
+        });
+    });
 }
 
 function loadOrderForEdit(orderId) {
@@ -899,21 +945,40 @@ function updateOrderSummary() {
 function saveOrderAction(action) {
     // ── "Add to existing order" mode ──
     if (addToOrderId) {
-        const newItems = orderItems.slice(addToOrderOriginalItemCount).filter(i => i.name && i.qty > 0);
-        if (newItems.length === 0) { alert('נא להוסיף לפחות פריט חדש'); return; }
-
-        const existing = getOrderById(addToOrderId);
-        const mappedNew = newItems.map(i => ({
+        const mapItem = i => ({
             name: i.name, quantity: i.qty,
             unit: UNIT_OPTIONS.find(u => u.value === i.unit)?.label || i.unit,
-            unitValue: i.unit, price: i.price, total: i.total
-        }));
-        const allItems = [...(existing.items || []), ...mappedNew];
-        const newTotal = allItems.reduce((s, i) => s + (i.total || 0), 0);
-        updateOrder(addToOrderId, { items: allItems, total: newTotal });
+            unitValue: i.unit, price: i.price, total: i.total,
+            packageSize:  i.packageSize  || 0,
+            pricePerUnit: i.pricePerUnit || 0
+        });
 
-        const additionMsg = `תוספת להזמנה ${existing.orderNumber || ''}:\n` +
-            mappedNew.map(i => `• ${i.name}: ${i.quantity} ${i.unit}`).join('\n');
+        const existing = getOrderById(addToOrderId);
+        const existingHalls = existing.halls || [];
+
+        const newMainItems = orderItems.slice(addToOrderOriginalItemCount).filter(i => i.name && i.qty > 0);
+        const mappedNewMain = newMainItems.map(mapItem);
+
+        const msgLines = mappedNewMain.map(i => `• ${i.name}: ${i.quantity} ${i.unit}`);
+
+        const mergedHalls = halls.map(h => {
+            const newHallItems = h.items.slice(h.lockedCount || 0).filter(i => i.name && i.qty > 0);
+            const mappedNewHall = newHallItems.map(mapItem);
+            if (mappedNewHall.length) {
+                msgLines.push(...mappedNewHall.map(i => `• [${h.name}] ${i.name}: ${i.quantity} ${i.unit}`));
+            }
+            const existingHallItems = existingHalls.find(eh => eh.name === h.name)?.items || [];
+            return { name: h.name, items: [...existingHallItems, ...mappedNewHall] };
+        }).filter(h => h.items.length > 0);
+
+        if (msgLines.length === 0) { alert('נא להוסיף לפחות פריט חדש'); return; }
+
+        const allItems = [...(existing.items || []), ...mappedNewMain];
+        const newTotal = allItems.reduce((s, i) => s + (i.total || 0), 0) +
+            mergedHalls.reduce((s, h) => s + h.items.reduce((ss, i) => ss + (i.total || 0), 0), 0);
+        updateOrder(addToOrderId, { items: allItems, halls: mergedHalls, total: newTotal });
+
+        const additionMsg = `תוספת להזמנה ${existing.orderNumber || ''}:\n` + msgLines.join('\n');
 
         const redirectToList = () => {
             showToast('הפריטים נוספו להזמנה ✓');

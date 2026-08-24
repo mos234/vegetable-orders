@@ -293,6 +293,44 @@ function updateStats() {
  * Views an order in a modal.
  * @param {string} orderId
  */
+function buildItemsTableHtml(items) {
+    if (!items || items.length === 0) {
+        return `<div class="bg-slate-50 rounded-xl p-4 text-sm text-slate-400 text-center">אין פריטים</div>`;
+    }
+    return `
+        <div class="bg-slate-50 rounded-xl overflow-hidden">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-100">
+                    <tr>
+                        <th class="p-3 text-right font-medium">פריט</th>
+                        <th class="p-3 text-center font-medium">כמות</th>
+                        <th class="p-3 text-center font-medium">מחיר הזמנה</th>
+                        <th class="p-3 text-center font-medium">מחיר בפועל</th>
+                        <th class="p-3 text-left font-medium">סה"כ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${items.map(item => {
+                        const displayPrice = item.actualPrice != null ? item.actualPrice : item.price;
+                        const displayTotal = item.actualTotal != null ? item.actualTotal : item.total;
+                        const hasDiff = item.actualPrice != null && Math.abs(item.actualPrice - item.price) > 0.001;
+                        return `
+                        <tr class="border-t border-slate-200">
+                            <td class="p-3">${escapeHtml(item.name)}</td>
+                            <td class="p-3 text-center">${item.quantity} ${item.unit}</td>
+                            <td class="p-3 text-center text-slate-500">₪${(item.price || 0).toFixed(2)}</td>
+                            <td class="p-3 text-center font-bold ${hasDiff ? 'text-amber-600' : 'text-slate-700'}">
+                                ₪${(displayPrice || 0).toFixed(2)}
+                                ${hasDiff ? '<i class="fas fa-pen text-xs mr-1 opacity-60"></i>' : ''}
+                            </td>
+                            <td class="p-3 text-left font-bold">₪${(displayTotal || 0).toFixed(2)}</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>`;
+}
+
 function viewOrder(orderId) {
     const order = getOrderById(orderId);
     if (!order) return;
@@ -324,41 +362,20 @@ function viewOrder(orderId) {
                 </div>
             </div>
 
-            <!-- Items -->
+            <!-- Items (main hall) -->
             <div>
-                <h4 class="font-bold mb-3">פריטים בהזמנה</h4>
-                <div class="bg-slate-50 rounded-xl overflow-hidden">
-                    <table class="w-full text-sm">
-                        <thead class="bg-slate-100">
-                            <tr>
-                                <th class="p-3 text-right font-medium">פריט</th>
-                                <th class="p-3 text-center font-medium">כמות</th>
-                                <th class="p-3 text-center font-medium">מחיר הזמנה</th>
-                                <th class="p-3 text-center font-medium">מחיר בפועל</th>
-                                <th class="p-3 text-left font-medium">סה"כ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${(order.items || []).map(item => {
-                                const displayPrice = item.actualPrice != null ? item.actualPrice : item.price;
-                                const displayTotal = item.actualTotal != null ? item.actualTotal : item.total;
-                                const hasDiff = item.actualPrice != null && Math.abs(item.actualPrice - item.price) > 0.001;
-                                return `
-                                <tr class="border-t border-slate-200">
-                                    <td class="p-3">${item.name}</td>
-                                    <td class="p-3 text-center">${item.quantity} ${item.unit}</td>
-                                    <td class="p-3 text-center text-slate-500">₪${(item.price || 0).toFixed(2)}</td>
-                                    <td class="p-3 text-center font-bold ${hasDiff ? 'text-amber-600' : 'text-slate-700'}">
-                                        ₪${(displayPrice || 0).toFixed(2)}
-                                        ${hasDiff ? '<i class="fas fa-pen text-xs mr-1 opacity-60"></i>' : ''}
-                                    </td>
-                                    <td class="p-3 text-left font-bold">₪${(displayTotal || 0).toFixed(2)}</td>
-                                </tr>`;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
+                <h4 class="font-bold mb-3">${escapeHtml(order.mainHallName || 'פריטים בהזמנה')}</h4>
+                ${buildItemsTableHtml(order.items)}
             </div>
+
+            <!-- Additional halls -->
+            ${(order.halls || []).map(hall => `
+            <div>
+                <h4 class="font-bold mb-3 flex items-center gap-2 text-teal-700">
+                    <i class="fas fa-building"></i>${escapeHtml(hall.name || 'אולם נוסף')}
+                </h4>
+                ${buildItemsTableHtml(hall.items)}
+            </div>`).join('')}
 
             <!-- Total -->
             ${order.actualTotal != null ? `
